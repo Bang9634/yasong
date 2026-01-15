@@ -1,4 +1,5 @@
 import { Bell, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface NoticeItem {
   id: number;
@@ -41,6 +42,8 @@ const notices: NoticeItem[] = [
 ];
 
 export function Notice() {
+  const navigate = useNavigate();
+
   return (
     <section id="notice" className="py-20 bg-gradient-to-b from-teal-50 to-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -53,6 +56,7 @@ export function Notice() {
           {notices.map((notice, index) => (
             <div
               key={notice.id}
+              onClick={() => navigate('/notice')}
               className={`flex items-center justify-between p-5 hover:bg-teal-50 transition-colors cursor-pointer ${
                 index !== notices.length - 1 ? 'border-b border-gray-200' : ''
               }`}
@@ -74,7 +78,10 @@ export function Notice() {
         </div>
 
         <div className="text-center mt-8">
-          <button className="px-8 py-3 bg-teal-700 text-white rounded-lg hover:bg-teal-800 transition-colors">
+          <button 
+            onClick={() => navigate('/notice')}
+            className="px-8 py-3 bg-teal-700 text-white rounded-lg hover:bg-teal-800 transition-colors"
+          >
             공지사항 더보기
           </button>
         </div>

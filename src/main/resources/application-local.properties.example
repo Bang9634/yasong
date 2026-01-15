@@ -1,0 +1,8 @@
+# MySQL 로컬 개발 환경 설정
+spring.datasource.url=jdbc:mysql://localhost:3306/yasongmuseum?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+spring.datasource.username=root
+spring.datasource.password=your_password_here
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+# JWT Secret Key (최소 32자 이상 권장)
+jwt.secret=your-secret-key-here-please-change-this-to-something-more-secure-at-least-32-characters

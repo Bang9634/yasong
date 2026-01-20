@@ -15,6 +15,8 @@ import io.jsonwebtoken.security.Keys;
 /**
  * JWT Token Provider
  * Responsible for creating and validating JWT tokens.
+ * 
+ * @apiNote Token includes username as subject and userId as a claim.
  */
 @Component
 public class JwtTokenProvider {

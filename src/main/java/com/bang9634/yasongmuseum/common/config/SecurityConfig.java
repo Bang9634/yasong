@@ -34,7 +34,6 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> auth
             .requestMatchers("/api/auth/**").permitAll() // permit auth APIs without authentication
             .requestMatchers("/api/**").authenticated() // authenticate other API requests
-            .anyRequest().permitAll() // TODO: change to authenticated() in production
         )
         .sessionManagement(session ->
             session.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // no session will be created or used by spring security

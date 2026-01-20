@@ -22,11 +22,18 @@ public class User {
     @Column(unique = true, nullable = false, length = 100)
     private String email;
 
+    @Column(unique = true, nullable = false, length = 50)
+    private String username;
+
     @Column(nullable = false)
     private String password;
 
     @Column(length = 50)
     private String name;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private UserRole role = UserRole.USER;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -43,5 +50,13 @@ public class User {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    public boolean isAdmin() {
+        return this.role == UserRole.ADMIN;
+    }
+
+    public boolean isManager() {
+        return this.role == UserRole.MANAGER;
     }
 }

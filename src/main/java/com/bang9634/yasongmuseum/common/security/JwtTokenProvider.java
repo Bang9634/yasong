@@ -7,7 +7,6 @@ import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -30,15 +29,13 @@ public class JwtTokenProvider {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
     }
 
-    public String createToken(String email, Long userId) {
-        Claims claims = Jwts.claims().subject(email).build();
-        claims.put("userId", userId);
-
+    public String createToken(String username, Long userId) {
         Date now = new Date();
         Date validity = new Date(now.getTime() + validityInMilliseconds);
 
         return Jwts.builder()
-                .claims(claims)
+                .subject(username)
+                .claim("userId", userId)
                 .issuedAt(now)
                 .expiration(validity)
                 .signWith(getSigningKey(), Jwts.SIG.HS256)

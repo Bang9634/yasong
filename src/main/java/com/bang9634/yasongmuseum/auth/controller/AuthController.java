@@ -5,6 +5,7 @@ import com.bang9634.yasongmuseum.auth.dto.LoginRequest;
 import com.bang9634.yasongmuseum.auth.dto.SignupRequest;
 import com.bang9634.yasongmuseum.auth.service.AuthService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -36,8 +37,11 @@ public class AuthController {
      * POST /api/auth/login
      */
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-        AuthResponse response = authService.login(request);
+    public ResponseEntity<AuthResponse> login(
+            @Valid @RequestBody LoginRequest request, 
+            HttpServletRequest httpRequest) {
+                
+        AuthResponse response = authService.login(request, httpRequest);
         return ResponseEntity.ok(response);
     }
     

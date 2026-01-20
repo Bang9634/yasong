@@ -15,6 +15,7 @@ import com.bang9634.yasongmuseum.common.security.JwtTokenProvider;
 import com.bang9634.yasongmuseum.user.entity.User;
 import com.bang9634.yasongmuseum.user.repository.UserRepository;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,6 +32,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final LoginLogService loginLogService;
 
     public AuthResponse signup(SignupRequest request) {
         log.info("Attempting to sign up user: {}", request.getUsername());
@@ -62,29 +64,54 @@ public class AuthService {
     }
 
 
-    public AuthResponse login(LoginRequest request) {
-        log.info("Attempting to log in user: {}", request.getUsername());
-        User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> {
-                    return new UserNotFoundException("사용자를 찾을 수 없습니다.");
-        });
-        
-        // Verify password
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new InvalidPasswordException("비밀번호가 일치하지 않습니다.");
-        }
+    public AuthResponse login(LoginRequest request, HttpServletRequest httpRequest) {
+        try {
+            log.info("Attempting to log in user: {}", request.getUsername());
+            User user = userRepository.findByUsername(request.getUsername())
+                    .orElseThrow(() -> {
+                        return new UserNotFoundException("사용자를 찾을 수 없습니다.");
+            });
+            
+            // Verify password
+            if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+                throw new InvalidPasswordException("비밀번호가 일치하지 않습니다.");
+            }
 
-        String token = jwtTokenProvider.createToken(user.getUsername(), user.getId());
-        
-        log.info("User logged in successfully: {}", user.getUsername());
-        return AuthResponse.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .username(user.getUsername())
-                .name(user.getName())
-                .token(token)
-                .createdAt(user.getCreatedAt())
-                .message("로그인 성공")
-                .build();
+            loginLogService.logSuccessfulLogin(user, httpRequest);
+
+            String token = jwtTokenProvider.createToken(user.getUsername(), user.getId());
+            
+            log.info("User logged in successfully: {}", user.getUsername());
+            return AuthResponse.builder()
+                    .id(user.getId())
+                    .email(user.getEmail())
+                    .username(user.getUsername())
+                    .name(user.getName())
+                    .token(token)
+                    .createdAt(user.getCreatedAt())
+                    .message("로그인 성공")
+                    .build();
+        } catch (UserNotFoundException e) {
+            loginLogService.logFailedLogin(
+                request.getUsername(), 
+                "User not found", 
+                httpRequest
+            );
+            throw e;
+        } catch (InvalidPasswordException e) {
+            loginLogService.logFailedLogin(
+                request.getUsername(), 
+                "Invalid password", 
+                httpRequest
+            );
+            throw e;
+        } catch (Exception e) {
+            loginLogService.logFailedLogin(
+                request.getUsername(), 
+                "Unexpected system error: " + e.getMessage(), 
+                httpRequest
+            );
+            throw e;
+        }
     }
 }

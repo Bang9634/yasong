@@ -3,28 +3,39 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
+import { useAuth } from '@/context/AuthContext';
 
 export function Login() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const { login } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    // 임시 로그인 로직 (추후 백엔드 API 연동 예정)
-    if (!email || !password) {
-      setError('이메일과 비밀번호를 입력해주세요.');
+    // 기본 유효성 검사
+    if (!username || !password) {
+      const errorMsg = '아이디와 비밀번호를 입력해주세요.';
+      setError(errorMsg);
+      alert(errorMsg);
       return;
     }
 
-    // TODO: 백엔드 API 호출로 대체
-    console.log('로그인 시도:', { email, password });
-    
-    // 임시로 홈으로 이동
-    navigate('/');
+    try {
+      const response = await login(username, password);
+      console.log('로그인 성공:', response);
+      alert('로그인 성공!');
+      navigate('/');
+    } catch (err) {
+      // 백엔드에서 보낸 에러 메시지 추출
+      const errorMessage = err instanceof Error ? err.message : '로그인에 실패했습니다.';
+      setError(errorMessage);
+      alert(`로그인 실패\n\n${errorMessage}`);
+      console.error('로그인 실패:', err);
+    }
   };
 
   return (
@@ -46,15 +57,15 @@ export function Login() {
               </div>
             )}
 
-            {/* 이메일 */}
+            {/* 아이디 */}
             <div className="space-y-2">
-              <Label htmlFor="email">이메일</Label>
+              <Label htmlFor="username">아이디</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="example@email.com"
-                value={email}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+                id="username"
+                type="text"
+                placeholder="아이디를 입력해주세요."
+                value={username}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)}
                 className="w-full"
               />
             </div>

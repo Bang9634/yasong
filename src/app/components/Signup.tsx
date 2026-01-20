@@ -4,6 +4,7 @@ import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { Checkbox } from '@/app/components/ui/checkbox';
+import { useAuth } from '@/context/AuthContext';
 
 export function Signup() {
   const navigate = useNavigate();
@@ -12,11 +13,13 @@ export function Signup() {
     email: '',
     password: '',
     passwordConfirm: '',
-    phone: '',
+    username: '',
     agreeTerms: false,
     agreePrivacy: false,
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const { signup } = useAuth();
 
   const handleChange = (field: string, value: string | boolean) => {
     setFormData({ ...formData, [field]: value });
@@ -49,8 +52,8 @@ export function Signup() {
       newErrors.passwordConfirm = '비밀번호가 일치하지 않습니다.';
     }
 
-    if (!formData.phone.trim()) {
-      newErrors.phone = '연락처를 입력해주세요.';
+    if (!formData.username.trim()) {
+      newErrors.username = '아이디를 입력해주세요.';
     }
 
     if (!formData.agreeTerms) {
@@ -65,19 +68,29 @@ export function Signup() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
 
     if (!validateForm()) {
       return;
     }
 
+    setIsLoading(true);
     // TODO: 백엔드 API 호출로 대체
     console.log('회원가입 시도:', formData);
+    try {
+        const response = await signup(formData.email, formData.username ,formData.password, formData.name);
+        alert("회원가입이 완료되었습니다.");
+        navigate("/login");
 
-    // 회원가입 성공 시 로그인 페이지로 이동
-    alert('회원가입이 완료되었습니다!');
-    navigate('/login');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '회원가입에 실패했습니다.';
+      alert(`회원가입 실패\n\n${errorMessage}`);
+      console.error('회원가입 실패:', err);
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   return (
@@ -124,6 +137,22 @@ export function Signup() {
               )}
             </div>
 
+            {/* 아이디 */}
+            <div className="space-y-2">
+              <Label htmlFor="username">아이디 *</Label>
+              <Input
+                id="username"
+                type="text"
+                placeholder="아이디를 입력해주세요."
+                value={formData.username}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('username', e.target.value)}
+                className={errors.username ? 'border-red-500' : ''}
+              />
+              {errors.username && (
+                <p className="text-sm text-red-500">{errors.username}</p>
+              )}
+            </div>
+
             {/* 비밀번호 */}
             <div className="space-y-2">
               <Label htmlFor="password">비밀번호 *</Label>
@@ -156,21 +185,7 @@ export function Signup() {
               )}
             </div>
 
-            {/* 연락처 */}
-            <div className="space-y-2">
-              <Label htmlFor="phone">연락처 *</Label>
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="010-1234-5678"
-                value={formData.phone}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('phone', e.target.value)}
-                className={errors.phone ? 'border-red-500' : ''}
-              />
-              {errors.phone && (
-                <p className="text-sm text-red-500">{errors.phone}</p>
-              )}
-            </div>
+
 
             {/* 약관 동의 */}
             <div className="space-y-3 pt-4 border-t">
@@ -218,8 +233,8 @@ export function Signup() {
             </div>
 
             {/* 회원가입 버튼 */}
-            <Button type="submit" className="w-full bg-teal-700 hover:bg-teal-800 text-white">
-              회원가입
+            <Button type="submit" className="w-full bg-teal-700 hover:bg-teal-800 text-white" disabled={isLoading}>
+                {isLoading ? '처리 중...' : '회원가입'}
             </Button>
 
             {/* 로그인 링크 */}

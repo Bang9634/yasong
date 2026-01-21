@@ -44,7 +44,7 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    public String getEmail(String token) {
+    public String getUsername(String token) {
         return Jwts.parser()
                 .verifyWith(getSigningKey())
                 .build()

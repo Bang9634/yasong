@@ -7,6 +7,8 @@ import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.bang9634.yasongmuseum.user.entity.UserRole;
+
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -31,13 +33,14 @@ public class JwtTokenProvider {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
     }
 
-    public String createToken(String username, Long userId) {
+    public String createToken(String username, Long userId, UserRole role) {
         Date now = new Date();
         Date validity = new Date(now.getTime() + validityInMilliseconds);
 
         return Jwts.builder()
                 .subject(username)
                 .claim("userId", userId)
+                .claim("role", role.getAuthority())
                 .issuedAt(now)
                 .expiration(validity)
                 .signWith(getSigningKey(), Jwts.SIG.HS256)
@@ -51,6 +54,16 @@ public class JwtTokenProvider {
                 .parseSignedClaims(token)
                 .getPayload()
                 .getSubject();
+    }
+
+    public UserRole getRole(String token) {
+        String role = (String) Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("role", String.class);
+        return UserRole.valueOf(role);
     }
 
     public boolean validateToken(String token) {

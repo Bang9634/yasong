@@ -2,6 +2,8 @@ package com.bang9634.yasongmuseum.auth.dto;
 
 import java.time.LocalDateTime;
 
+import com.bang9634.yasongmuseum.user.entity.UserRole;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,6 +26,7 @@ public class AuthResponse {
     private String email;
     private String username;
     private String name;
+    private UserRole role;
     private String token;
     private LocalDateTime createdAt;
 

@@ -19,6 +19,11 @@ public enum UserRole {
         return description;
     }
 
+    /**
+     * Gets the authority string for the role.
+     * 
+     * @return the authority string (e.g., "ROLE_USER")
+     */
     public String getAuthority() {
         return "ROLE_" + this.name();
     }

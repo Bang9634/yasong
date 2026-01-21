@@ -58,6 +58,7 @@ public class AuthService {
                 .username(savedUser.getUsername())
                 .email(savedUser.getEmail())
                 .name(savedUser.getName())
+                .role(savedUser.getRole())
                 .createdAt(savedUser.getCreatedAt())
                 .message("회원가입이 완료되었습니다.")
                 .build();
@@ -79,7 +80,11 @@ public class AuthService {
 
             loginLogService.logSuccessfulLogin(user, httpRequest);
 
-            String token = jwtTokenProvider.createToken(user.getUsername(), user.getId());
+            String token = jwtTokenProvider.createToken(
+                user.getUsername(), 
+                user.getId(),
+                user.getRole()
+            );
             
             log.info("User logged in successfully: {}", user.getUsername());
             return AuthResponse.builder()
@@ -87,6 +92,7 @@ public class AuthService {
                     .email(user.getEmail())
                     .username(user.getUsername())
                     .name(user.getName())
+                    .role(user.getRole())
                     .token(token)
                     .createdAt(user.getCreatedAt())
                     .message("로그인 성공")

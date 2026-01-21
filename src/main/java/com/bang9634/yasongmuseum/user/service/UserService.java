@@ -1,5 +1,7 @@
 package com.bang9634.yasongmuseum.user.service;
 
+import java.util.List;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +14,7 @@ import com.bang9634.yasongmuseum.user.dto.DeleteUserRequest;
 import com.bang9634.yasongmuseum.user.dto.UpdateUserRequest;
 import com.bang9634.yasongmuseum.user.dto.UserResponse;
 import com.bang9634.yasongmuseum.user.entity.User;
+import com.bang9634.yasongmuseum.user.entity.UserRole;
 import com.bang9634.yasongmuseum.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -95,5 +98,39 @@ public class UserService {
         userRepository.save(user);
 
         log.info("Password changed successfully: {}", username);
+    }
+
+    public List<UserResponse> getAllUsers() {
+        log.info("Fetching all users");
+        List<User> users = userRepository.findAll();
+        log.info("Total users found: {}", users.size());
+        return users.stream()
+                .map(UserResponse::from)
+                .toList();
+    }
+
+    @Transactional
+    public UserResponse updateUserRole(Long id, UserRole newRole) {
+        log.info("Updating role for user ID: {}", id);
+
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
+        
+        user.setRole(newRole);
+        userRepository.save(user);
+
+        log.info("User role updated successfully: {} - {}", user.getUsername(), newRole);
+        return UserResponse.from(user);
+    }
+
+    @Transactional
+    public void deleteUserById(Long id) {
+        log.info("Deleting user by ID: {}", id);
+
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
+
+        userRepository.delete(user);
+        log.info("User deleted successfully: {}", id);
     }
 }

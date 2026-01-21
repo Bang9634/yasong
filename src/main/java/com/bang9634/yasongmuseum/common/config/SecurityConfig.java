@@ -35,6 +35,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> auth
             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // permit all OPTIONS requests
             .requestMatchers("/api/auth/**").permitAll() // permit auth APIs without authentication
+            .requestMatchers("/api/admin/**").hasRole("ADMIN") // restrict admin APIs to ADMIN role
             .requestMatchers("/api/**").authenticated() // authenticate other API requests
         )
         .sessionManagement(session ->

@@ -1,6 +1,7 @@
 import { Menu, X, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -8,6 +9,14 @@ export function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const isHomePage = location.pathname === '/';
+  const { user, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    alert('로그아웃되었습니다.');
+    navigate('/');
+    setIsMenuOpen(false);
+  };
 
   const scrollToSection = (sectionId: string) => {
     if (!isHomePage) {
@@ -118,18 +127,39 @@ export function Header() {
             >
               오시는 길
             </button>
-            <button
-              onClick={() => navigate('/login')}
-              className="text-gray-800 hover:text-teal-700 transition-colors"
-            >
-              로그인
-            </button>
-            <button
-              onClick={() => navigate('/signup')}
-              className="px-4 py-2 bg-teal-700 text-white rounded-md hover:bg-teal-800 transition-colors"
-            >
-              회원가입
-            </button>
+            
+            {/* 로그인 상태에 따른 버튼 */}
+            {user ? (
+              <>
+                <button
+                  onClick={() => navigate('/profile')}
+                  className="text-gray-800 hover:text-teal-700 transition-colors"
+                >
+                  내정보
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="px-4 py-2 bg-teal-700 text-white rounded-md hover:bg-teal-800 transition-colors"
+                >
+                  로그아웃
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => navigate('/login')}
+                  className="text-gray-800 hover:text-teal-700 transition-colors"
+                >
+                  로그인
+                </button>
+                <button
+                  onClick={() => navigate('/signup')}
+                  className="px-4 py-2 bg-teal-700 text-white rounded-md hover:bg-teal-800 transition-colors"
+                >
+                  회원가입
+                </button>
+              </>
+            )}
           </nav>
 
           {/* 모바일 메뉴 버튼 */}
@@ -205,19 +235,49 @@ export function Header() {
             >
               오시는 길
             </button>
+            
+            {/* 로그인 상태에 따른 버튼 */}
             <div className="border-t border-teal-100 pt-2 mt-2 space-y-2">
-              <button
-                onClick={() => navigate('/login')}
-                className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors rounded"
-              >
-                로그인
-              </button>
-              <button
-                onClick={() => navigate('/signup')}
-                className="block w-full text-left px-4 py-2 bg-teal-700 text-white hover:bg-teal-800 transition-colors rounded"
-              >
-                회원가입
-              </button>
+              {user ? (
+                <>
+                  <button
+                    onClick={() => {
+                      navigate('/profile');
+                      setIsMenuOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors rounded"
+                  >
+                    내정보
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="block w-full text-left px-4 py-2 bg-teal-700 text-white hover:bg-teal-800 transition-colors rounded"
+                  >
+                    로그아웃
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => {
+                      navigate('/login');
+                      setIsMenuOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors rounded"
+                  >
+                    로그인
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigate('/signup');
+                      setIsMenuOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-2 bg-teal-700 text-white hover:bg-teal-800 transition-colors rounded"
+                  >
+                    회원가입
+                  </button>
+                </>
+              )}
             </div>
           </nav>
         )}

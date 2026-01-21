@@ -41,6 +41,10 @@ const apiCall = async (endpoint: string, options: ApiCallOptions = {}): Promise<
       throw new Error(error.message || `HTTP error! status: ${response.status}`);
     }
 
+    if (response.status === 204) {
+      return null;
+    }
+
     return await response.json();
   } catch (error) {
     console.error('API call failed:', error);
@@ -84,6 +88,52 @@ export const authAPI = {
     });
   }
 };
+
+export const usersAPI = {
+
+  /**
+   * 로그인된 사용자 정보 요청
+   * GET /api/users/me
+   */
+  me: async () => {
+    return apiCall('/api/users/me', {
+      method: 'GET'
+    });
+  },
+
+  /**
+   * 프로필 업데이트
+   * PUT /api/users/me
+   */
+  updateProfile: async (profileData: { name: string; email: string }) => {
+    return apiCall('/api/users/me', {
+      method: 'PUT',
+      body: JSON.stringify(profileData)
+    });
+  },
+
+  /**
+   * 비밀번호 변경
+   * PUT /api/users/me/password
+   */
+  changePassword: async (passwordData: { currentPassword: string; newPassword: string }) => {
+    return apiCall('/api/users/me/password', {
+      method: 'PUT',
+      body: JSON.stringify(passwordData)
+    });
+  },
+
+  /**
+   * 계정 삭제
+   * DELETE /api/users/me
+   */
+  deleteAccount: async (password: string) => {
+    return apiCall('/api/users/me', {
+      method: 'DELETE',
+      body: JSON.stringify({ password })
+    });
+  },
+}
 
 /**
  * 인증이 필요한 API 예시 (나중에 사용)

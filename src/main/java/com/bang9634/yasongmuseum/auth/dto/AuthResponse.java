@@ -10,6 +10,10 @@ import lombok.NoArgsConstructor;
 /**
  * Authentication response DTO
  * Contains user details and authentication token.
+ * 
+ * @apiNote message field is deprecated and will be removed in future versions.
+ *          so, recommended to avoid using message field.
+ *          Success messages should be managed on the client side.
  */
 @Data
 @Builder
@@ -22,5 +26,8 @@ public class AuthResponse {
     private String name;
     private String token;
     private LocalDateTime createdAt;
+
+    // success message is managed in client side, so this field is deprecated
+    @Deprecated
     private String message;
 }

@@ -1,5 +1,9 @@
 package com.bang9634.yasongmuseum.user.entity;
 
+/**
+ * User Role Enum
+ * Defines the roles available for users in the system.
+ */
 public enum UserRole {
     USER("일반 사용자"),
     MANAGER("운영 관리자"),

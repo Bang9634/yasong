@@ -7,12 +7,14 @@ import { NoticeForm } from '@/app/components/NoticeForm';
 import { Profile } from '@/app/components/Profile';
 import { UserManagement } from '@/app/components/admin/UserManagement';
 import { WebsiteManagement } from '@/app/components/admin/WebsiteManagement';
+import { ScrollToTop } from '@/app/components/ScrollToTop';
 import { AuthProvider } from '@/context/AuthContext';
 
 export default function App() {
   return (
     <AuthProvider>
       <Router>
+        <ScrollToTop />
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<Login />} />

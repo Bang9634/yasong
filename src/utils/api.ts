@@ -275,6 +275,41 @@ export const noticeAPI = {
  */
 export const websiteAPI = {
   /**
+   * Hero 이미지 조회 (공개)
+   * GET /api/website/settings/hero-image
+   */
+  getHeroImage: async () => {
+    return apiCall('/api/website/settings/hero-image', {
+      method: 'GET'
+    });
+  },
+
+  /**
+   * Hero 이미지 업로드 (관리자)
+   * POST /api/management/website/hero-image
+   */
+  uploadHeroImage: async (file: File) => {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/management/website/hero-image`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Upload failed' }));
+      throw new Error(error.message || 'Failed to upload image');
+    }
+
+    return await response.json();
+  },
+
+  /**
    * 홈페이지 설정 조회
    * GET /api/website/settings
    */

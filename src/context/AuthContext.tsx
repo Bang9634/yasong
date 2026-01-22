@@ -50,7 +50,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         id: response.id,
         email: response.email,
         username: response.username,
-        name: response.name
+        name: response.name,
+        role: response.role
       }));
 
       setToken(response.token);
@@ -58,7 +59,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         id: response.id,
         email: response.email,
         username: response.username,
-        name: response.name
+        name: response.name,
+        role: response.role
       });
 
       return response;
@@ -71,23 +73,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signup = async (email: string, username: string, password: string, name: string) => {
     try {
       const response = await authAPI.signup(email, username, password, name);
-      
-      // 회원가입 후 자동 로그인
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('user', JSON.stringify({
-        id: response.id,
-        email: response.email,
-        name: response.name
-      }));
-
-      setToken(response.token);
-      setUser({
-        id: response.id,
-        email: response.email,
-        username: response.username,
-        name: response.name
-      });
-
       return response;
     } catch (error) {
       throw error;

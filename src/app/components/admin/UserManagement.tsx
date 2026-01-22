@@ -1,0 +1,263 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Header } from '../Header';
+import { Footer } from '../Footer';
+import { Button } from '@/app/components/ui/button';
+import { Input } from '@/app/components/ui/input';
+import { useAuth } from '@/context/AuthContext';
+import { adminUsersAPI } from '@/utils/api';
+import { isAdmin, getRoleDisplayName, UserRole } from '@/utils/auth';
+
+interface User {
+  id: number;
+  username: string;
+  email: string;
+  name: string;
+  role: string;
+  createdAt: string;
+}
+
+export function UserManagement() {
+  const navigate = useNavigate();
+  const { user, loading } = useAuth();
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [newRole, setNewRole] = useState<string>('');
+
+  // 권한 확인
+  useEffect(() => {
+    if (loading) return;
+    
+    if (!user || !isAdmin(user.role)) {
+      alert('접근 권한이 없습니다.');
+      navigate('/');
+    }
+  }, [user, loading, navigate]);
+
+  // 사용자 목록 조회
+  useEffect(() => {
+    if (!user || !isAdmin(user.role)) return;
+    
+    const fetchUsers = async () => {
+      try {
+        setIsLoading(true);
+        const data = await adminUsersAPI.getAllUsers();
+        setUsers(data);
+      } catch (err) {
+        console.error('사용자 목록 조회 실패:', err);
+        alert('사용자 목록을 불러오는데 실패했습니다.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, [user]);
+
+  // 사용자 삭제
+  const handleDeleteUser = async (id: number, username: string) => {
+    const confirmed = window.confirm(
+      `정말로 "${username}" 사용자를 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await adminUsersAPI.deleteUser(id);
+      alert('사용자가 삭제되었습니다.');
+      setUsers(users.filter(u => u.id !== id));
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '사용자 삭제에 실패했습니다.';
+      alert(`실패\n\n${errorMessage}`);
+    }
+  };
+
+  // 권한 변경
+  const handleUpdateRole = async () => {
+    if (!selectedUser || !newRole) return;
+
+    try {
+      await adminUsersAPI.updateUserRole(selectedUser.id, newRole);
+      alert('권한이 변경되었습니다.');
+      
+      // 목록 업데이트
+      setUsers(users.map(u => 
+        u.id === selectedUser.id ? { ...u, role: newRole } : u
+      ));
+      
+      setSelectedUser(null);
+      setNewRole('');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '권한 변경에 실패했습니다.';
+      alert(`실패\n\n${errorMessage}`);
+    }
+  };
+
+  // 검색 필터링
+  const filteredUsers = users.filter(u =>
+    u.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    u.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (loading || !user || !isAdmin(user.role)) {
+    return null;
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      
+      <div className="pt-24 pb-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* 페이지 헤더 */}
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold text-teal-900 mb-2">사용자 관리</h1>
+            <p className="text-gray-600">전체 사용자 계정을 관리하고 권한을 수정할 수 있습니다.</p>
+          </div>
+
+          {/* 검색 */}
+          <div className="mb-6">
+            <Input
+              type="text"
+              placeholder="이름, 이메일, 사용자명으로 검색..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="max-w-md"
+            />
+          </div>
+
+          {/* 사용자 목록 */}
+          <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            {isLoading ? (
+              <div className="p-8 text-center">
+                <p className="text-gray-500">로딩 중...</p>
+              </div>
+            ) : filteredUsers.length === 0 ? (
+              <div className="p-8 text-center">
+                <p className="text-gray-500">사용자가 없습니다.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        사용자 정보
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        이메일
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        권한
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        가입일
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        관리
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {filteredUsers.map((u) => (
+                      <tr key={u.id}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">{u.name}</div>
+                            <div className="text-sm text-gray-500">@{u.username}</div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{u.email}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            u.role === 'ADMIN' ? 'bg-red-100 text-red-800' :
+                            u.role === 'MANAGER' ? 'bg-blue-100 text-blue-800' :
+                            'bg-green-100 text-green-800'
+                          }`}>
+                            {getRoleDisplayName(u.role)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {new Date(u.createdAt).toLocaleDateString('ko-KR')}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                          <Button
+                            onClick={() => {
+                              setSelectedUser(u);
+                              setNewRole(u.role);
+                            }}
+                            className="bg-teal-600 hover:bg-teal-700 text-white text-xs px-3 py-1"
+                            disabled={u.id === user.id}
+                          >
+                            권한 변경
+                          </Button>
+                          <Button
+                            onClick={() => handleDeleteUser(u.id, u.username)}
+                            className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1"
+                            disabled={u.id === user.id}
+                          >
+                            삭제
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {/* 권한 변경 다이얼로그 */}
+          {selectedUser && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">권한 변경</h2>
+                <p className="text-gray-600 mb-4">
+                  {selectedUser.name} (@{selectedUser.username})
+                </p>
+                
+                <div className="space-y-2 mb-6">
+                  <label className="text-sm font-medium text-gray-700">새 권한</label>
+                  <select
+                    value={newRole}
+                    onChange={(e) => setNewRole(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  >
+                    <option value={UserRole.USER}>일반 사용자</option>
+                    <option value={UserRole.MANAGER}>관리자</option>
+                    <option value={UserRole.ADMIN}>최고 관리자</option>
+                  </select>
+                </div>
+
+                <div className="flex space-x-3">
+                  <Button
+                    onClick={handleUpdateRole}
+                    className="flex-1 bg-teal-600 hover:bg-teal-700 text-white"
+                  >
+                    변경
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setSelectedUser(null);
+                      setNewRole('');
+                    }}
+                    className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800"
+                  >
+                    취소
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <Footer />
+    </div>
+  );
+}

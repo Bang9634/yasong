@@ -1,268 +1,80 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Bell, ChevronLeft, Search, ChevronRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Bell, ChevronLeft, Search, ChevronRight, Pin } from 'lucide-react';
 import { Header } from './Header';
 import { Footer } from './Footer';
+import { Button } from '@/app/components/ui/button';
+import { useAuth } from '@/context/AuthContext';
+import { isManagerOrAbove } from '@/utils/auth';
+import { noticeAPI } from '@/utils/api';
 
 interface NoticeItem {
   id: number;
   title: string;
-  date: string;
   content: string;
-  isImportant: boolean;
-  views: number;
-  category: '일반' | '전시' | '교육' | '행사';
+  category: string;
+  isPinned: boolean;
+  viewCount: number;
+  status: string;
+  authorId: number;
+  authorName: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-// 임시 공지사항 데이터 (추후 백엔드 API로 대체)
-const allNotices: NoticeItem[] = [
-  {
-    id: 1,
-    title: '2026년 설 연휴 휴관 안내',
-    date: '2026.01.10',
-    content: '설 연휴 기간(1월 28일~30일) 동안 미술관은 휴관합니다. 양해 부탁드립니다.',
-    isImportant: true,
-    views: 1250,
-    category: '일반'
-  },
-  {
-    id: 2,
-    title: '이원좌 화백 탄생 100주년 특별전 개최 안내',
-    date: '2026.01.08',
-    content: '이원좌 화백 탄생 100주년을 기념하는 특별전이 2월 1일부터 4월 30일까지 개최됩니다.',
-    isImportant: true,
-    views: 2340,
-    category: '전시'
-  },
-  {
-    id: 3,
-    title: '겨울방학 어린이 미술교실 수강생 모집',
-    date: '2026.01.05',
-    content: '초등학생을 대상으로 한 겨울방학 미술교실 수강생을 모집합니다. 선착순 30명.',
-    isImportant: false,
-    views: 890,
-    category: '교육'
-  },
-  {
-    id: 4,
-    title: '1월 문화가 있는 날 무료 관람 안내',
-    date: '2026.01.03',
-    content: '매월 마지막 주 수요일은 문화가 있는 날로 무료 관람이 가능합니다.',
-    isImportant: false,
-    views: 1560,
-    category: '일반'
-  },
-  {
-    id: 5,
-    title: '미술관 주차장 확장 공사 완료',
-    date: '2025.12.28',
-    content: '주차장 확장 공사가 완료되어 더욱 편리한 주차 환경을 제공합니다.',
-    isImportant: false,
-    views: 670,
-    category: '일반'
-  },
-  {
-    id: 6,
-    title: '2025년 연말 특별 기획전 종료 안내',
-    date: '2025.12.25',
-    content: '올 한 해 사랑해주신 관람객 여러분께 감사드립니다.',
-    isImportant: false,
-    views: 920,
-    category: '전시'
-  },
-  {
-    id: 7,
-    title: '겨울 시즌 도슨트 프로그램 운영',
-    date: '2025.12.20',
-    content: '매주 토요일, 일요일 오후 2시 무료 도슨트 프로그램이 운영됩니다.',
-    isImportant: false,
-    views: 780,
-    category: '교육'
-  },
-  {
-    id: 8,
-    title: '연말연시 특별 이벤트 안내',
-    date: '2025.12.15',
-    content: '12월 한 달간 미술관 방문 시 특별 기념품을 증정합니다.',
-    isImportant: false,
-    views: 1450,
-    category: '행사'
-  },
-  {
-    id: 9,
-    title: '미술관 홈페이지 리뉴얼 완료',
-    date: '2025.12.10',
-    content: '더욱 편리해진 홈페이지를 통해 미술관 소식을 확인하세요.',
-    isImportant: false,
-    views: 1120,
-    category: '일반'
-  },
-  {
-    id: 10,
-    title: '청소년 미술 공모전 수상작 전시',
-    date: '2025.12.05',
-    content: '2025 청소년 미술 공모전 수상작 전시가 12월 한 달간 진행됩니다.',
-    isImportant: false,
-    views: 850,
-    category: '전시'
-  },
-  {
-    id: 11,
-    title: '가을 특별 기획전 개최 안내',
-    date: '2025.11.28',
-    content: '가을을 주제로 한 특별 기획전이 개최됩니다.',
-    isImportant: false,
-    views: 920,
-    category: '전시'
-  },
-  {
-    id: 12,
-    title: '11월 문화의 날 행사 안내',
-    date: '2025.11.20',
-    content: '다양한 문화 행사가 준비되어 있습니다.',
-    isImportant: false,
-    views: 650,
-    category: '행사'
-  },
-  {
-    id: 13,
-    title: '미술관 무료 셔틀버스 운행 안내',
-    date: '2025.11.15',
-    content: '주말 및 공휴일 무료 셔틀버스가 운행됩니다.',
-    isImportant: false,
-    views: 1100,
-    category: '일반'
-  },
-  {
-    id: 14,
-    title: '추석 연휴 특별 개관 안내',
-    date: '2025.09.20',
-    content: '추석 연휴 기간에도 정상 운영합니다.',
-    isImportant: false,
-    views: 890,
-    category: '일반'
-  },
-  {
-    id: 15,
-    title: '여름방학 청소년 미술캠프 안내',
-    date: '2025.08.10',
-    content: '중고등학생 대상 2박 3일 미술캠프 참가자를 모집합니다.',
-    isImportant: false,
-    views: 1340,
-    category: '교육'
-  },
-  {
-    id: 16,
-    title: '미술관 리모델링 공사 완료',
-    date: '2025.07.25',
-    content: '전시실 리모델링이 완료되어 더욱 쾌적한 관람 환경을 제공합니다.',
-    isImportant: false,
-    views: 760,
-    category: '일반'
-  },
-  {
-    id: 17,
-    title: '여름 특별 전시회 오픈',
-    date: '2025.07.15',
-    content: '여름을 주제로 한 특별 전시회가 개최됩니다.',
-    isImportant: false,
-    views: 980,
-    category: '전시'
-  },
-  {
-    id: 18,
-    title: '미술관 가이드 앱 출시',
-    date: '2025.06.30',
-    content: '스마트폰으로 더욱 편리하게 미술관을 관람하세요.',
-    isImportant: false,
-    views: 1250,
-    category: '일반'
-  },
-  {
-    id: 19,
-    title: '봄꽃 사진 공모전 개최',
-    date: '2025.05.20',
-    content: '미술관 정원의 봄꽃을 주제로 한 사진 공모전을 개최합니다.',
-    isImportant: false,
-    views: 870,
-    category: '행사'
-  },
-  {
-    id: 20,
-    title: '개관 10주년 기념 행사 안내',
-    date: '2025.05.01',
-    content: '미술관 개관 10주년을 기념하는 다양한 행사가 준비되어 있습니다.',
-    isImportant: false,
-    views: 1890,
-    category: '행사'
-  },
-  {
-    id: 21,
-    title: '어린이날 특별 프로그램 운영',
-    date: '2025.04.25',
-    content: '어린이날을 맞아 다양한 체험 프로그램을 운영합니다.',
-    isImportant: false,
-    views: 1120,
-    category: '교육'
-  },
-  {
-    id: 22,
-    title: '봄맞이 야외 조각 전시',
-    date: '2025.04.10',
-    content: '미술관 정원에서 야외 조각 전시가 진행됩니다.',
-    isImportant: false,
-    views: 950,
-    category: '전시'
-  },
-  {
-    id: 23,
-    title: '3월 무료 도슨트 프로그램 확대',
-    date: '2025.03.15',
-    content: '주중에도 무료 도슨트 프로그램이 운영됩니다.',
-    isImportant: false,
-    views: 720,
-    category: '교육'
-  },
-  {
-    id: 24,
-    title: '설 연휴 특별 개관 안내',
-    date: '2025.02.10',
-    content: '설 연휴 기간에도 정상 개관합니다.',
-    isImportant: false,
-    views: 1050,
-    category: '일반'
-  },
-  {
-    id: 25,
-    title: '신년 특별 기획전 개최',
-    date: '2025.01.05',
-    content: '새해를 맞아 특별 기획전이 개최됩니다.',
-    isImportant: false,
-    views: 1430,
-    category: '전시'
-  }
-];
-
 export function NoticePage() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [notices, setNotices] = useState<NoticeItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedNotice, setSelectedNotice] = useState<NoticeItem | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<'전체' | '일반' | '전시' | '교육' | '행사'>('전체');
+  const [selectedCategory, setSelectedCategory] = useState<'전체' | '일반' | '전시' | '시스템'>('전체');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
+  // 관리자 권한 확인
+  const canManage = user && isManagerOrAbove(user.role);
+
+  // 공지사항 목록 로드
+  useEffect(() => {
+    const fetchNotices = async () => {
+      try {
+        setIsLoading(true);
+        const data = canManage 
+          ? await noticeAPI.getAllNotices() // 관리자: 전체 목록 (숨김/임시저장 포함)
+          : await noticeAPI.getNotices();    // 일반: 공개된 것만
+        setNotices(data);
+      } catch (err) {
+        console.error('공지사항 조회 실패:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchNotices();
+  }, [canManage]);
+
   // 검색 및 필터링
-  const filteredNotices = allNotices.filter(notice => {
+  const filteredNotices = notices.filter(notice => {
     const matchesSearch = notice.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          notice.content.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === '전체' || notice.category === selectedCategory;
+    const matchesCategory = selectedCategory === '전체' || getCategoryDisplayName(notice.category) === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
+  // 고정 공지를 먼저 정렬
+  const sortedNotices = [...filteredNotices].sort((a, b) => {
+    if (a.isPinned && !b.isPinned) return -1;
+    if (!a.isPinned && b.isPinned) return 1;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
   // 페이지네이션 계산
-  const totalPages = Math.ceil(filteredNotices.length / itemsPerPage);
+  const totalPages = Math.ceil(sortedNotices.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentNotices = filteredNotices.slice(startIndex, endIndex);
+  const currentNotices = sortedNotices.slice(startIndex, endIndex);
 
   // 페이지 변경 시 처리
   const handlePageChange = (page: number) => {
@@ -281,6 +93,41 @@ export function NoticePage() {
     setCurrentPage(1);
   };
 
+  // 공지사항 삭제
+  const handleDelete = async (noticeId: number, title: string) => {
+    const confirmed = window.confirm(`"${title}" 공지사항을 삭제하시겠습니까?`);
+    if (!confirmed) return;
+
+    try {
+      await noticeAPI.deleteNotice(noticeId.toString());
+      alert('공지사항이 삭제되었습니다.');
+      setNotices(notices.filter(n => n.id !== noticeId));
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '삭제에 실패했습니다.';
+      alert(`실패\n\n${errorMessage}`);
+    }
+  };
+
+  // 카테고리 표시 이름 변환
+  const getCategoryDisplayName = (category: string): string => {
+    const categoryMap: { [key: string]: string } = {
+      'GENERAL': '일반',
+      'EXHIBITION': '전시',
+      'MAINTENANCE': '시스템'
+    };
+    return categoryMap[category] || category;
+  };
+
+  // 상태 표시 이름 변환
+  const getStatusDisplayName = (status: string): string => {
+    const statusMap: { [key: string]: string } = {
+      'PUBLISHED': '게시됨',
+      'DRAFT': '임시저장',
+      'HIDDEN': '숨김'
+    };
+    return statusMap[status] || status;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -292,9 +139,19 @@ export function NoticePage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             {/* 페이지 헤더 */}
             <div className="mb-8">
-              <div className="flex items-center mb-4">
-                <Bell className="w-8 h-8 text-teal-800 mr-3" />
-                <h1 className="text-4xl font-bold text-teal-900">공지사항</h1>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center">
+                  <Bell className="w-8 h-8 text-teal-800 mr-3" />
+                  <h1 className="text-4xl font-bold text-teal-900">공지사항</h1>
+                </div>
+                {canManage && (
+                  <Button
+                    onClick={() => navigate('/notice/write')}
+                    className="bg-teal-700 hover:bg-teal-800 text-white"
+                  >
+                    글 작성
+                  </Button>
+                )}
               </div>
               <Link 
                 to="/" 
@@ -322,7 +179,7 @@ export function NoticePage() {
 
                 {/* 카테고리 필터 */}
                 <div className="flex gap-2 flex-wrap">
-                  {(['전체', '일반', '전시', '교육', '행사'] as const).map((category) => (
+                  {(['전체', '일반', '전시', '시스템'] as const).map((category) => (
                     <button
                       key={category}
                       onClick={() => handleCategoryChange(category)}
@@ -341,25 +198,37 @@ export function NoticePage() {
 
             {/* 공지사항 목록 */}
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              {currentNotices.length > 0 ? (
+              {isLoading ? (
+                <div className="p-8 text-center">
+                  <p className="text-gray-500">로딩 중...</p>
+                </div>
+              ) : currentNotices.length > 0 ? (
                 <div className="divide-y divide-gray-200">
                   {currentNotices.map((notice) => (
                     <div
                       key={notice.id}
-                      onClick={() => setSelectedNotice(notice)}
-                      className="p-5 hover:bg-teal-50 transition-colors cursor-pointer"
+                      className="p-5 hover:bg-teal-50 transition-colors"
                     >
                       <div className="flex items-start justify-between">
-                        <div className="flex-1">
+                        <div 
+                          className="flex-1 cursor-pointer"
+                          onClick={() => setSelectedNotice(notice)}
+                        >
                           <div className="flex items-center gap-2 mb-2">
-                            {notice.isImportant && (
-                              <span className="bg-red-500 text-white text-xs px-2 py-1 rounded">
-                                중요
+                            {notice.isPinned && (
+                              <span className="bg-red-500 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+                                <Pin className="w-3 h-3" />
+                                고정
                               </span>
                             )}
                             <span className="bg-teal-100 text-teal-800 text-xs px-2 py-1 rounded">
-                              {notice.category}
+                              {getCategoryDisplayName(notice.category)}
                             </span>
+                            {canManage && notice.status !== 'PUBLISHED' && (
+                              <span className="bg-gray-500 text-white text-xs px-2 py-1 rounded">
+                                {getStatusDisplayName(notice.status)}
+                              </span>
+                            )}
                           </div>
                           <h3 className="text-lg font-semibold text-gray-900 mb-1">
                             {notice.title}
@@ -367,10 +236,30 @@ export function NoticePage() {
                           <p className="text-sm text-gray-600 line-clamp-1">
                             {notice.content}
                           </p>
+                          <p className="text-xs text-gray-400 mt-2">
+                            작성자: {notice.authorName} | {new Date(notice.createdAt).toLocaleDateString('ko-KR')}
+                          </p>
                         </div>
-                        <div className="ml-4 text-right">
-                          <p className="text-sm text-gray-500">{notice.date}</p>
-                          <p className="text-xs text-gray-400 mt-1">조회 {notice.views}</p>
+                        <div className="ml-4 flex flex-col items-end gap-2">
+                          <div className="text-right">
+                            <p className="text-xs text-gray-400">조회 {notice.viewCount}</p>
+                          </div>
+                          {canManage && (
+                            <div className="flex gap-2">
+                              <Button
+                                onClick={() => navigate(`/notice/write?id=${notice.id}`)}
+                                className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1"
+                              >
+                                수정
+                              </Button>
+                              <Button
+                                onClick={() => handleDelete(notice.id, notice.title)}
+                                className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1"
+                              >
+                                삭제
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>

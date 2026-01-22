@@ -2,6 +2,7 @@ import { Menu, X, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { isManagerOrAbove, isAdmin } from '@/utils/auth';
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -131,6 +132,38 @@ export function Header() {
             {/* 로그인 상태에 따른 버튼 */}
             {user ? (
               <>
+                {/* 관리자 메뉴 (MANAGER, ADMIN) */}
+                {isManagerOrAbove(user.role) && (
+                  <div className="relative group">
+                    <button className="text-gray-800 hover:text-teal-700 transition-colors flex items-center py-2">
+                      관리
+                      <ChevronDown className="ml-1 w-4 h-4" />
+                    </button>
+                    <div className="absolute top-full left-0 mt-0 w-48 bg-white shadow-lg border border-teal-100 rounded-b-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                      {isAdmin(user.role) && (
+                        <button
+                          onClick={() => {
+                            navigate('/admin/users');
+                            setIsMenuOpen(false);
+                          }}
+                          className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors border-b border-gray-100"
+                        >
+                          사용자 관리
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          navigate('/admin/website');
+                          setIsMenuOpen(false);
+                        }}
+                        className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
+                      >
+                        홈페이지 관리
+                      </button>
+                    </div>
+                  </div>
+                )}
+                
                 <button
                   onClick={() => navigate('/profile')}
                   className="text-gray-800 hover:text-teal-700 transition-colors"
@@ -240,6 +273,33 @@ export function Header() {
             <div className="border-t border-teal-100 pt-2 mt-2 space-y-2">
               {user ? (
                 <>
+                  {/* 관리자 메뉴 (모바일) */}
+                  {isManagerOrAbove(user.role) && (
+                    <div className="border-b border-teal-100 pb-2 mb-2">
+                      <div className="px-4 py-2 text-sm text-teal-800">관리</div>
+                      {isAdmin(user.role) && (
+                        <button
+                          onClick={() => {
+                            navigate('/admin/users');
+                            setIsMenuOpen(false);
+                          }}
+                          className="block w-full text-left px-8 py-2 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
+                        >
+                          사용자 관리
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          navigate('/admin/website');
+                          setIsMenuOpen(false);
+                        }}
+                        className="block w-full text-left px-8 py-2 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
+                      >
+                        홈페이지 관리
+                      </button>
+                    </div>
+                  )}
+                  
                   <button
                     onClick={() => {
                       navigate('/profile');

@@ -136,6 +136,210 @@ export const usersAPI = {
 }
 
 /**
+ * 관리자 - 사용자 관리 API (ADMIN 전용)
+ */
+export const adminUsersAPI = {
+  /**
+   * 전체 사용자 목록 조회
+   * GET /api/admin/users
+   */
+  getAllUsers: async () => {
+    return apiCall('/api/admin/users', {
+      method: 'GET'
+    });
+  },
+
+  /**
+   * 특정 사용자 정보 조회
+   * GET /api/admin/users/{userId}
+   */
+  getUserById: async (id: number) => {
+    return apiCall(`/api/admin/users/${id}`, {
+      method: 'GET'
+    });
+  },
+
+  /**
+   * 사용자 권한 변경
+   * PUT /api/admin/users/{userId}/role
+   */
+  updateUserRole: async (id: number, role: string) => {
+    return apiCall(`/api/admin/users/${id}/role`, {
+      method: 'PUT',
+      body: JSON.stringify({ role })
+    });
+  },
+
+  /**
+   * 사용자 삭제
+   * DELETE /api/admin/users/{userId}
+   */
+  deleteUser: async (id: number) => {
+    return apiCall(`/api/admin/users/${id}`, {
+      method: 'DELETE'
+    });
+  },
+};
+
+/**
+ * 공지사항 API
+ */
+export const noticeAPI = {
+  /**
+   * 공지사항 목록 조회 (공개된 것만)
+   * GET /api/notices
+   */
+  getNotices: async () => {
+    return apiCall('/api/notices', {
+      method: 'GET'
+    });
+  },
+
+  /**
+   * 공지사항 상세 조회
+   * GET /api/notices/{noticeId}
+   */
+  getNoticeById: async (noticeId: string) => {
+    return apiCall(`/api/notices/${noticeId}`, {
+      method: 'GET'
+    });
+  },
+
+  /**
+   * 관리자 - 전체 공지사항 목록 조회
+   * GET /api/management/notices
+   */
+  getAllNotices: async () => {
+    return apiCall('/api/management/notices', {
+      method: 'GET'
+    });
+  },
+
+  /**
+   * 관리자 - 공지사항 생성
+   * POST /api/management/notices
+   */
+  createNotice: async (noticeData: {
+    title: string;
+    content: string;
+    category: string;
+    isPinned?: boolean;
+    status?: string;
+  }) => {
+    return apiCall('/api/management/notices', {
+      method: 'POST',
+      body: JSON.stringify(noticeData)
+    });
+  },
+
+  /**
+   * 관리자 - 공지사항 수정
+   * PUT /api/management/notices/{noticeId}
+   */
+  updateNotice: async (noticeId: string, noticeData: {
+    title: string;
+    content: string;
+    category: string;
+    isPinned?: boolean;
+    status?: string;
+  }) => {
+    return apiCall(`/api/management/notices/${noticeId}`, {
+      method: 'PUT',
+      body: JSON.stringify(noticeData)
+    });
+  },
+
+  /**
+   * 관리자 - 공지사항 삭제
+   * DELETE /api/management/notices/{noticeId}
+   */
+  deleteNotice: async (noticeId: string) => {
+    return apiCall(`/api/management/notices/${noticeId}`, {
+      method: 'DELETE'
+    });
+  },
+};
+
+/**
+ * 홈페이지 관리 API (ADMIN, MANAGER)
+ */
+export const websiteAPI = {
+  /**
+   * 홈페이지 설정 조회
+   * GET /api/website/settings
+   */
+  getSettings: async () => {
+    return apiCall('/api/website/settings', {
+      method: 'GET'
+    });
+  },
+
+  /**
+   * 배경 이미지 업데이트
+   * PUT /api/website/background
+   */
+  updateBackground: async (backgroundData: any) => {
+    return apiCall('/api/website/background', {
+      method: 'PUT',
+      body: JSON.stringify(backgroundData)
+    });
+  },
+
+  /**
+   * 텍스트 데이터 업데이트
+   * PUT /api/website/text
+   */
+  updateText: async (textData: any) => {
+    return apiCall('/api/website/text', {
+      method: 'PUT',
+      body: JSON.stringify(textData)
+    });
+  },
+
+  /**
+   * 기념품 목록 조회
+   * GET /api/website/souvenirs
+   */
+  getSouvenirs: async () => {
+    return apiCall('/api/website/souvenirs', {
+      method: 'GET'
+    });
+  },
+
+  /**
+   * 기념품 추가
+   * POST /api/website/souvenirs
+   */
+  createSouvenir: async (souvenirData: any) => {
+    return apiCall('/api/website/souvenirs', {
+      method: 'POST',
+      body: JSON.stringify(souvenirData)
+    });
+  },
+
+  /**
+   * 기념품 수정
+   * PUT /api/website/souvenirs/{souvenirId}
+   */
+  updateSouvenir: async (souvenirId: string, souvenirData: any) => {
+    return apiCall(`/api/website/souvenirs/${souvenirId}`, {
+      method: 'PUT',
+      body: JSON.stringify(souvenirData)
+    });
+  },
+
+  /**
+   * 기념품 삭제
+   * DELETE /api/website/souvenirs/{souvenirId}
+   */
+  deleteSouvenir: async (souvenirId: string) => {
+    return apiCall(`/api/website/souvenirs/${souvenirId}`, {
+      method: 'DELETE'
+    });
+  },
+};
+
+/**
  * 인증이 필요한 API 예시 (나중에 사용)
  */
 export const artworkAPI = {

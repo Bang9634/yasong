@@ -20,6 +20,11 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // Serve uploaded files from file system
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations("file:uploads/");
+
+        // Serve static resources for SPA
         registry.addResourceHandler("/**")
                 .addResourceLocations("classpath:/static/")
                 .resourceChain(true)
@@ -28,8 +33,8 @@ public class WebConfig implements WebMvcConfigurer {
             protected Resource getResource(String resourcePath, Resource location) throws IOException {
                 Resource requestedResource = location.createRelative(resourcePath);
 
-                // Exclude paths that start with "api/"
-                if (resourcePath.startsWith("api/")) {
+                // Exclude paths that start with "api/" or "uploads/"
+                if (resourcePath.startsWith("api/") || resourcePath.startsWith("uploads/")) {
                     return null;
                 }
 

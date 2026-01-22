@@ -4,6 +4,13 @@ import { Header } from '../Header';
 import { Footer } from '../Footer';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
+import { ChevronDown } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/app/components/ui/dropdown-menu';
 import { useAuth } from '@/context/AuthContext';
 import { adminUsersAPI } from '@/utils/api';
 import { isAdmin, getRoleDisplayName, UserRole } from '@/utils/auth';
@@ -23,6 +30,7 @@ export function UserManagement() {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState<string>('전체');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [newRole, setNewRole] = useState<string>('');
 
@@ -95,12 +103,19 @@ export function UserManagement() {
     }
   };
 
-  // 검색 필터링
-  const filteredUsers = users.filter(u =>
-    u.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    u.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // 검색 및 권한 필터링
+  const filteredUsers = users.filter(u => {
+    const matchesSearch = u.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.name.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesRole = roleFilter === '전체' || 
+      (roleFilter === '최고 관리자' && u.role === 'ADMIN') ||
+      (roleFilter === '관리자' && u.role === 'MANAGER') ||
+      (roleFilter === '일반 사용자' && u.role === 'USER');
+    
+    return matchesSearch && matchesRole;
+  });
 
   if (loading || !user || !isAdmin(user.role)) {
     return null;
@@ -118,15 +133,40 @@ export function UserManagement() {
             <p className="text-gray-600">전체 사용자 계정을 관리하고 권한을 수정할 수 있습니다.</p>
           </div>
 
-          {/* 검색 */}
-          <div className="mb-6">
+          {/* 검색 및 필터 */}
+          <div className="mb-6 flex gap-4">
             <Input
               type="text"
               placeholder="이름, 이메일, 사용자명으로 검색..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="max-w-md"
+              className="max-w-md flex-1"
             />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="inline-flex items-center justify-between min-w-[150px] px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                >
+                  {roleFilter}
+                  <ChevronDown className="ml-2 h-4 w-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-[150px]">
+                <DropdownMenuItem onClick={() => setRoleFilter('전체')}>
+                  전체
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setRoleFilter('최고 관리자')}>
+                  최고 관리자
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setRoleFilter('관리자')}>
+                  관리자
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setRoleFilter('일반 사용자')}>
+                  일반 사용자
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* 사용자 목록 */}

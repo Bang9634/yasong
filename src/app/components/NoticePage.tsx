@@ -43,7 +43,7 @@ export function NoticePage() {
         setIsLoading(true);
         const data = canManage 
           ? await noticeAPI.getAllNotices() // 관리자: 전체 목록 (숨김/임시저장 포함)
-          : await noticeAPI.getNotices();    // 일반: 공개된 것만
+          : await noticeAPI.getVisibleNotices();    // 일반: 공개된 것만
         setNotices(data);
       } catch (err) {
         console.error('공지사항 조회 실패:', err);
@@ -212,7 +212,10 @@ export function NoticePage() {
                       <div className="flex items-start justify-between">
                         <div 
                           className="flex-1 cursor-pointer"
-                          onClick={() => setSelectedNotice(notice)}
+                          onClick={() => {
+                            setSelectedNotice(notice);
+                            window.scrollTo(0, 0);
+                          }}
                         >
                           <div className="flex items-center gap-2 mb-2">
                             {notice.isPinned && (
@@ -327,19 +330,26 @@ export function NoticePage() {
               {/* 헤더 */}
               <div className="bg-teal-700 text-white p-6">
                 <div className="flex items-center gap-2 mb-3">
-                  {selectedNotice.isImportant && (
-                    <span className="bg-red-500 text-white text-xs px-2 py-1 rounded">
-                      중요
+                  {selectedNotice.isPinned && (
+                    <span className="bg-red-500 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+                      <Pin className="w-3 h-3" />
+                      고정
                     </span>
                   )}
                   <span className="bg-teal-600 text-white text-xs px-2 py-1 rounded">
-                    {selectedNotice.category}
+                    {getCategoryDisplayName(selectedNotice.category)}
                   </span>
+                  {canManage && selectedNotice.status !== 'PUBLISHED' && (
+                    <span className="bg-gray-500 text-white text-xs px-2 py-1 rounded">
+                      {getStatusDisplayName(selectedNotice.status)}
+                    </span>
+                  )}
                 </div>
                 <h1 className="text-2xl font-bold mb-3">{selectedNotice.title}</h1>
                 <div className="flex items-center text-teal-100 text-sm gap-4">
-                  <span>작성일: {selectedNotice.date}</span>
-                  <span>조회수: {selectedNotice.views}</span>
+                  <span>작성자: {selectedNotice.authorName}</span>
+                  <span>작성일: {new Date(selectedNotice.createdAt).toLocaleDateString('ko-KR')}</span>
+                  <span>조회수: {selectedNotice.viewCount}</span>
                 </div>
               </div>
 
@@ -355,7 +365,10 @@ export function NoticePage() {
               {/* 하단 버튼 */}
               <div className="border-t border-gray-200 p-6 flex gap-3">
                 <button
-                  onClick={() => setSelectedNotice(null)}
+                  onClick={() => {
+                    setSelectedNotice(null);
+                    window.scrollTo(0, 0);
+                  }}
                   className="px-6 py-2 bg-teal-700 text-white rounded-md hover:bg-teal-800 transition-colors"
                 >
                   목록으로

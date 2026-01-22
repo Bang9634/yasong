@@ -189,7 +189,7 @@ export const noticeAPI = {
    * 공지사항 목록 조회 (공개된 것만)
    * GET /api/notices
    */
-  getNotices: async () => {
+  getVisibleNotices: async () => {
     return apiCall('/api/notices', {
       method: 'GET'
     });
@@ -199,7 +199,7 @@ export const noticeAPI = {
    * 공지사항 상세 조회
    * GET /api/notices/{noticeId}
    */
-  getNoticeById: async (noticeId: string) => {
+  getVisibleNoticeById: async (noticeId: string) => {
     return apiCall(`/api/notices/${noticeId}`, {
       method: 'GET'
     });
@@ -211,6 +211,16 @@ export const noticeAPI = {
    */
   getAllNotices: async () => {
     return apiCall('/api/management/notices', {
+      method: 'GET'
+    });
+  },
+
+  /**
+   * 관리자 - 공지사항 상세 조회
+   * GET /api/management/notices/{noticeId}
+   */
+  getNoticeById: async (noticeId: string) => {
+    return apiCall(`/api/management/notices/${noticeId}`, {
       method: 'GET'
     });
   },

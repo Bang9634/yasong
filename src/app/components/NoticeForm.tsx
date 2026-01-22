@@ -45,7 +45,9 @@ export function NoticeForm() {
     const fetchNotice = async () => {
       try {
         setIsLoading(true);
-        const data = await noticeAPI.getNoticeById(noticeId);
+        const data = (user && isManagerOrAbove(user.role))
+            ? await noticeAPI.getNoticeById(noticeId)
+            : await noticeAPI.getVisibleNoticeById(noticeId);
         setFormData({
           title: data.title,
           content: data.content,

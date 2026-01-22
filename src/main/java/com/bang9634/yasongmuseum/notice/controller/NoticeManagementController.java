@@ -28,7 +28,7 @@ public class NoticeManagementController {
 
     private final NoticeService noticeService;
 
-    @GetMapping("/management")
+    @GetMapping
     public ResponseEntity<List<NoticeResponse>> getAllNotices() {
         List<NoticeResponse> notices = noticeService.getAllNotices();
         return ResponseEntity.ok(notices);

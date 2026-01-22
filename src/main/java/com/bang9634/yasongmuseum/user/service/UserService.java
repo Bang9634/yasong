@@ -6,15 +6,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.bang9634.yasongmuseum.common.exception.DuplicateEmailException;
-import com.bang9634.yasongmuseum.common.exception.InvalidPasswordException;
-import com.bang9634.yasongmuseum.common.exception.UserNotFoundException;
 import com.bang9634.yasongmuseum.user.dto.ChangePasswordRequest;
 import com.bang9634.yasongmuseum.user.dto.DeleteUserRequest;
 import com.bang9634.yasongmuseum.user.dto.UpdateUserRequest;
 import com.bang9634.yasongmuseum.user.dto.UserResponse;
 import com.bang9634.yasongmuseum.user.entity.User;
 import com.bang9634.yasongmuseum.user.entity.UserRole;
+import com.bang9634.yasongmuseum.user.exception.DuplicateEmailException;
+import com.bang9634.yasongmuseum.user.exception.InvalidPasswordException;
+import com.bang9634.yasongmuseum.user.exception.UserNotFoundException;
 import com.bang9634.yasongmuseum.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;

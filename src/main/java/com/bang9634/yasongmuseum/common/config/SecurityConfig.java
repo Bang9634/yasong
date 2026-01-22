@@ -33,10 +33,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth -> auth
+            // Public endpoints
             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // permit all OPTIONS requests
             .requestMatchers("/api/auth/**").permitAll() // permit auth APIs without authentication
+            .requestMatchers("/api/notices/**").permitAll() // permit public notice fetching
+
+            // Admin and Manager endpoints
+            .requestMatchers("/api/management/**").hasAnyRole("ADMIN","MANAGER")
+
+            // Admin endpoints
             .requestMatchers("/api/admin/**").hasRole("ADMIN") // restrict admin APIs to ADMIN role
-            .requestMatchers("/api/**").authenticated() // authenticate other API requests
+
+            .anyRequest().authenticated() // authenticate other API requests
         )
         .sessionManagement(session ->
             session.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // no session will be created or used by spring security

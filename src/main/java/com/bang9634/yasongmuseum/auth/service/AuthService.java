@@ -7,12 +7,12 @@ import org.springframework.transaction.annotation.Transactional;
 import com.bang9634.yasongmuseum.auth.dto.AuthResponse;
 import com.bang9634.yasongmuseum.auth.dto.LoginRequest;
 import com.bang9634.yasongmuseum.auth.dto.SignupRequest;
-import com.bang9634.yasongmuseum.common.exception.DuplicateEmailException;
-import com.bang9634.yasongmuseum.common.exception.DuplicateUsernameException;
-import com.bang9634.yasongmuseum.common.exception.InvalidPasswordException;
-import com.bang9634.yasongmuseum.common.exception.UserNotFoundException;
 import com.bang9634.yasongmuseum.common.security.JwtTokenProvider;
 import com.bang9634.yasongmuseum.user.entity.User;
+import com.bang9634.yasongmuseum.user.exception.DuplicateEmailException;
+import com.bang9634.yasongmuseum.user.exception.DuplicateUsernameException;
+import com.bang9634.yasongmuseum.user.exception.InvalidPasswordException;
+import com.bang9634.yasongmuseum.user.exception.UserNotFoundException;
 import com.bang9634.yasongmuseum.user.repository.UserRepository;
 
 import jakarta.servlet.http.HttpServletRequest;

@@ -1,4 +1,4 @@
-package com.bang9634.yasongmuseum.common.config;
+package com.bang9634.yasongmuseum.user.config;
 
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;

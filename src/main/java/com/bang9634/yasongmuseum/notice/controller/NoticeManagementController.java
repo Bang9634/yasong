@@ -34,6 +34,12 @@ public class NoticeManagementController {
         return ResponseEntity.ok(notices);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<NoticeResponse> getNotice(@PathVariable Long id) {
+        NoticeResponse notice = noticeService.getNoticeById(id);
+        return ResponseEntity.ok(notice);
+    }
+
     @PostMapping
     public ResponseEntity<NoticeResponse> createNotice(
         @Valid @RequestBody CreateNoticeRequest request,

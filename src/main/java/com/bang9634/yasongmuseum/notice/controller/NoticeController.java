@@ -25,14 +25,14 @@ public class NoticeController {
     private final NoticeService noticeService;
     
     @GetMapping
-    public ResponseEntity<List<NoticeResponse>> getNotices() {
+    public ResponseEntity<List<NoticeResponse>> getVisibleNotices() {
         List<NoticeResponse> notices = noticeService.getVisibleNotices();
         return ResponseEntity.ok(notices);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<NoticeResponse> getNotice(@PathVariable Long id) {
-        NoticeResponse notice = noticeService.getNoticeById(id);
+    public ResponseEntity<NoticeResponse> getVisibleNotice(@PathVariable Long id) {
+        NoticeResponse notice = noticeService.getVisibleNoticeById(id);
         return ResponseEntity.ok(notice);
     }
 }

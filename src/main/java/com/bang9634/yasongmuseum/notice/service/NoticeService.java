@@ -37,7 +37,7 @@ public class NoticeService {
     }
 
     @Transactional
-    public NoticeResponse getNoticeById(Long id) {
+    public NoticeResponse getVisibleNoticeById(Long id) {
         log.info("Fetching notice by ID: {}", id);
         Notice notice = noticeRepository.findVisibleNoticeById(id)
                 .orElseThrow(() -> new NoticeNotFoundException("게시글을 찾을 수 없습니다.") );
@@ -53,6 +53,18 @@ public class NoticeService {
         return noticeRepository.findAllNotDeleted().stream()
                 .map(NoticeResponse::from)
                 .toList();
+    }
+
+    @Transactional
+    public NoticeResponse getNoticeById(Long id) {
+        log.info("Fetching notice by ID: {}", id);
+        Notice notice = noticeRepository.findNoticeById(id)
+                .orElseThrow(() -> new NoticeNotFoundException("게시글을 찾을 수 없습니다.") );
+
+        notice.increaseViewCount();
+        noticeRepository.save(notice);
+
+        return NoticeResponse.from(notice);
     }
 
     @Transactional

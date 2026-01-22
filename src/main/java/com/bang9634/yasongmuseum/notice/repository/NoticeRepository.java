@@ -32,6 +32,13 @@ public interface NoticeRepository extends JpaRepository<Notice, Long>{
         """)
     Optional<Notice> findVisibleNoticeById(Long id);
 
+        @Query("""
+        SELECT n FROM Notice n
+        WHERE n.id = :id
+        AND n.deletedAt IS NULL
+        """)
+    Optional<Notice> findNoticeById(Long id);
+
     /**
      * Fetch all notices that are not deleted, regardless of their status.
      * @apiNote Used for admin purposes.

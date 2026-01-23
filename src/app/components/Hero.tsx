@@ -5,12 +5,12 @@ import { websiteAPI } from '@/utils/api';
 const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1762860498297-4b6c3591b041?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0cmFkaXRpb25hbCUyMGFzaWFuJTIwcGFpbnRpbmclMjBtb3VudGFpbnN8ZW58MXx8fHwxNzY4NDUzODE5fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral";
 
 export function Hero() {
-  const [heroImageUrl, setHeroImageUrl] = useState<string>(DEFAULT_IMAGE);
+  const [heroImageUrl, setHeroImageUrl] = useState<string>();
 
   useEffect(() => {
     const fetchHeroImage = async () => {
       try {
-        const data = await websiteAPI.getHeroImage();
+        const data = await websiteAPI.getImage('hero');
         if (data.imageUrl) {
           // 백엔드 URL이 상대경로면 BASE_URL 추가
           const imageUrl = data.imageUrl.startsWith('http') 

@@ -11,13 +11,6 @@ import { websiteAPI } from '@/utils/api';
 import { isManagerOrAbove } from '@/utils/auth';
 import { resizeImage } from '@/utils/imageUtils';
 
-interface Souvenir {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  imageUrl: string;
-}
 
 export function WebsiteManagement() {
   const navigate = useNavigate();
@@ -28,29 +21,20 @@ export function WebsiteManagement() {
   const [heroImagePreview, setHeroImagePreview] = useState<string>('');
   const [isHeroImageLoading, setIsHeroImageLoading] = useState(false);
 
-  // 배경 이미지
-  const [backgroundUrl, setBackgroundUrl] = useState('');
-  const [isBackgroundLoading, setIsBackgroundLoading] = useState(false);
+  // 초대관장 프로필 이미지
+  const [directorImage, setDirectorImage] = useState<File | null>(null);
+  const [directorImagePreview, setDirectorImagePreview] = useState<string>('');
+  const [isDirectorImageLoading, setIsDirectorImageLoading] = useState(false);
 
-  // 텍스트 데이터
-  const [textData, setTextData] = useState({
-    aboutTitle: '',
-    aboutDescription: '',
-    directorName: '',
-    directorMessage: '',
-  });
-  const [isTextLoading, setIsTextLoading] = useState(false);
-
-  // 기념품 관리
-  const [souvenirs, setSouvenirs] = useState<Souvenir[]>([]);
-  const [isSouvenirsLoading, setIsSouvenirsLoading] = useState(false);
-  const [editingSouvenir, setEditingSouvenir] = useState<Souvenir | null>(null);
-  const [newSouvenir, setNewSouvenir] = useState({
+  // 초대관장 정보
+  const [directorData, setDirectorData] = useState({
     name: '',
-    description: '',
-    price: 0,
-    imageUrl: '',
+    bio: '',
+    philosophy: '',
+    quote: '',
+    collection: '',
   });
+  const [isDirectorLoading, setIsDirectorLoading] = useState(false);
 
   // 권한 확인
   useEffect(() => {
@@ -69,7 +53,7 @@ export function WebsiteManagement() {
     const fetchData = async () => {
       try {
         // Hero 이미지 조회
-        const heroData = await websiteAPI.getHeroImage();
+        const heroData = await websiteAPI.getImage('hero');
         if (heroData.imageUrl) {
           const imageUrl = heroData.imageUrl.startsWith('http') 
             ? heroData.imageUrl 
@@ -77,19 +61,32 @@ export function WebsiteManagement() {
           setHeroImagePreview(imageUrl);
         }
 
-        // 홈페이지 설정 조회
-        const settings = await websiteAPI.getSettings();
-        setBackgroundUrl(settings.backgroundUrl || '');
-        setTextData({
-          aboutTitle: settings.aboutTitle || '',
-          aboutDescription: settings.aboutDescription || '',
-          directorName: settings.directorName || '',
-          directorMessage: settings.directorMessage || '',
+        // 초대관장 프로필 이미지 조회
+        const directorImageData = await websiteAPI.getImage('director');
+        if (directorImageData.imageUrl) {
+          const imageUrl = directorImageData.imageUrl.startsWith('http') 
+            ? directorImageData.imageUrl 
+            : `${import.meta.env.VITE_API_BASE_URL || ''}${directorImageData.imageUrl}`;
+          setDirectorImagePreview(imageUrl);
+        }
+
+        // 초대관장 정보 조회
+        const [nameData, bioData, philosophyData, quoteData, collectionData] = await Promise.all([
+          websiteAPI.getTextSetting('director_name'),
+          websiteAPI.getTextSetting('director_bio'),
+          websiteAPI.getTextSetting('director_philosophy'),
+          websiteAPI.getTextSetting('director_quote'),
+          websiteAPI.getTextSetting('director_collection'),
+        ]);
+
+        setDirectorData({
+          name: nameData.value || '',
+          bio: bioData.value || '',
+          philosophy: philosophyData.value || '',
+          quote: quoteData.value || '',
+          collection: collectionData.value || '',
         });
 
-        // 기념품 목록 조회
-        const souvenirList = await websiteAPI.getSouvenirs();
-        setSouvenirs(souvenirList);
       } catch (err) {
         console.error('데이터 로드 실패:', err);
       }
@@ -129,7 +126,7 @@ export function WebsiteManagement() {
 
     try {
       setIsHeroImageLoading(true);
-      const response = await websiteAPI.uploadHeroImage(heroImage);
+      const response = await websiteAPI.uploadImage('hero',heroImage);
       alert(response.message || 'Hero 이미지가 업로드되었습니다.');
       setHeroImage(null);
       
@@ -146,90 +143,74 @@ export function WebsiteManagement() {
     }
   };
 
-  // 배경 이미지 업데이트
-  const handleBackgroundUpdate = async () => {
+  // 초대관장 프로필 이미지 파일 선택 및 리사이징
+  const handleDirectorImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
     try {
-      setIsBackgroundLoading(true);
-      await websiteAPI.updateBackground({ backgroundUrl });
-      alert('배경 이미지가 업데이트되었습니다.');
+      // 이미지 리사이징 (프로필 이미지는 800x800 정도로)
+      const resizedImage = await resizeImage(file, 800, 800);
+      setDirectorImage(resizedImage);
+
+      // 미리보기 생성
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setDirectorImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(resizedImage);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '업데이트에 실패했습니다.';
-      alert(`실패\n\n${errorMessage}`);
-    } finally {
-      setIsBackgroundLoading(false);
+      console.error('이미지 리사이징 실패:', err);
+      alert('이미지 처리에 실패했습니다.');
     }
   };
 
-  // 텍스트 데이터 업데이트
-  const handleTextUpdate = async () => {
-    try {
-      setIsTextLoading(true);
-      await websiteAPI.updateText(textData);
-      alert('텍스트 데이터가 업데이트되었습니다.');
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '업데이트에 실패했습니다.';
-      alert(`실패\n\n${errorMessage}`);
-    } finally {
-      setIsTextLoading(false);
-    }
-  };
-
-  // 기념품 추가
-  const handleAddSouvenir = async () => {
-    if (!newSouvenir.name || !newSouvenir.description) {
-      alert('모든 필드를 입력해주세요.');
+  // 초대관장 프로필 이미지 업로드
+  const handleDirectorImageUpload = async () => {
+    if (!directorImage) {
+      alert('이미지를 선택해주세요.');
       return;
     }
 
     try {
-      setIsSouvenirsLoading(true);
-      const created = await websiteAPI.createSouvenir(newSouvenir);
-      setSouvenirs([...souvenirs, created]);
-      setNewSouvenir({ name: '', description: '', price: 0, imageUrl: '' });
-      alert('기념품이 추가되었습니다.');
+      setIsDirectorImageLoading(true);
+      const response = await websiteAPI.uploadImage('director', directorImage);
+      alert(response.message || '초대관장 프로필 이미지가 업로드되었습니다.');
+      setDirectorImage(null);
+      
+      // 업로드된 이미지로 미리보기 업데이트
+      const imageUrl = response.imageUrl.startsWith('http') 
+        ? response.imageUrl 
+        : `${import.meta.env.VITE_API_BASE_URL || ''}${response.imageUrl}`;
+      setDirectorImagePreview(imageUrl);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '추가에 실패했습니다.';
+      const errorMessage = err instanceof Error ? err.message : '업로드에 실패했습니다.';
       alert(`실패\n\n${errorMessage}`);
     } finally {
-      setIsSouvenirsLoading(false);
+      setIsDirectorImageLoading(false);
     }
   };
 
-  // 기념품 수정
-  const handleUpdateSouvenir = async () => {
-    if (!editingSouvenir) return;
-
+  // 초대관장 정보 업데이트
+  const handleDirectorDataUpdate = async () => {
     try {
-      setIsSouvenirsLoading(true);
-      await websiteAPI.updateSouvenir(editingSouvenir.id, editingSouvenir);
-      setSouvenirs(souvenirs.map(s => s.id === editingSouvenir.id ? editingSouvenir : s));
-      setEditingSouvenir(null);
-      alert('기념품이 수정되었습니다.');
+      setIsDirectorLoading(true);
+      await Promise.all([
+        websiteAPI.updateTextSetting('director_name', directorData.name),
+        websiteAPI.updateTextSetting('director_bio', directorData.bio),
+        websiteAPI.updateTextSetting('director_philosophy', directorData.philosophy),
+        websiteAPI.updateTextSetting('director_quote', directorData.quote),
+        websiteAPI.updateTextSetting('director_collection', directorData.collection),
+      ]);
+      alert('초대관장 정보가 업데이트되었습니다.');
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '수정에 실패했습니다.';
+      const errorMessage = err instanceof Error ? err.message : '업데이트에 실패했습니다.';
       alert(`실패\n\n${errorMessage}`);
     } finally {
-      setIsSouvenirsLoading(false);
+      setIsDirectorLoading(false);
     }
   };
 
-  // 기념품 삭제
-  const handleDeleteSouvenir = async (souvenirId: string) => {
-    const confirmed = window.confirm('정말로 이 기념품을 삭제하시겠습니까?');
-    if (!confirmed) return;
-
-    try {
-      setIsSouvenirsLoading(true);
-      await websiteAPI.deleteSouvenir(souvenirId);
-      setSouvenirs(souvenirs.filter(s => s.id !== souvenirId));
-      alert('기념품이 삭제되었습니다.');
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '삭제에 실패했습니다.';
-      alert(`실패\n\n${errorMessage}`);
-    } finally {
-      setIsSouvenirsLoading(false);
-    }
-  };
 
   if (loading || !user || !isManagerOrAbove(user.role)) {
     return null;
@@ -247,7 +228,8 @@ export function WebsiteManagement() {
             <p className="text-gray-600">웹사이트의 배경 이미지, 텍스트, 기념품 목록을 관리할 수 있습니다.</p>
           </div>
 
-          <div className="space-y-6">            {/* Hero 이미지 관리 */}
+          <div className="space-y-6">
+            {/* Hero 이미지 관리 */}
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">Hero 배경 이미지</h2>
               <p className="text-sm text-gray-600 mb-4">홈페이지 최상단 Hero 섹션의 배경 이미지를 변경할 수 있습니다.</p>
@@ -284,226 +266,116 @@ export function WebsiteManagement() {
                 </Button>
               </div>
             </div>
-            {/* 배경 이미지 관리 */}
+
+            {/* 초대관장 프로필 이미지 관리 */}
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">배경 이미지</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">초대관장 프로필 이미지</h2>
+              <p className="text-sm text-gray-600 mb-4">초대관장 소개 섹션에 표시될 프로필 이미지를 변경할 수 있습니다.</p>
               <div className="space-y-4">
+                {directorImagePreview && (
+                  <div>
+                    <Label>현재 이미지 미리보기</Label>
+                    <div className="mt-2 border border-gray-300 rounded-md overflow-hidden flex justify-center">
+                      <img 
+                        src={directorImagePreview} 
+                        alt="초대관장 프로필 이미지 미리보기" 
+                        className="w-64 h-80 object-cover"
+                      />
+                    </div>
+                  </div>
+                )}
                 <div>
-                  <Label htmlFor="backgroundUrl">이미지 URL</Label>
+                  <Label htmlFor="directorImage">새 이미지 선택</Label>
                   <Input
-                    id="backgroundUrl"
-                    type="text"
-                    value={backgroundUrl}
-                    onChange={(e) => setBackgroundUrl(e.target.value)}
-                    placeholder="https://example.com/image.jpg"
+                    id="directorImage"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleDirectorImageChange}
+                    className="mt-1"
                   />
+                  <p className="text-xs text-gray-500 mt-1">권장 크기: 800x800px 이상 (세로 사진 권장)</p>
                 </div>
                 <Button
-                  onClick={handleBackgroundUpdate}
-                  disabled={isBackgroundLoading}
+                  onClick={handleDirectorImageUpload}
+                  disabled={isDirectorImageLoading || !directorImage}
                   className="bg-teal-700 hover:bg-teal-800 text-white"
                 >
-                  {isBackgroundLoading ? '저장 중...' : '배경 이미지 저장'}
+                  {isDirectorImageLoading ? '업로드 중...' : '프로필 이미지 업로드'}
                 </Button>
               </div>
             </div>
 
-            {/* 텍스트 데이터 관리 */}
+            {/* 초대관장 정보 관리 */}
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">텍스트 데이터</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">초대관장 정보</h2>
+              <p className="text-sm text-gray-600 mb-4">홈페이지의 초대관장 소개 내용을 수정할 수 있습니다.</p>
               <div className="space-y-4">
-                <div>
-                  <Label htmlFor="aboutTitle">미술관 소개 제목</Label>
-                  <Input
-                    id="aboutTitle"
-                    type="text"
-                    value={textData.aboutTitle}
-                    onChange={(e) => setTextData({ ...textData, aboutTitle: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="aboutDescription">미술관 소개 내용</Label>
-                  <Textarea
-                    id="aboutDescription"
-                    value={textData.aboutDescription}
-                    onChange={(e) => setTextData({ ...textData, aboutDescription: e.target.value })}
-                    rows={4}
-                  />
-                </div>
                 <div>
                   <Label htmlFor="directorName">관장 이름</Label>
                   <Input
                     id="directorName"
                     type="text"
-                    value={textData.directorName}
-                    onChange={(e) => setTextData({ ...textData, directorName: e.target.value })}
+                    value={directorData.name}
+                    onChange={(e) => setDirectorData({ ...directorData, name: e.target.value })}
+                    placeholder="야송 이원좌 李元佐 (1939-2019)"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="directorMessage">관장 메시지</Label>
+                  <Label htmlFor="directorBio">화백 약력</Label>
                   <Textarea
-                    id="directorMessage"
-                    value={textData.directorMessage}
-                    onChange={(e) => setTextData({ ...textData, directorMessage: e.target.value })}
-                    rows={4}
+                    id="directorBio"
+                    value={directorData.bio}
+                    onChange={(e) => setDirectorData({ ...directorData, bio: e.target.value })}
+                    placeholder="• 로 시작하는 각 줄바꿈 구분"
+                    rows={8}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">각 항목을 줄바꿈으로 구분해주세요</p>
+                </div>
+                <div>
+                  <Label htmlFor="directorPhilosophy">예술 세계</Label>
+                  <Textarea
+                    id="directorPhilosophy"
+                    value={directorData.philosophy}
+                    onChange={(e) => setDirectorData({ ...directorData, philosophy: e.target.value })}
+                    placeholder="예술 철학 및 작품 세계에 대한 설명"
+                    rows={10}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">단락 구분은 빈 줄로 해주세요</p>
+                </div>
+                <div>
+                  <Label htmlFor="directorQuote">인용구</Label>
+                  <Textarea
+                    id="directorQuote"
+                    value={directorData.quote}
+                    onChange={(e) => setDirectorData({ ...directorData, quote: e.target.value })}
+                    placeholder='"예술은 자연을 닮아가는 과정이며, 화가는 자연의 목소리를 전하는 사람이다."'
+                    rows={3}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="directorCollection">주요 소장처</Label>
+                  <Textarea
+                    id="directorCollection"
+                    value={directorData.collection}
+                    onChange={(e) => setDirectorData({ ...directorData, collection: e.target.value })}
+                    placeholder="주요 소장처"
+                    rows={5}
                   />
                 </div>
                 <Button
-                  onClick={handleTextUpdate}
-                  disabled={isTextLoading}
+                  onClick={handleDirectorDataUpdate}
+                  disabled={isDirectorLoading}
                   className="bg-teal-700 hover:bg-teal-800 text-white"
                 >
-                  {isTextLoading ? '저장 중...' : '텍스트 데이터 저장'}
+                  {isDirectorLoading ? '저장 중...' : '초대관장 정보 저장'}
                 </Button>
               </div>
             </div>
 
-            {/* 기념품 목록 관리 */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">기념품 관리</h2>
-              
-              {/* 기념품 추가 */}
-              <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                <h3 className="text-lg font-semibold mb-3">새 기념품 추가</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>이름</Label>
-                    <Input
-                      value={newSouvenir.name}
-                      onChange={(e) => setNewSouvenir({ ...newSouvenir, name: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <Label>가격</Label>
-                    <Input
-                      type="number"
-                      value={newSouvenir.price}
-                      onChange={(e) => setNewSouvenir({ ...newSouvenir, price: Number(e.target.value) })}
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <Label>설명</Label>
-                    <Textarea
-                      value={newSouvenir.description}
-                      onChange={(e) => setNewSouvenir({ ...newSouvenir, description: e.target.value })}
-                      rows={2}
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <Label>이미지 URL</Label>
-                    <Input
-                      value={newSouvenir.imageUrl}
-                      onChange={(e) => setNewSouvenir({ ...newSouvenir, imageUrl: e.target.value })}
-                    />
-                  </div>
-                </div>
-                <Button
-                  onClick={handleAddSouvenir}
-                  disabled={isSouvenirsLoading}
-                  className="mt-4 bg-teal-700 hover:bg-teal-800 text-white"
-                >
-                  기념품 추가
-                </Button>
-              </div>
 
-              {/* 기념품 목록 */}
-              <div className="space-y-4">
-                {souvenirs.length === 0 ? (
-                  <p className="text-gray-500 text-center py-4">등록된 기념품이 없습니다.</p>
-                ) : (
-                  souvenirs.map((souvenir) => (
-                    <div key={souvenir.id} className="border rounded-lg p-4">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-lg">{souvenir.name}</h4>
-                          <p className="text-gray-600 text-sm mt-1">{souvenir.description}</p>
-                          <p className="text-teal-700 font-semibold mt-2">₩{souvenir.price.toLocaleString()}</p>
-                          {souvenir.imageUrl && (
-                            <p className="text-gray-400 text-xs mt-1">이미지: {souvenir.imageUrl}</p>
-                          )}
-                        </div>
-                        <div className="flex space-x-2">
-                          <Button
-                            onClick={() => setEditingSouvenir(souvenir)}
-                            className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-3 py-1"
-                          >
-                            수정
-                          </Button>
-                          <Button
-                            onClick={() => handleDeleteSouvenir(souvenir.id)}
-                            className="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-1"
-                          >
-                            삭제
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
           </div>
-
-          {/* 기념품 수정 다이얼로그 */}
-          {editingSouvenir && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">기념품 수정</h2>
-                
-                <div className="space-y-4">
-                  <div>
-                    <Label>이름</Label>
-                    <Input
-                      value={editingSouvenir.name}
-                      onChange={(e) => setEditingSouvenir({ ...editingSouvenir, name: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <Label>가격</Label>
-                    <Input
-                      type="number"
-                      value={editingSouvenir.price}
-                      onChange={(e) => setEditingSouvenir({ ...editingSouvenir, price: Number(e.target.value) })}
-                    />
-                  </div>
-                  <div>
-                    <Label>설명</Label>
-                    <Textarea
-                      value={editingSouvenir.description}
-                      onChange={(e) => setEditingSouvenir({ ...editingSouvenir, description: e.target.value })}
-                      rows={3}
-                    />
-                  </div>
-                  <div>
-                    <Label>이미지 URL</Label>
-                    <Input
-                      value={editingSouvenir.imageUrl}
-                      onChange={(e) => setEditingSouvenir({ ...editingSouvenir, imageUrl: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="flex space-x-3 mt-6">
-                  <Button
-                    onClick={handleUpdateSouvenir}
-                    disabled={isSouvenirsLoading}
-                    className="flex-1 bg-teal-600 hover:bg-teal-700 text-white"
-                  >
-                    {isSouvenirsLoading ? '저장 중...' : '저장'}
-                  </Button>
-                  <Button
-                    onClick={() => setEditingSouvenir(null)}
-                    className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800"
-                  >
-                    취소
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
-
       <Footer />
     </div>
   );

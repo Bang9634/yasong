@@ -50,7 +50,7 @@ export function Header() {
             <h1 className="text-xl sm:text-2xl text-teal-900">
               군립청송야송미술관
             </h1>
-            <p className="text-xs sm:text-sm text-teal-700">Cheongsung Yasong Art Museum</p>
+            <p className="text-xs sm:text-sm text-teal-700">Cheongsong Yasong Art Gallery</p>
           </div>
 
           {/* 데스크톱 네비게이션 */}

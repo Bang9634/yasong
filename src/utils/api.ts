@@ -274,26 +274,23 @@ export const noticeAPI = {
  * 홈페이지 관리 API (ADMIN, MANAGER)
  */
 export const websiteAPI = {
+
   /**
    * Hero 이미지 조회 (공개)
    * GET /api/website/settings/hero-image
    */
-  getHeroImage: async () => {
-    return apiCall('/api/website/settings/hero-image', {
+  getImage: async (imageType: string) => {
+    return apiCall(`/api/website/settings/images/${imageType}`, {
       method: 'GET'
     });
   },
 
-  /**
-   * Hero 이미지 업로드 (관리자)
-   * POST /api/management/website/hero-image
-   */
-  uploadHeroImage: async (file: File) => {
+  uploadImage: async (imageType: string, file: File) => {
     const formData = new FormData();
     formData.append('image', file);
 
     const token = localStorage.getItem('token');
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/management/website/hero-image`, {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/management/website/images/${imageType}`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -310,6 +307,27 @@ export const websiteAPI = {
   },
 
   /**
+   * 텍스트 설정 조회 (공개)
+   * GET /api/website/settings/{key}
+   */
+  getTextSetting: async (key: string) => {
+    return apiCall(`/api/website/settings/${key}`, {
+      method: 'GET'
+    });
+  },
+
+  /**
+   * 텍스트 설정 업데이트 (관리자)
+   * PUT /api/management/website/{key}
+   */
+  updateTextSetting: async (key: string, value: string) => {
+    return apiCall(`/api/management/website/${key}`, {
+      method: 'PUT',
+      body: JSON.stringify({ value })
+    });
+  },
+
+  /**
    * 홈페이지 설정 조회
    * GET /api/website/settings
    */
@@ -319,95 +337,6 @@ export const websiteAPI = {
     });
   },
 
-  /**
-   * 배경 이미지 업데이트
-   * PUT /api/website/background
-   */
-  updateBackground: async (backgroundData: any) => {
-    return apiCall('/api/website/background', {
-      method: 'PUT',
-      body: JSON.stringify(backgroundData)
-    });
-  },
-
-  /**
-   * 텍스트 데이터 업데이트
-   * PUT /api/website/text
-   */
-  updateText: async (textData: any) => {
-    return apiCall('/api/website/text', {
-      method: 'PUT',
-      body: JSON.stringify(textData)
-    });
-  },
-
-  /**
-   * 기념품 목록 조회
-   * GET /api/website/souvenirs
-   */
-  getSouvenirs: async () => {
-    return apiCall('/api/website/souvenirs', {
-      method: 'GET'
-    });
-  },
-
-  /**
-   * 기념품 추가
-   * POST /api/website/souvenirs
-   */
-  createSouvenir: async (souvenirData: any) => {
-    return apiCall('/api/website/souvenirs', {
-      method: 'POST',
-      body: JSON.stringify(souvenirData)
-    });
-  },
-
-  /**
-   * 기념품 수정
-   * PUT /api/website/souvenirs/{souvenirId}
-   */
-  updateSouvenir: async (souvenirId: string, souvenirData: any) => {
-    return apiCall(`/api/website/souvenirs/${souvenirId}`, {
-      method: 'PUT',
-      body: JSON.stringify(souvenirData)
-    });
-  },
-
-  /**
-   * 기념품 삭제
-   * DELETE /api/website/souvenirs/{souvenirId}
-   */
-  deleteSouvenir: async (souvenirId: string) => {
-    return apiCall(`/api/website/souvenirs/${souvenirId}`, {
-      method: 'DELETE'
-    });
-  },
-};
-
-/**
- * 인증이 필요한 API 예시 (나중에 사용)
- */
-export const artworkAPI = {
-  /**
-   * 작품 목록 조회
-   * GET /api/artworks
-   */
-  getArtworks: async () => {
-    return apiCall('/api/artworks', {
-      method: 'GET'
-    });
-  },
-
-  /**
-   * 작품 생성
-   * POST /api/artworks
-   */
-  createArtwork: async (artworkData: any) => {
-    return apiCall('/api/artworks', {
-      method: 'POST',
-      body: JSON.stringify(artworkData)
-    });
-  }
 };
 
 export default apiCall;

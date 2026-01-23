@@ -2,6 +2,7 @@ package com.bang9634.yasongmuseum.website.controller;
 
 import com.bang9634.yasongmuseum.website.dto.UpdateTextSettingRequest;
 import com.bang9634.yasongmuseum.website.dto.UploadImageResponse;
+import com.bang9634.yasongmuseum.website.entity.ImageType;
 import com.bang9634.yasongmuseum.website.service.WebsiteSettingsService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,16 +20,23 @@ public class WebsiteManagementController {
 
     private final WebsiteSettingsService websiteSettingsService;
 
-    @PostMapping("/hero-image")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<UploadImageResponse> uploadHeroImage(
+    /**
+     * Generic image upload endpoint
+     * Supports: hero, about, contact, gallery
+     * 
+     * Example: POST /api/management/website/images/hero
+     *          POST /api/management/website/images/about
+     */
+    @PostMapping("/images/{imageType}")
+    public ResponseEntity<UploadImageResponse> uploadImage(
+            @PathVariable String imageType,
             @RequestParam("image") MultipartFile file) {
-        UploadImageResponse response = websiteSettingsService.uploadHeroImage(file);
+        ImageType type = ImageType.fromString(imageType);
+        UploadImageResponse response = websiteSettingsService.uploadImage(file, type);
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{key}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Map<String, String>> updateTextSetting(
             @PathVariable String key,
             @Valid @RequestBody UpdateTextSettingRequest request) {

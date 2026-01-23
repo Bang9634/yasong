@@ -1,7 +1,8 @@
 package com.bang9634.yasongmuseum.website.controller;
 
-import com.bang9634.yasongmuseum.website.dto.HeroImageResponse;
+import com.bang9634.yasongmuseum.website.dto.ImageResponse;
 import com.bang9634.yasongmuseum.website.dto.TextSettingResponse;
+import com.bang9634.yasongmuseum.website.entity.ImageType;
 import com.bang9634.yasongmuseum.website.service.WebsiteSettingsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,9 +18,17 @@ public class WebsiteSettingsController {
 
     private final WebsiteSettingsService websiteSettingsService;
 
-    @GetMapping("/hero-image")
-    public ResponseEntity<HeroImageResponse> getHeroImage() {
-        HeroImageResponse response = websiteSettingsService.getHeroImage();
+    /**
+     * Generic image get endpoint
+     * Supports: hero, about, contact, gallery
+     * 
+     * Example: GET /api/website/settings/images/hero
+     *          GET /api/website/settings/images/about
+     */
+    @GetMapping("/images/{imageType}")
+    public ResponseEntity<ImageResponse> getImage(@PathVariable String imageType) {
+        ImageType type = ImageType.fromString(imageType);
+        ImageResponse response = websiteSettingsService.getImage(type);
         return ResponseEntity.ok(response);
     }
 

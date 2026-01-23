@@ -1,15 +1,15 @@
 package com.bang9634.yasongmuseum.website.service;
 
 import com.bang9634.yasongmuseum.common.service.FileStorageService;
-import com.bang9634.yasongmuseum.website.dto.HeroImageResponse;
+import com.bang9634.yasongmuseum.website.dto.ImageResponse;
 import com.bang9634.yasongmuseum.website.dto.TextSettingResponse;
 import com.bang9634.yasongmuseum.website.dto.UploadImageResponse;
+import com.bang9634.yasongmuseum.website.entity.ImageType;
 import com.bang9634.yasongmuseum.website.entity.WebsiteSettings;
 import com.bang9634.yasongmuseum.website.exception.SettingNotFoundException;
 import com.bang9634.yasongmuseum.website.repository.WebsiteSettingsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,37 +23,49 @@ public class WebsiteSettingsService {
     private final WebsiteSettingsRepository websiteSettingsRepository;
     private final FileStorageService fileStorageService;
 
-    @Value("${file.upload.hero.dir:hero}")
-    private String heroDir;
-
-    private static final String HERO_IMAGE_KEY = "hero_image_url";
-
-    public HeroImageResponse getHeroImage() {
-        WebsiteSettings setting = websiteSettingsRepository.findBySettingKey(HERO_IMAGE_KEY)
+    /**
+     * Get image URL by image type
+     * 
+     * @param imageType Image type enum
+     * @return Image response with URL and updatedAt
+     */
+    public ImageResponse getImage(ImageType imageType) {
+        WebsiteSettings setting = websiteSettingsRepository.findBySettingKey(imageType.getSettingKey())
                 .orElse(WebsiteSettings.builder()
-                        .settingKey(HERO_IMAGE_KEY)
+                        .settingKey(imageType.getSettingKey())
                         .settingValue("")
                         .build());
 
-        return HeroImageResponse.builder()
+        return ImageResponse.builder()
                 .imageUrl(setting.getSettingValue())
                 .updatedAt(setting.getUpdatedAt())
                 .build();
     }
 
+    /**
+     * Upload image for specified type (Generic method)
+     * 
+     * @param file Multipart file to upload
+     * @param imageType Image type enum
+     * @return Upload response with URL and message
+     */
     @Transactional
-    public UploadImageResponse uploadHeroImage(MultipartFile file) {
-        // 1. 파일 저장 (FileStorageService에 위임)
-        String imageUrl = fileStorageService.saveFile(file, heroDir, "hero-");
+    public UploadImageResponse uploadImage(MultipartFile file, ImageType imageType) {
+        // 1. Save file using FileStorageService
+        String imageUrl = fileStorageService.saveFile(
+                file, 
+                imageType.getSubDirectory(), 
+                imageType.getFilePrefix()
+        );
 
-        // 2. DB에 URL 저장 (기존 설정 업데이트 또는 새로 생성)
-        WebsiteSettings setting = websiteSettingsRepository.findBySettingKey(HERO_IMAGE_KEY)
+        // 2. Save or update URL in DB
+        WebsiteSettings setting = websiteSettingsRepository.findBySettingKey(imageType.getSettingKey())
                 .orElse(WebsiteSettings.builder()
-                        .settingKey(HERO_IMAGE_KEY)
-                        .description("Hero section background image URL")
+                        .settingKey(imageType.getSettingKey())
+                        .description(imageType.getDescription())
                         .build());
 
-        // 3. 기존 파일 삭제 (있다면)
+        // 3. Delete old file if exists
         if (setting.getSettingValue() != null && !setting.getSettingValue().isEmpty()) {
             fileStorageService.deleteFile(setting.getSettingValue());
         }
@@ -61,13 +73,14 @@ public class WebsiteSettingsService {
         setting.updateValue(imageUrl);
         websiteSettingsRepository.save(setting);
 
-        log.info("Hero image uploaded successfully: {}", imageUrl);
+        log.info("{} image uploaded successfully: {}", imageType.name(), imageUrl);
 
         return UploadImageResponse.builder()
                 .imageUrl(imageUrl)
-                .message("히어로 이미지가 성공적으로 업로드되었습니다.")
+                .message(imageType.name() + " 이미지가 성공적으로 업로드되었습니다.")
                 .build();
     }
+
 
     /**
      * Get text setting by key with full response

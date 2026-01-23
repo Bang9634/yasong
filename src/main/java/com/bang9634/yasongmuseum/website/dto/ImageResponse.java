@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class HeroImageResponse {
+public class ImageResponse {
 
     private String imageUrl;
     private LocalDateTime updatedAt;

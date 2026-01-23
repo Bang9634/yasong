@@ -1,7 +1,48 @@
+import { useState, useEffect } from 'react';
 import { ImageWithFallback } from '@/app/components/figma/ImageWithFallback';
-import { Building2, Users, Award } from 'lucide-react';
+import { Building2, Users, Award, Home } from 'lucide-react';
+import { websiteAPI } from '@/utils/api';
 
 export function About() {
+  const [mainBuildingImage, setMainBuildingImage] = useState<string>('');
+  const [mainBuildingText, setMainBuildingText] = useState<string>('군립청송야송미술관은 이원좌 화백의 예술 세계를 기리고 지역 문화예술 발전을 위해 2020년 개관한 복합 문화공간입니다. 다양한 기획전시와 교육 프로그램을 운영하며, 상설전시실에서는 이원좌 화백의 대표작들을 감상할 수 있습니다.');
+  
+  const [cheongryangImage, setCheongryangImage] = useState<string>('');
+  const [cheongryangText, setCheongryangText] = useState<string>('청량대운도전시관은 이원좌 화백의 필생의 역작인 「청량대운도」를 전시하기 위해 특별히 건립된 전시관입니다. 청송의 명승 청량산의 아름다움을 담은 이 대작을 최적의 환경에서 감상할 수 있도록 설계되었습니다.');
+
+  useEffect(() => {
+    const fetchBuildingData = async () => {
+      try {
+        const [mainImageData, mainTextData, cheongryangImageData, cheongryangTextData] = await Promise.all([
+          websiteAPI.getImage('main_building'),
+          websiteAPI.getTextSetting('main_building_description'),
+          websiteAPI.getImage('cheongryangdae_building'),
+          websiteAPI.getTextSetting('cheongryangdae_building_description'),
+        ]);
+
+        if (mainImageData.imageUrl) {
+          const imageUrl = mainImageData.imageUrl.startsWith('http') 
+            ? mainImageData.imageUrl 
+            : `${import.meta.env.VITE_API_BASE_URL || ''}${mainImageData.imageUrl}`;
+          setMainBuildingImage(imageUrl);
+        }
+        if (mainTextData.value) setMainBuildingText(mainTextData.value);
+
+        if (cheongryangImageData.imageUrl) {
+          const imageUrl = cheongryangImageData.imageUrl.startsWith('http') 
+            ? cheongryangImageData.imageUrl 
+            : `${import.meta.env.VITE_API_BASE_URL || ''}${cheongryangImageData.imageUrl}`;
+          setCheongryangImage(imageUrl);
+        }
+        if (cheongryangTextData.value) setCheongryangText(cheongryangTextData.value);
+      } catch (err) {
+        console.error('건물 정보 로드 실패:', err);
+      }
+    };
+
+    fetchBuildingData();
+  }, []);
+
   return (
     <section id="about" className="py-20 bg-gradient-to-b from-white to-teal-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -10,58 +51,77 @@ export function About() {
           <div className="w-20 h-1 bg-amber-600 mx-auto"></div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-12 items-center mb-16">
-          <div>
-            <ImageWithFallback
-              src="https://images.unsplash.com/photo-1565799515768-2dcfd834625c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhcnQlMjBnYWxsZXJ5JTIwaW50ZXJpb3IlMjBtb2Rlcm58ZW58MXx8fHwxNzY4NDI5ODU2fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
-              alt="야송미술관 전시실"
-              className="w-full h-96 object-cover rounded-lg shadow-xl border-4 border-white"
-            />
+
+
+        {/* 건물 소개 */}
+        <div className="mt-20 mb-16">
+
+          {/* 군립청송야송미술관 */}
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
+            <div className="grid md:grid-cols-2 gap-0">
+              <div className="relative h-80">
+                {mainBuildingImage ? (
+                  <img 
+                    src={mainBuildingImage} 
+                    alt="군립청송야송미술관" 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <ImageWithFallback
+                    src="https://images.unsplash.com/photo-1565799515768-2dcfd834625c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhcnQlMjBnYWxsZXJ5fGVufDF8fHx8MTc2ODQyOTg1Nnww&ixlib=rb-4.1.0&q=80&w=1080"
+                    alt="군립청송야송미술관"
+                    className="w-full h-full object-cover"
+                  />
+                )}
+              </div>
+              <div className="p-8 flex flex-col justify-center">
+                <div className="flex items-center mb-4">
+                  <div className="w-10 h-10 bg-teal-700 rounded-full flex items-center justify-center mr-3">
+                    <Home className="w-5 h-5 text-white" />
+                  </div>
+                  <h4 className="text-2xl font-bold text-teal-900">군립청송야송미술관</h4>
+                </div>
+                <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                  {mainBuildingText}
+                </p>
+              </div>
+            </div>
           </div>
-          <div className="space-y-6">
-            <div className="flex items-start">
-              <div className="w-12 h-12 bg-teal-700 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                <Building2 className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h3 className="text-2xl mb-2 text-teal-800">설립 배경</h3>
-                <p className="text-gray-700 leading-relaxed">
-                  2019년 이원좌 화백의 작품 기증을 계기로 청송군과 경상북도의 지원을 받아 
-                  2020년 10월 15일 개관하였습니다. 청송의 문화예술 진흥과 지역민의 
-                  문화향유권 증진을 위해 설립되었습니다.
-                </p>
-              </div>
-            </div>
 
-            <div className="flex items-start">
-              <div className="w-12 h-12 bg-teal-700 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                <Users className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h3 className="text-2xl mb-2 text-teal-800">운영 목표</h3>
-                <p className="text-gray-700 leading-relaxed">
-                  이원좌 화백의 예술 정신을 계승하고, 지역 문화예술 발전의 거점으로서 
-                  다양한 전시와 교육 프로그램을 운영합니다. 국내외 우수 작가들의 작품을 
-                  소개하며 문화 교류의 장을 마련하고 있습니다.
+          {/* 청량대운도전시관 */}
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div className="grid md:grid-cols-2 gap-0">
+              <div className="order-2 md:order-1 p-8 flex flex-col justify-center">
+                <div className="flex items-center mb-4">
+                  <div className="w-10 h-10 bg-amber-600 rounded-full flex items-center justify-center mr-3">
+                    <Building2 className="w-5 h-5 text-white" />
+                  </div>
+                  <h4 className="text-2xl font-bold text-teal-900">청량대운도전시관</h4>
+                </div>
+                <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                  {cheongryangText}
                 </p>
               </div>
-            </div>
-
-            <div className="flex items-start">
-              <div className="w-12 h-12 bg-teal-700 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                <Award className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h3 className="text-2xl mb-2 text-teal-800">주요 성과</h3>
-                <p className="text-gray-700 leading-relaxed">
-                  개관 이래 연평균 5만여 명의 관람객이 방문하고 있으며, 
-                  2023년 대한민국 공공디자인대상을 수상하였습니다. 
-                  지역 미술 교육의 중심지로 자리매김하고 있습니다.
-                </p>
+              <div className="order-1 md:order-2 relative h-80">
+                {cheongryangImage ? (
+                  <img 
+                    src={cheongryangImage} 
+                    alt="청량대운도전시관" 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <ImageWithFallback
+                    src="https://images.unsplash.com/photo-1554907984-15263bfd63bd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwyfHxhcnQlMjBnYWxsZXJ5fGVufDF8fHx8MTc2ODQyOTg1Nnww&ixlib=rb-4.1.0&q=80&w=1080"
+                    alt="청량대운도전시관"
+                    className="w-full h-full object-cover"
+                  />
+                )}
               </div>
             </div>
           </div>
         </div>
+
+
 
         {/* 연혁 타임라인 */}
         <div className="bg-white rounded-lg shadow-lg p-8 border border-teal-100">

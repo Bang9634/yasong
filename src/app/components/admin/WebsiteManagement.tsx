@@ -36,6 +36,18 @@ export function WebsiteManagement() {
   });
   const [isDirectorLoading, setIsDirectorLoading] = useState(false);
 
+  // 본관 건물
+  const [mainBuildingImage, setMainBuildingImage] = useState<File | null>(null);
+  const [mainBuildingImagePreview, setMainBuildingImagePreview] = useState<string>('');
+  const [mainBuildingText, setMainBuildingText] = useState<string>('');
+  const [isMainBuildingLoading, setIsMainBuildingLoading] = useState(false);
+
+  // 청량대운도전시관
+  const [cheongryangImage, setCheongryangImage] = useState<File | null>(null);
+  const [cheongryangImagePreview, setCheongryangImagePreview] = useState<string>('');
+  const [cheongryangText, setCheongryangText] = useState<string>('');
+  const [isCheongryangLoading, setIsCheongryangLoading] = useState(false);
+
   // 권한 확인
   useEffect(() => {
     if (loading) return;
@@ -86,6 +98,28 @@ export function WebsiteManagement() {
           quote: quoteData.value || '',
           collection: collectionData.value || '',
         });
+
+        // 본관 건물 정보 조회
+        const mainBuildingImageData = await websiteAPI.getImage('main_building');
+        if (mainBuildingImageData.imageUrl) {
+          const imageUrl = mainBuildingImageData.imageUrl.startsWith('http') 
+            ? mainBuildingImageData.imageUrl 
+            : `${import.meta.env.VITE_API_BASE_URL || ''}${mainBuildingImageData.imageUrl}`;
+          setMainBuildingImagePreview(imageUrl);
+        }
+        const mainBuildingTextData = await websiteAPI.getTextSetting('main_building_description');
+        setMainBuildingText(mainBuildingTextData.value || '');
+
+        // 청량대운도전시관 정보 조회
+        const cheongryangImageData = await websiteAPI.getImage('cheongryangdae_building');
+        if (cheongryangImageData.imageUrl) {
+          const imageUrl = cheongryangImageData.imageUrl.startsWith('http') 
+            ? cheongryangImageData.imageUrl 
+            : `${import.meta.env.VITE_API_BASE_URL || ''}${cheongryangImageData.imageUrl}`;
+          setCheongryangImagePreview(imageUrl);
+        }
+        const cheongryangTextData = await websiteAPI.getTextSetting('cheongryangdae_building_description');
+        setCheongryangText(cheongryangTextData.value || '');
 
       } catch (err) {
         console.error('데이터 로드 실패:', err);
@@ -208,6 +242,124 @@ export function WebsiteManagement() {
       alert(`실패\n\n${errorMessage}`);
     } finally {
       setIsDirectorLoading(false);
+    }
+  };
+
+  // 본관 건물 이미지 파일 선택 및 리사이징
+  const handleMainBuildingImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const resizedImage = await resizeImage(file, 1920, 1080);
+      setMainBuildingImage(resizedImage);
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setMainBuildingImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(resizedImage);
+    } catch (err) {
+      console.error('이미지 리사이징 실패:', err);
+      alert('이미지 처리에 실패했습니다.');
+    }
+  };
+
+  // 본관 건물 이미지 업로드
+  const handleMainBuildingImageUpload = async () => {
+    if (!mainBuildingImage) {
+      alert('이미지를 선택해주세요.');
+      return;
+    }
+
+    try {
+      setIsMainBuildingLoading(true);
+      const response = await websiteAPI.uploadImage('main_building', mainBuildingImage);
+      alert(response.message || '본관 건물 이미지가 업로드되었습니다.');
+      setMainBuildingImage(null);
+      
+      const imageUrl = response.imageUrl.startsWith('http') 
+        ? response.imageUrl 
+        : `${import.meta.env.VITE_API_BASE_URL || ''}${response.imageUrl}`;
+      setMainBuildingImagePreview(imageUrl);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '업로드에 실패했습니다.';
+      alert(`실패\n\n${errorMessage}`);
+    } finally {
+      setIsMainBuildingLoading(false);
+    }
+  };
+
+  // 본관 건물 텍스트 업데이트
+  const handleMainBuildingTextUpdate = async () => {
+    try {
+      setIsMainBuildingLoading(true);
+      await websiteAPI.updateTextSetting('main_building_description', mainBuildingText);
+      alert('본관 건물 소개가 업데이트되었습니다.');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '업데이트에 실패했습니다.';
+      alert(`실패\n\n${errorMessage}`);
+    } finally {
+      setIsMainBuildingLoading(false);
+    }
+  };
+
+  // 청량대운도전시관 이미지 파일 선택 및 리사이징
+  const handleCheongryangImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const resizedImage = await resizeImage(file, 1920, 1080);
+      setCheongryangImage(resizedImage);
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCheongryangImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(resizedImage);
+    } catch (err) {
+      console.error('이미지 리사이징 실패:', err);
+      alert('이미지 처리에 실패했습니다.');
+    }
+  };
+
+  // 청량대운도전시관 이미지 업로드
+  const handleCheongryangImageUpload = async () => {
+    if (!cheongryangImage) {
+      alert('이미지를 선택해주세요.');
+      return;
+    }
+
+    try {
+      setIsCheongryangLoading(true);
+      const response = await websiteAPI.uploadImage('cheongryangdae_building', cheongryangImage);
+      alert(response.message || '청량대운도전시관 이미지가 업로드되었습니다.');
+      setCheongryangImage(null);
+      
+      const imageUrl = response.imageUrl.startsWith('http') 
+        ? response.imageUrl 
+        : `${import.meta.env.VITE_API_BASE_URL || ''}${response.imageUrl}`;
+      setCheongryangImagePreview(imageUrl);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '업로드에 실패했습니다.';
+      alert(`실패\n\n${errorMessage}`);
+    } finally {
+      setIsCheongryangLoading(false);
+    }
+  };
+
+  // 청량대운도전시관 텍스트 업데이트
+  const handleCheongryangTextUpdate = async () => {
+    try {
+      setIsCheongryangLoading(true);
+      await websiteAPI.updateTextSetting('cheongryangdae_building_description', cheongryangText);
+      alert('청량대운도전시관 소개가 업데이트되었습니다.');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '업데이트에 실패했습니다.';
+      alert(`실패\n\n${errorMessage}`);
+    } finally {
+      setIsCheongryangLoading(false);
     }
   };
 
@@ -369,6 +521,118 @@ export function WebsiteManagement() {
                 >
                   {isDirectorLoading ? '저장 중...' : '초대관장 정보 저장'}
                 </Button>
+              </div>
+            </div>
+
+            {/* 본관 건물 이미지 및 텍스트 관리 */}
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">군립청송야송미술관 (본관)</h2>
+              <p className="text-sm text-gray-600 mb-4">본관 건물 이미지와 소개 텍스트를 관리할 수 있습니다.</p>
+              <div className="space-y-4">
+                {mainBuildingImagePreview && (
+                  <div>
+                    <Label>현재 이미지 미리보기</Label>
+                    <div className="mt-2 border border-gray-300 rounded-md overflow-hidden">
+                      <img 
+                        src={mainBuildingImagePreview} 
+                        alt="본관 건물 이미지 미리보기" 
+                        className="w-full h-64 object-cover"
+                      />
+                    </div>
+                  </div>
+                )}
+                <div>
+                  <Label htmlFor="mainBuildingImage">건물 이미지 선택</Label>
+                  <Input
+                    id="mainBuildingImage"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleMainBuildingImageChange}
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">권장 크기: 1920x1080px</p>
+                </div>
+                <Button
+                  onClick={handleMainBuildingImageUpload}
+                  disabled={isMainBuildingLoading || !mainBuildingImage}
+                  className="bg-teal-700 hover:bg-teal-800 text-white"
+                >
+                  {isMainBuildingLoading ? '업로드 중...' : '본관 이미지 업로드'}
+                </Button>
+                
+                <div className="border-t pt-4 mt-4">
+                  <Label htmlFor="mainBuildingText">건물 소개</Label>
+                  <Textarea
+                    id="mainBuildingText"
+                    value={mainBuildingText}
+                    onChange={(e) => setMainBuildingText(e.target.value)}
+                    placeholder="군립청송야송미술관 소개 텍스트를 입력하세요"
+                    rows={4}
+                  />
+                  <Button
+                    onClick={handleMainBuildingTextUpdate}
+                    disabled={isMainBuildingLoading}
+                    className="bg-teal-700 hover:bg-teal-800 text-white mt-2"
+                  >
+                    {isMainBuildingLoading ? '저장 중...' : '본관 소개 저장'}
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* 청량대운도전시관 이미지 및 텍스트 관리 */}
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">청량대운도전시관</h2>
+              <p className="text-sm text-gray-600 mb-4">청량대운도전시관 건물 이미지와 소개 텍스트를 관리할 수 있습니다.</p>
+              <div className="space-y-4">
+                {cheongryangImagePreview && (
+                  <div>
+                    <Label>현재 이미지 미리보기</Label>
+                    <div className="mt-2 border border-gray-300 rounded-md overflow-hidden">
+                      <img 
+                        src={cheongryangImagePreview} 
+                        alt="청량대운도전시관 이미지 미리보기" 
+                        className="w-full h-64 object-cover"
+                      />
+                    </div>
+                  </div>
+                )}
+                <div>
+                  <Label htmlFor="cheongryangImage">건물 이미지 선택</Label>
+                  <Input
+                    id="cheongryangImage"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleCheongryangImageChange}
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">권장 크기: 1920x1080px</p>
+                </div>
+                <Button
+                  onClick={handleCheongryangImageUpload}
+                  disabled={isCheongryangLoading || !cheongryangImage}
+                  className="bg-teal-700 hover:bg-teal-800 text-white"
+                >
+                  {isCheongryangLoading ? '업로드 중...' : '청량대운도전시관 이미지 업로드'}
+                </Button>
+                
+                <div className="border-t pt-4 mt-4">
+                  <Label htmlFor="cheongryangText">건물 소개</Label>
+                  <Textarea
+                    id="cheongryangText"
+                    value={cheongryangText}
+                    onChange={(e) => setCheongryangText(e.target.value)}
+                    placeholder="청량대운도전시관 소개 텍스트를 입력하세요"
+                    rows={4}
+                  />
+                  <Button
+                    onClick={handleCheongryangTextUpdate}
+                    disabled={isCheongryangLoading}
+                    className="bg-teal-700 hover:bg-teal-800 text-white mt-2"
+                  >
+                    {isCheongryangLoading ? '저장 중...' : '청량대운도전시관 소개 저장'}
+                  </Button>
+                </div>
               </div>
             </div>
 

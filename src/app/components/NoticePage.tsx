@@ -55,6 +55,26 @@ export function NoticePage() {
     fetchNotices();
   }, [canManage]);
 
+  // 카테고리 표시 이름 변환
+  const getCategoryDisplayName = (category: string): string => {
+    const categoryMap: { [key: string]: string } = {
+      'GENERAL': '일반',
+      'EXHIBITION': '전시',
+      'MAINTENANCE': '시스템'
+    };
+    return categoryMap[category] || category;
+  };
+
+  // 상태 표시 이름 변환
+  const getStatusDisplayName = (status: string): string => {
+    const statusMap: { [key: string]: string } = {
+      'PUBLISHED': '게시됨',
+      'DRAFT': '임시저장',
+      'HIDDEN': '숨김'
+    };
+    return statusMap[status] || status;
+  };
+
   // 검색 및 필터링
   const filteredNotices = notices.filter(notice => {
     const matchesSearch = notice.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -88,7 +108,7 @@ export function NoticePage() {
     setCurrentPage(1);
   };
 
-  const handleCategoryChange = (category: '전체' | '일반' | '전시' | '교육' | '행사') => {
+  const handleCategoryChange = (category: '전체' | '일반' | '전시' | '시스템') => {
     setSelectedCategory(category);
     setCurrentPage(1);
   };
@@ -106,26 +126,6 @@ export function NoticePage() {
       const errorMessage = err instanceof Error ? err.message : '삭제에 실패했습니다.';
       alert(`실패\n\n${errorMessage}`);
     }
-  };
-
-  // 카테고리 표시 이름 변환
-  const getCategoryDisplayName = (category: string): string => {
-    const categoryMap: { [key: string]: string } = {
-      'GENERAL': '일반',
-      'EXHIBITION': '전시',
-      'MAINTENANCE': '시스템'
-    };
-    return categoryMap[category] || category;
-  };
-
-  // 상태 표시 이름 변환
-  const getStatusDisplayName = (status: string): string => {
-    const statusMap: { [key: string]: string } = {
-      'PUBLISHED': '게시됨',
-      'DRAFT': '임시저장',
-      'HIDDEN': '숨김'
-    };
-    return statusMap[status] || status;
   };
 
   return (

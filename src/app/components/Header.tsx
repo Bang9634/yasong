@@ -91,12 +91,6 @@ export function Header() {
                     대표 소장품
                   </button>
                   <button
-                    onClick={() => scrollToSection('programs')}
-                    className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors border-b border-gray-100"
-                  >
-                    교육 프로그램
-                  </button>
-                  <button
                     onClick={() => scrollToSection('shop')}
                     className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
                   >

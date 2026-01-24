@@ -21,4 +21,6 @@ public class CreateSouvenirRequest {
     @NotNull(message = "가격은 필수입니다")
     @Positive(message = "가격은 0보다 커야 합니다")
     private Double price;
+
+    private Boolean isPinned = false;
 }

@@ -20,6 +20,7 @@ public class SouvenirResponse {
     private String imageUrl;
     private String description;
     private Double price;
+    private Boolean isPinned;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -30,6 +31,7 @@ public class SouvenirResponse {
                 .imageUrl(souvenir.getImageUrl())
                 .description(souvenir.getDescription())
                 .price(souvenir.getPrice())
+                .isPinned(souvenir.getIsPinned())
                 .createdAt(souvenir.getCreatedAt())
                 .updatedAt(souvenir.getUpdatedAt())
                 .build();

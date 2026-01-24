@@ -32,7 +32,7 @@ public class SouvenirService {
 
     @Transactional(readOnly = true)
     public List<SouvenirResponse> getAllSouvenirs() {
-        return souvenirRepository.findAllByOrderByCreatedAtDesc().stream()
+        return souvenirRepository.findAllByOrderByIsPinnedDescCreatedAtDesc().stream()
                 .map(SouvenirResponse::from)
                 .collect(Collectors.toList());
     }
@@ -53,6 +53,7 @@ public class SouvenirService {
                 .name(request.getName())
                 .description(request.getDescription())
                 .price(request.getPrice())
+                .isPinned(request.getIsPinned() != null ? request.getIsPinned() : false)
                 .imageUrl(imageUrl)
                 .build();
 
@@ -84,6 +85,9 @@ public class SouvenirService {
         }
         if (request.getPrice() != null) {
             souvenir.setPrice(request.getPrice());
+        }
+        if (request.getIsPinned() != null) {
+            souvenir.setIsPinned(request.getIsPinned());
         }
 
         Souvenir updatedSouvenir = souvenirRepository.save(souvenir);

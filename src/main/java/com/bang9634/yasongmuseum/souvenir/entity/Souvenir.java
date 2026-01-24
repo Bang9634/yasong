@@ -39,6 +39,9 @@ public class Souvenir {
     @Column(nullable = false)
     private Double price;
 
+    @Column(nullable = false)
+    private Boolean isPinned = false;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

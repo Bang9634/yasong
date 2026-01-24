@@ -15,4 +15,6 @@ public class UpdateSouvenirRequest {
 
     @Positive(message = "가격은 0보다 커야 합니다")
     private Double price;
+
+    private Boolean isPinned;
 }

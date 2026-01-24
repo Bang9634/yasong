@@ -10,5 +10,5 @@ import com.bang9634.yasongmuseum.souvenir.entity.Souvenir;
 @Repository
 public interface SouvenirRepository extends JpaRepository<Souvenir, Long> {
     
-    List<Souvenir> findAllByOrderByCreatedAtDesc();
+    List<Souvenir> findAllByOrderByIsPinnedDescCreatedAtDesc();
 }

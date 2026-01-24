@@ -3,6 +3,7 @@ import { HomePage } from '@/app/components/HomePage';
 import { Login } from '@/app/components/Login';
 import { Signup } from '@/app/components/Signup';
 import { NoticePage } from '@/app/components/NoticePage';
+import { NoticeDetailPage } from '@/app/components/NoticeDetailPage';
 import { NoticeForm } from '@/app/components/NoticeForm';
 import { ExhibitionsPage } from '@/app/components/ExhibitionsPage';
 import { Profile } from '@/app/components/Profile';
@@ -21,6 +22,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/notice" element={<NoticePage />} />
+          <Route path="/notice/:id" element={<NoticeDetailPage />} />
           <Route path="/notice/write" element={<NoticeForm />} />
           <Route path="/exhibitions" element={<ExhibitionsPage />} />
           <Route path="/profile" element={<Profile />} />

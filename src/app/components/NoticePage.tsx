@@ -27,7 +27,6 @@ export function NoticePage() {
   const { user } = useAuth();
   const [notices, setNotices] = useState<NoticeItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedNotice, setSelectedNotice] = useState<NoticeItem | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<'전체' | '일반' | '전시' | '공모전'| '시스템'>('전체');
   const [currentPage, setCurrentPage] = useState(1);
@@ -135,9 +134,8 @@ export function NoticePage() {
       
       {/* 메인 컨텐츠 - 헤더 높이만큼 상단 여백 추가 */}
       <div className="pt-24">
-        {!selectedNotice ? (
-          // 공지사항 목록
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* 공지사항 목록 */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             {/* 페이지 헤더 */}
             <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
@@ -213,10 +211,7 @@ export function NoticePage() {
                       <div className="flex items-start justify-between">
                         <div 
                           className="flex-1 cursor-pointer"
-                          onClick={() => {
-                            setSelectedNotice(notice);
-                            window.scrollTo(0, 0);
-                          }}
+                          onClick={() => navigate(`/notice/${notice.id}`)}
                         >
                           <div className="flex items-center gap-2 mb-2">
                             {notice.isPinned && (
@@ -324,69 +319,10 @@ export function NoticePage() {
               </div>
             )}
           </div>
-        ) : (
-          // 공지사항 상세보기
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              {/* 헤더 */}
-              <div className="bg-teal-700 text-white p-6">
-                <div className="flex items-center gap-2 mb-3">
-                  {selectedNotice.isPinned && (
-                    <span className="bg-red-500 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
-                      <Pin className="w-3 h-3" />
-                      고정
-                    </span>
-                  )}
-                  <span className="bg-teal-600 text-white text-xs px-2 py-1 rounded">
-                    {getCategoryDisplayName(selectedNotice.category)}
-                  </span>
-                  {canManage && selectedNotice.status !== 'PUBLISHED' && (
-                    <span className="bg-gray-500 text-white text-xs px-2 py-1 rounded">
-                      {getStatusDisplayName(selectedNotice.status)}
-                    </span>
-                  )}
-                </div>
-                <h1 className="text-2xl font-bold mb-3">{selectedNotice.title}</h1>
-                <div className="flex items-center text-teal-100 text-sm gap-4">
-                  <span>작성자: {selectedNotice.authorName}</span>
-                  <span>작성일: {new Date(selectedNotice.createdAt).toLocaleDateString('ko-KR')}</span>
-                  <span>조회수: {selectedNotice.viewCount}</span>
-                </div>
-              </div>
-
-              {/* 본문 */}
-              <div className="p-6">
-                <div className="prose max-w-none">
-                  <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                    {selectedNotice.content}
-                  </p>
-                </div>
-              </div>
-
-              {/* 하단 버튼 */}
-              <div className="border-t border-gray-200 p-6 flex gap-3">
-                <button
-                  onClick={() => {
-                    setSelectedNotice(null);
-                    window.scrollTo(0, 0);
-                  }}
-                  className="px-6 py-2 bg-teal-700 text-white rounded-md hover:bg-teal-800 transition-colors"
-                >
-                  목록으로
-                </button>
-                <Link
-                  to="/"
-                  className="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
-                >
-                  홈으로
-                </Link>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+        </div>
 
       <Footer />
     </div>
   );
 }
+

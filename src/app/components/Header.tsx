@@ -86,6 +86,12 @@ export function Header() {
                 </div>
               )}
             </div>
+            <button
+              onClick={() => scrollToSection('contest')}
+              className="text-gray-800 hover:text-teal-700 transition-colors"
+            >
+              미술대전
+            </button>
             {/* 미술관 소개 드롭다운 */}
             <div className="relative group">
               <button

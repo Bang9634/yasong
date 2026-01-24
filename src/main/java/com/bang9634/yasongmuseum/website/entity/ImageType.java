@@ -10,8 +10,10 @@ import lombok.Getter;
 @Getter
 public enum ImageType {
     HERO("hero_image_url", "hero", "hero-", "Hero section background image"),
-    DIRECTOR("director_image_url", "director", "director-", "Director's profile image");
-    
+    DIRECTOR("director_image_url", "director", "director-", "Director's profile image"),
+    MAIN_BUILDING("main_building_image_url", "main_building", "main-building-", "Main building image"),
+    CHEONGRYANGDAE_BUILDING("cheongryangdae_building_image_url", "cheongryangdae_building", "cheongryangdae-building-", "Cheongryangdae building image");
+
     private final String settingKey;
     private final String subDirectory;
     private final String filePrefix;

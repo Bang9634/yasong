@@ -22,7 +22,6 @@ export function HomePage() {
         <About />
         <Collections />
         <Exhibitions />
-        <Programs />
         <MuseumShop />
         <VisitInfo />
         <Location />

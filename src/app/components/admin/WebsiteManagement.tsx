@@ -59,6 +59,12 @@ export function WebsiteManagement() {
   const [newHistoryDescription, setNewHistoryDescription] = useState<string>('');
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
 
+  // 시설 규모
+  const [facilitySiteArea, setFacilitySiteArea] = useState<string>('');
+  const [facilityExhibitionRooms, setFacilityExhibitionRooms] = useState<string>('');
+  const [facilityCollectionCount, setFacilityCollectionCount] = useState<string>('');
+  const [isFacilityLoading, setIsFacilityLoading] = useState(false);
+
   // 권한 확인
   useEffect(() => {
     if (loading) return;
@@ -144,6 +150,16 @@ export function WebsiteManagement() {
             console.error('연혁 데이터 파싱 실패:', e);
           }
         }
+
+        // 시설 규모 조회
+        const [siteAreaData, exhibitionRoomsData, collectionCountData] = await Promise.all([
+          websiteAPI.getTextSetting('facility_site_area'),
+          websiteAPI.getTextSetting('facility_exhibition_rooms'),
+          websiteAPI.getTextSetting('facility_collection_count'),
+        ]);
+        setFacilitySiteArea(siteAreaData.value || '');
+        setFacilityExhibitionRooms(exhibitionRoomsData.value || '');
+        setFacilityCollectionCount(collectionCountData.value || '');
 
       } catch (err) {
         console.error('데이터 로드 실패:', err);
@@ -429,6 +445,24 @@ export function WebsiteManagement() {
       alert(`실패\n\n${errorMessage}`);
     } finally {
       setIsHistoryLoading(false);
+    }
+  };
+
+  // 시설 규모 저장
+  const handleSaveFacility = async () => {
+    try {
+      setIsFacilityLoading(true);
+      await Promise.all([
+        websiteAPI.updateTextSetting('facility_site_area', facilitySiteArea),
+        websiteAPI.updateTextSetting('facility_exhibition_rooms', facilityExhibitionRooms),
+        websiteAPI.updateTextSetting('facility_collection_count', facilityCollectionCount),
+      ]);
+      alert('시설 규모 정보가 저장되었습니다.');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '저장에 실패했습니다.';
+      alert(`실패\n\n${errorMessage}`);
+    } finally {
+      setIsFacilityLoading(false);
     }
   };
 
@@ -792,6 +826,61 @@ export function WebsiteManagement() {
               >
                 {isHistoryLoading ? '저장 중...' : '연혁 저장'}
               </Button>
+            </div>
+
+            {/* 시설 규모 관리 */}
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">시설 규모 정보</h2>
+              <p className="text-sm text-gray-600 mb-4">미술관 연혁 하단에 표시되는 시설 규모 정보를 관리할 수 있습니다.</p>
+              
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="facilitySiteArea">전체 부지 면적 (㎡ 단위는 자동 추가)</Label>
+                  <Input
+                    id="facilitySiteArea"
+                    type="text"
+                    value={facilitySiteArea}
+                    onChange={(e) => setFacilitySiteArea(e.target.value)}
+                    placeholder="예: 3,500"
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">숫자만 입력하세요 (단위 ㎡는 자동으로 표시됩니다)</p>
+                </div>
+
+                <div>
+                  <Label htmlFor="facilityExhibitionRooms">전시실 및 특별실 ('개' 단위는 자동 추가)</Label>
+                  <Input
+                    id="facilityExhibitionRooms"
+                    type="text"
+                    value={facilityExhibitionRooms}
+                    onChange={(e) => setFacilityExhibitionRooms(e.target.value)}
+                    placeholder="예: 6"
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">숫자만 입력하세요 (단위 '개'는 자동으로 표시됩니다)</p>
+                </div>
+
+                <div>
+                  <Label htmlFor="facilityCollectionCount">소장품 수 ('점' 단위는 자동 추가)</Label>
+                  <Input
+                    id="facilityCollectionCount"
+                    type="text"
+                    value={facilityCollectionCount}
+                    onChange={(e) => setFacilityCollectionCount(e.target.value)}
+                    placeholder="예: 420"
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">숫자만 입력하세요 (단위 '점'은 자동으로 표시됩니다)</p>
+                </div>
+
+                <Button
+                  onClick={handleSaveFacility}
+                  disabled={isFacilityLoading}
+                  className="bg-teal-700 hover:bg-teal-800 text-white w-full"
+                >
+                  {isFacilityLoading ? '저장 중...' : '시설 규모 저장'}
+                </Button>
+              </div>
             </div>
 
 

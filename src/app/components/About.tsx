@@ -25,15 +25,22 @@ export function About() {
     { year: '2026.03', description: '이원좌 화백 탄생 100주년 특별전 개최 예정' },
   ]);
 
+  const [facilitySiteArea, setFacilitySiteArea] = useState<string>('3,500');
+  const [facilityExhibitionRooms, setFacilityExhibitionRooms] = useState<string>('6');
+  const [facilityCollectionCount, setFacilityCollectionCount] = useState<string>('420');
+
   useEffect(() => {
     const fetchBuildingData = async () => {
       try {
-        const [mainImageData, mainTextData, cheongryangImageData, cheongryangTextData, historyData] = await Promise.all([
+        const [mainImageData, mainTextData, cheongryangImageData, cheongryangTextData, historyData, siteAreaData, exhibitionRoomsData, collectionCountData] = await Promise.all([
           websiteAPI.getImage('main_building'),
           websiteAPI.getTextSetting('main_building_description'),
           websiteAPI.getImage('cheongryangdae_building'),
           websiteAPI.getTextSetting('cheongryangdae_building_description'),
           websiteAPI.getTextSetting('museum_history'),
+          websiteAPI.getTextSetting('facility_site_area'),
+          websiteAPI.getTextSetting('facility_exhibition_rooms'),
+          websiteAPI.getTextSetting('facility_collection_count'),
         ]);
 
         if (mainImageData.imageUrl) {
@@ -62,6 +69,10 @@ export function About() {
             console.error('연혁 데이터 파싱 실패:', e);
           }
         }
+
+        if (siteAreaData.value) setFacilitySiteArea(siteAreaData.value);
+        if (exhibitionRoomsData.value) setFacilityExhibitionRooms(exhibitionRoomsData.value);
+        if (collectionCountData.value) setFacilityCollectionCount(collectionCountData.value);
       } catch (err) {
         console.error('건물 정보 로드 실패:', err);
       }
@@ -179,15 +190,15 @@ export function About() {
         {/* 시설 규모 */}
         <div className="grid sm:grid-cols-3 gap-8 mt-12">
           <div className="text-center p-8 bg-teal-700 text-white rounded-lg shadow-lg">
-            <div className="text-5xl mb-4">3,500㎡</div>
+            <div className="text-5xl mb-4">{facilitySiteArea}㎡</div>
             <div className="text-xl">전체 부지 면적</div>
           </div>
           <div className="text-center p-8 bg-teal-700 text-white rounded-lg shadow-lg">
-            <div className="text-5xl mb-4">6개</div>
+            <div className="text-5xl mb-4">{facilityExhibitionRooms}개</div>
             <div className="text-xl">전시실 및 특별실</div>
           </div>
           <div className="text-center p-8 bg-teal-700 text-white rounded-lg shadow-lg">
-            <div className="text-5xl mb-4">420점</div>
+            <div className="text-5xl mb-4">{facilityCollectionCount}점</div>
             <div className="text-xl">소장품 수</div>
           </div>
         </div>

@@ -8,6 +8,7 @@ export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAboutDropdownOpen, setIsAboutDropdownOpen] = useState(false);
   const [isNoticeDropdownOpen, setIsNoticeDropdownOpen] = useState(false);
+  const [isExhibitionDropdownOpen, setIsExhibitionDropdownOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const isHomePage = location.pathname === '/';
@@ -131,12 +132,36 @@ export function Header() {
               )}
             </div>
 
-            <button
-              onClick={() => scrollToSection('exhibitions')}
-              className="text-gray-800 hover:text-teal-700 transition-colors"
-            >
-              전시 일정
-            </button>
+            {/* 전시일정 드롭다운 */}
+            <div className="relative group">
+              <button
+                className="text-gray-800 hover:text-teal-700 transition-colors flex items-center py-2"
+                onClick={() => scrollToSection('exhibitions')}
+                onMouseEnter={() => setIsExhibitionDropdownOpen(true)}
+                onMouseLeave={() => setIsExhibitionDropdownOpen(false)}
+              >
+                전시 일정
+                <ChevronDown className="ml-1 w-4 h-4" />
+              </button>
+              {isExhibitionDropdownOpen && (
+                <div
+                  className="absolute top-full left-0 mt-0 w-48 bg-white shadow-lg border border-teal-100 rounded-b-md"
+                  onMouseEnter={() => setIsExhibitionDropdownOpen(true)}
+                  onMouseLeave={() => setIsExhibitionDropdownOpen(false)}
+                >
+                  <button
+                    onClick={() => {
+                      navigate('/exhibitions');
+                      setIsMenuOpen(false);
+                      setIsExhibitionDropdownOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
+                  >
+                    전시일정 목록
+                  </button>
+                </div>
+              )}
+            </div>
             <button
               onClick={() => scrollToSection('visit')}
               className="text-gray-800 hover:text-teal-700 transition-colors"
@@ -265,18 +290,42 @@ export function Header() {
                 뮤지엄샵
               </button>
             </div>
-            <button
-              onClick={() => scrollToSection('notice')}
-              className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors rounded"
-            >
-              공지사항
-            </button>
-            <button
-              onClick={() => scrollToSection('exhibitions')}
-              className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors rounded"
-            >
-              전시 일정
-            </button>
+            <div className="border-b border-teal-100 pb-2 mb-2">
+              <div className="px-4 py-2 text-sm text-teal-800">공지사항</div>
+              <button
+                onClick={() => scrollToSection('notice')}
+                className="block w-full text-left px-8 py-2 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
+              >
+                공지사항 보기
+              </button>
+              <button
+                onClick={() => {
+                  navigate('/notice');
+                  setIsMenuOpen(false);
+                }}
+                className="block w-full text-left px-8 py-2 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
+              >
+                공지사항 목록
+              </button>
+            </div>
+            <div className="border-b border-teal-100 pb-2 mb-2">
+              <div className="px-4 py-2 text-sm text-teal-800">전시 일정</div>
+              <button
+                onClick={() => scrollToSection('exhibitions')}
+                className="block w-full text-left px-8 py-2 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
+              >
+                전시 일정 보기
+              </button>
+              <button
+                onClick={() => {
+                  navigate('/exhibitions');
+                  setIsMenuOpen(false);
+                }}
+                className="block w-full text-left px-8 py-2 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
+              >
+                전시일정 목록
+              </button>
+            </div>
             <button
               onClick={() => scrollToSection('visit')}
               className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors rounded"

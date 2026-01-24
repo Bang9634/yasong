@@ -269,7 +269,145 @@ export const noticeAPI = {
     });
   },
 };
+/**
+ * Exhibition API
+ */
+export const exhibitionAPI = {
+  /**
+   * 전체 전시 조회 (공개)
+   */
+  getAllExhibitions: async () => {
+    return apiCall('/api/exhibitions', {
+      method: 'GET'
+    });
+  },
 
+  /**
+   * 현재 전시 조회 (공개)
+   */
+  getOngoingExhibitions: async () => {
+    return apiCall('/api/exhibitions/ongoing', {
+      method: 'GET'
+    });
+  },
+
+  /**
+   * 예정 전시 조회 (공개)
+   */
+  getUpcomingExhibitions: async () => {
+    return apiCall('/api/exhibitions/upcoming', {
+      method: 'GET'
+    });
+  },
+
+  /**
+   * 지난 전시 조회 (공개)
+   */
+  getPastExhibitions: async () => {
+    return apiCall('/api/exhibitions/past', {
+      method: 'GET'
+    });
+  },
+
+  /**
+   * 개별 전시 조회 (공개)
+   */
+  getExhibitionById: async (id: string) => {
+    return apiCall(`/api/exhibitions/${id}`, {
+      method: 'GET'
+    });
+  },
+
+  /**
+   * 전시 생성 (관리자)
+   */
+  createExhibition: async (data: {
+    title: string;
+    artist: string;
+    location: string;
+    description: string;
+    startDate: string;
+    endDate: string;
+  }, imageFile: File) => {
+    const formData = new FormData();
+    
+    // JSON을 File 객체로 변환 (Blob 대신 File 사용)
+    const jsonFile = new File(
+      [JSON.stringify(data)], 
+      'data.json', 
+      { type: 'application/json' }
+    );
+    formData.append('data', jsonFile);
+    formData.append('image', imageFile);
+
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/api/management/exhibitions`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Failed to create exhibition' }));
+      throw new Error(error.message || 'Failed to create exhibition');
+    }
+
+    return await response.json();
+  },
+
+  /**
+   * 전시 수정 (관리자)
+   */
+  updateExhibition: async (id: number, data: {
+    title: string;
+    artist: string;
+    location: string;
+    description: string;
+    startDate: string;
+    endDate: string;
+  }, imageFile?: File) => {
+    const formData = new FormData();
+    
+    // JSON을 File 객체로 변환 (Blob 대신 File 사용)
+    const jsonFile = new File(
+      [JSON.stringify(data)], 
+      'data.json', 
+      { type: 'application/json' }
+    );
+    formData.append('data', jsonFile);
+    
+    if (imageFile) {
+      formData.append('image', imageFile);
+    }
+
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/api/management/exhibitions/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Failed to update exhibition' }));
+      throw new Error(error.message || 'Failed to update exhibition');
+    }
+
+    return await response.json();
+  },
+
+  /**
+   * 전시 삭제 (관리자)
+   */
+  deleteExhibition: async (id: number) => {
+    return apiCall(`/api/management/exhibitions/${id}`, {
+      method: 'DELETE'
+    });
+  },
+};
 /**
  * 홈페이지 관리 API (ADMIN, MANAGER)
  */
@@ -446,5 +584,7 @@ export const collectionAPI = {
   },
 
 };
+
+
 
 export default apiCall;

@@ -7,10 +7,10 @@ import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { Textarea } from '@/app/components/ui/textarea';
 import { useAuth } from '@/context/AuthContext';
-import { websiteAPI, collectionAPI } from '@/utils/api';
+import { websiteAPI, collectionAPI, exhibitionAPI } from '@/utils/api';
 import { isManagerOrAbove } from '@/utils/auth';
 import { resizeImage } from '@/utils/imageUtils';
-import { Plus, Trash2, Edit, Upload } from 'lucide-react';
+import { Plus, Trash2, Edit, Upload, Calendar } from 'lucide-react';
 
 interface HistoryItem {
   year: string;
@@ -25,6 +25,18 @@ interface Collection {
   imageUrl: string;
   description: string;
   displayOrder: number;
+}
+
+interface Exhibition {
+  id: number;
+  title: string;
+  artist: string;
+  location: string;
+  imageUrl: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  status: 'ONGOING' | 'UPCOMING' | 'PAST';
 }
 
 export function WebsiteManagement() {
@@ -89,6 +101,22 @@ export function WebsiteManagement() {
   });
   const [collectionImage, setCollectionImage] = useState<File | null>(null);
   const [collectionImagePreview, setCollectionImagePreview] = useState<string>('');
+
+  // 전시 관리
+  const [exhibitions, setExhibitions] = useState<Exhibition[]>([]);
+  const [isExhibitionLoading, setIsExhibitionLoading] = useState(false);
+  const [editingExhibition, setEditingExhibition] = useState<Exhibition | null>(null);
+  const [showExhibitionForm, setShowExhibitionForm] = useState(false);
+  const [exhibitionForm, setExhibitionForm] = useState({
+    title: '',
+    artist: '',
+    location: '',
+    description: '',
+    startDate: '',
+    endDate: '',
+  });
+  const [exhibitionImage, setExhibitionImage] = useState<File | null>(null);
+  const [exhibitionImagePreview, setExhibitionImagePreview] = useState<string>('');
 
   // 권한 확인
   useEffect(() => {
@@ -189,6 +217,10 @@ export function WebsiteManagement() {
         // 소장품 조회
         const collectionsData = await collectionAPI.getAllCollections();
         setCollections(collectionsData.sort((a, b) => a.displayOrder - b.displayOrder));
+
+        // 전시 조회
+        const exhibitionsData = await exhibitionAPI.getAllExhibitions();
+        setExhibitions(exhibitionsData);
 
       } catch (err) {
         console.error('데이터 로드 실패:', err);
@@ -638,6 +670,196 @@ export function WebsiteManagement() {
       alert(`실패\n\n${errorMessage}`);
     } finally {
       setIsCollectionLoading(false);
+    }
+  };
+
+  // 전시 이미지 선택 및 리사이징
+  const handleExhibitionImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const resizedImage = await resizeImage(file, 1200, 800);
+      setExhibitionImage(resizedImage);
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setExhibitionImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(resizedImage);
+    } catch (err) {
+      console.error('이미지 리사이징 실패:', err);
+      alert('이미지 처리에 실패했습니다.');
+    }
+  };
+
+  // 전시 추가 폼 열기
+  const handleOpenAddExhibitionForm = () => {
+    setEditingExhibition(null);
+    setExhibitionForm({
+      title: '',
+      artist: '',
+      location: '',
+      description: '',
+      startDate: '',
+      endDate: '',
+    });
+    setExhibitionImage(null);
+    setExhibitionImagePreview('');
+    setShowExhibitionForm(true);
+  };
+
+  // 전시 수정 폼 열기
+  const handleOpenEditExhibitionForm = (exhibition: Exhibition) => {
+    setEditingExhibition(exhibition);
+    
+    // LocalDateTime을 date input 형식으로 변환 (YYYY-MM-DD)
+    const startDate = new Date(exhibition.startDate).toISOString().slice(0, 10);
+    const endDate = new Date(exhibition.endDate).toISOString().slice(0, 10);
+    
+    setExhibitionForm({
+      title: exhibition.title,
+      artist: exhibition.artist,
+      location: exhibition.location,
+      description: exhibition.description,
+      startDate: startDate,
+      endDate: endDate,
+    });
+    setExhibitionImage(null);
+    
+    const imageUrl = exhibition.imageUrl.startsWith('http') 
+      ? exhibition.imageUrl 
+      : `${import.meta.env.VITE_API_BASE_URL || ''}${exhibition.imageUrl}`;
+    setExhibitionImagePreview(imageUrl);
+    setShowExhibitionForm(true);
+  };
+
+  // 전시 폼 취소
+  const handleCancelExhibitionForm = () => {
+    setShowExhibitionForm(false);
+    setEditingExhibition(null);
+    setExhibitionForm({
+      title: '',
+      artist: '',
+      location: '',
+      description: '',
+      startDate: '',
+      endDate: '',
+    });
+    setExhibitionImage(null);
+    setExhibitionImagePreview('');
+  };
+
+  // 전시 생성
+  const handleCreateExhibition = async () => {
+    if (!exhibitionForm.title || !exhibitionForm.artist || !exhibitionForm.location || 
+        !exhibitionForm.description || !exhibitionForm.startDate || !exhibitionForm.endDate) {
+      alert('모든 필드를 입력해주세요.');
+      return;
+    }
+    if (!exhibitionImage) {
+      alert('이미지를 선택해주세요.');
+      return;
+    }
+
+    // 날짜 검증
+    if (new Date(exhibitionForm.startDate) >= new Date(exhibitionForm.endDate)) {
+      alert('종료일은 시작일보다 늦어야 합니다.');
+      return;
+    }
+
+    try {
+      setIsExhibitionLoading(true);
+      
+      // date 형식을 ISO 8601 형식으로 변환 (시작일: 00:00:00, 종료일: 23:59:59)
+      const startDateTime = new Date(exhibitionForm.startDate + 'T00:00:00');
+      const endDateTime = new Date(exhibitionForm.endDate + 'T23:59:59');
+      
+      const formData = {
+        ...exhibitionForm,
+        startDate: startDateTime.toISOString(),
+        endDate: endDateTime.toISOString(),
+      };
+      
+      await exhibitionAPI.createExhibition(formData, exhibitionImage);
+      
+      // 목록 새로고침
+      const updated = await exhibitionAPI.getAllExhibitions();
+      setExhibitions(updated);
+      
+      alert('전시가 추가되었습니다.');
+      handleCancelExhibitionForm();
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '추가에 실패했습니다.';
+      alert(`실패\n\n${errorMessage}`);
+    } finally {
+      setIsExhibitionLoading(false);
+    }
+  };
+
+  // 전시 수정
+  const handleUpdateExhibition = async () => {
+    if (!editingExhibition) return;
+    
+    if (!exhibitionForm.title || !exhibitionForm.artist || !exhibitionForm.location || 
+        !exhibitionForm.description || !exhibitionForm.startDate || !exhibitionForm.endDate) {
+      alert('모든 필드를 입력해주세요.');
+      return;
+    }
+
+    // 날짜 검증
+    if (new Date(exhibitionForm.startDate) >= new Date(exhibitionForm.endDate)) {
+      alert('종료일은 시작일보다 늦어야 합니다.');
+      return;
+    }
+
+    try {
+      setIsExhibitionLoading(true);
+      
+      // date 형식을 ISO 8601 형식으로 변환 (시작일: 00:00:00, 종료일: 23:59:59)
+      const startDateTime = new Date(exhibitionForm.startDate + 'T00:00:00');
+      const endDateTime = new Date(exhibitionForm.endDate + 'T23:59:59');
+      
+      const formData = {
+        ...exhibitionForm,
+        startDate: startDateTime.toISOString(),
+        endDate: endDateTime.toISOString(),
+      };
+      
+      await exhibitionAPI.updateExhibition(editingExhibition.id, formData, exhibitionImage || undefined);
+      
+      // 목록 새로고침
+      const updated = await exhibitionAPI.getAllExhibitions();
+      setExhibitions(updated);
+      
+      alert('전시가 수정되었습니다.');
+      handleCancelExhibitionForm();
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '수정에 실패했습니다.';
+      alert(`실패\n\n${errorMessage}`);
+    } finally {
+      setIsExhibitionLoading(false);
+    }
+  };
+
+  // 전시 삭제
+  const handleDeleteExhibition = async (id: number) => {
+    if (!confirm('이 전시를 삭제하시겠습니까?')) return;
+
+    try {
+      setIsExhibitionLoading(true);
+      await exhibitionAPI.deleteExhibition(id);
+      
+      // 목록 새로고침
+      const updated = await exhibitionAPI.getAllExhibitions();
+      setExhibitions(updated);
+      
+      alert('전시가 삭제되었습니다.');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '삭제에 실패했습니다.';
+      alert(`실패\n\n${errorMessage}`);
+    } finally {
+      setIsExhibitionLoading(false);
     }
   };
 
@@ -1261,7 +1483,6 @@ export function WebsiteManagement() {
                 </div>
               )}
             </div>
-
 
           </div>
         </div>

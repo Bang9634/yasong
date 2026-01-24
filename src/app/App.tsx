@@ -4,6 +4,7 @@ import { Login } from '@/app/components/Login';
 import { Signup } from '@/app/components/Signup';
 import { NoticePage } from '@/app/components/NoticePage';
 import { NoticeForm } from '@/app/components/NoticeForm';
+import { ExhibitionsPage } from '@/app/components/ExhibitionsPage';
 import { Profile } from '@/app/components/Profile';
 import { UserManagement } from '@/app/components/admin/UserManagement';
 import { WebsiteManagement } from '@/app/components/admin/WebsiteManagement';
@@ -21,6 +22,7 @@ export default function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/notice" element={<NoticePage />} />
           <Route path="/notice/write" element={<NoticeForm />} />
+          <Route path="/exhibitions" element={<ExhibitionsPage />} />
           <Route path="/profile" element={<Profile />} />
           
           {/* 관리자 페이지 */}

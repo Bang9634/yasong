@@ -56,11 +56,41 @@ export function Header() {
 
           {/* 데스크톱 네비게이션 */}
           <nav className="hidden lg:flex space-x-8">
+            {/* 공지사항 드롭다운 */}
+            <div className="relative group">
+              <button
+                className="text-gray-800 hover:text-teal-700 transition-colors flex items-center py-2"
+                onClick={() => scrollToSection('notice')}
+                onMouseEnter={() => setIsNoticeDropdownOpen(true)}
+                onMouseLeave={() => setIsNoticeDropdownOpen(false)}
+              >
+                공지사항
+                <ChevronDown className="ml-1 w-4 h-4" />
+              </button>
+              {isNoticeDropdownOpen && (
+                <div
+                  className="absolute top-full left-0 mt-0 w-48 bg-white shadow-lg border border-teal-100 rounded-b-md"
+                  onMouseEnter={() => setIsNoticeDropdownOpen(true)}
+                  onMouseLeave={() => setIsNoticeDropdownOpen(false)}
+                >
+                  <button
+                    onClick={() => {
+                      navigate('/notice');
+                      setIsMenuOpen(false);
+                      setIsNoticeDropdownOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
+                  >
+                    공지사항 목록
+                  </button>
+                </div>
+              )}
+            </div>
             {/* 미술관 소개 드롭다운 */}
             <div className="relative group">
               <button
                 className="text-gray-800 hover:text-teal-700 transition-colors flex items-center py-2"
-                onClick={() => scrollToSection('hero')}
+                onClick={() => scrollToSection('director')}
                 onMouseEnter={() => setIsAboutDropdownOpen(true)}
                 onMouseLeave={() => setIsAboutDropdownOpen(false)}
               >
@@ -101,36 +131,7 @@ export function Header() {
               )}
             </div>
 
-            {/* 공지사항 드롭다운 */}
-            <div className="relative group">
-              <button
-                className="text-gray-800 hover:text-teal-700 transition-colors flex items-center py-2"
-                onClick={() => scrollToSection('notice')}
-                onMouseEnter={() => setIsNoticeDropdownOpen(true)}
-                onMouseLeave={() => setIsNoticeDropdownOpen(false)}
-              >
-                공지사항
-                <ChevronDown className="ml-1 w-4 h-4" />
-              </button>
-              {isNoticeDropdownOpen && (
-                <div
-                  className="absolute top-full left-0 mt-0 w-48 bg-white shadow-lg border border-teal-100 rounded-b-md"
-                  onMouseEnter={() => setIsNoticeDropdownOpen(true)}
-                  onMouseLeave={() => setIsNoticeDropdownOpen(false)}
-                >
-                  <button
-                    onClick={() => {
-                      navigate('/notice');
-                      setIsMenuOpen(false);
-                      setIsNoticeDropdownOpen(false);
-                    }}
-                    className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
-                  >
-                    공지사항 목록
-                  </button>
-                </div>
-              )}
-            </div>
+            
 
             {/* 전시일정 드롭다운 */}
             <div className="relative group">

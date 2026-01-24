@@ -74,6 +74,9 @@ export function MuseumShop() {
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
             이원좌 화백의 예술 세계를 담은 다양한 문화상품을 만나보세요
           </p>
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+            * 청량대운도전시관에서 구매하실 수 있습니다
+          </p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
@@ -109,59 +112,6 @@ export function MuseumShop() {
               </div>
             </div>
           ))}
-        </div>
-
-        {/* 뮤지엄샵 안내 */}
-        <div className="grid md:grid-cols-2 gap-8">
-          <div className="bg-white p-8 rounded-lg shadow-lg border border-teal-100">
-            <h3 className="text-2xl mb-6 text-teal-900 border-b-2 border-teal-200 pb-3">운영 안내</h3>
-            <div className="space-y-4 text-gray-700">
-              <div className="flex justify-between border-b border-gray-200 pb-2">
-                <span className="text-teal-700">위치</span>
-                <span>미술관 1층 로비</span>
-              </div>
-              <div className="flex justify-between border-b border-gray-200 pb-2">
-                <span className="text-teal-700">운영 시간</span>
-                <span>10:00 - 18:00</span>
-              </div>
-              <div className="flex justify-between border-b border-gray-200 pb-2">
-                <span className="text-teal-700">휴무일</span>
-                <span>매주 월요일</span>
-              </div>
-              <div className="flex justify-between border-b border-gray-200 pb-2">
-                <span className="text-teal-700">결제 방법</span>
-                <span>현금, 카드</span>
-              </div>
-              <div className="pt-2">
-                <p className="text-sm text-gray-600">
-                  ※ 관람권 미소지 시에도 뮤지엄샵 이용 가능
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-br from-teal-700 to-teal-600 text-white p-8 rounded-lg shadow-lg">
-            <h3 className="text-2xl mb-6 border-b-2 border-amber-400 pb-3">온라인 구매</h3>
-            <div className="space-y-4 mb-6">
-              <p className="leading-relaxed">
-                방문이 어려우신 분들을 위해 온라인 쇼핑몰을 준비 중입니다.
-              </p>
-              <div className="bg-teal-800 p-4 rounded-lg">
-                <p className="text-amber-200 mb-2">이메일 문의</p>
-                <p>shop@yasong-museum.kr</p>
-              </div>
-              <div className="bg-teal-800 p-4 rounded-lg">
-                <p className="text-amber-200 mb-2">전화 문의</p>
-                <p>054-870-6001</p>
-                <p className="text-sm text-teal-200 mt-1">(평일 10:00-17:00)</p>
-              </div>
-            </div>
-            <div className="text-sm text-teal-100">
-              <p>• 택배 발송 가능 (배송비 별도)</p>
-              <p>• 대량 구매 시 할인 혜택</p>
-              <p>• 기업 및 단체 주문 환영</p>
-            </div>
-          </div>
         </div>
       </div>
     </section>

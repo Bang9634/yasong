@@ -82,7 +82,7 @@ export function Exhibitions() {
   const allExhibitions = [...currentExhibitions, ...upcomingExhibitions];
 
   return (
-    <section id="exhibitions" className="py-20 bg-gradient-to-b from-teal-50 to-white">
+    <section id="exhibitions" className="py-20 bg-gradient-to-b from-white to-teal-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl sm:text-5xl mb-4 text-teal-900">전시 일정</h2>

@@ -39,6 +39,7 @@ public class SecurityConfig {
             .requestMatchers("/api/notices/**").permitAll() // permit public notice fetching
             .requestMatchers("/api/website/settings/**").permitAll() // permit public website settings fetching
             .requestMatchers("/api/collections/**").permitAll() // permit public collections fetching
+            .requestMatchers("/api/exhibitions/**").permitAll() // permit public exhibitions fetching
             .requestMatchers("/uploads/**").permitAll() // permit uploaded files access
 
             // Admin and Manager endpoints

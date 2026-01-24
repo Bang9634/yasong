@@ -36,7 +36,7 @@ public class Collection {
     @Column(nullable = false, length = 100)
     private String size;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = 1000)
     private String imageUrl;
 
     @Column(nullable = false, columnDefinition = "TEXT")

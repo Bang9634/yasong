@@ -29,7 +29,7 @@ export function NoticePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedNotice, setSelectedNotice] = useState<NoticeItem | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<'전체' | '일반' | '전시' | '시스템'>('전체');
+  const [selectedCategory, setSelectedCategory] = useState<'전체' | '일반' | '전시' | '공모전'| '시스템'>('전체');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -60,6 +60,7 @@ export function NoticePage() {
     const categoryMap: { [key: string]: string } = {
       'GENERAL': '일반',
       'EXHIBITION': '전시',
+      'CONTEST': '공모전',
       'MAINTENANCE': '시스템'
     };
     return categoryMap[category] || category;
@@ -108,7 +109,7 @@ export function NoticePage() {
     setCurrentPage(1);
   };
 
-  const handleCategoryChange = (category: '전체' | '일반' | '전시' | '시스템') => {
+  const handleCategoryChange = (category: '전체' | '일반' | '전시' | '공모전' | '시스템') => {
     setSelectedCategory(category);
     setCurrentPage(1);
   };
@@ -179,7 +180,7 @@ export function NoticePage() {
 
                 {/* 카테고리 필터 */}
                 <div className="flex gap-2 flex-wrap">
-                  {(['전체', '일반', '전시', '시스템'] as const).map((category) => (
+                  {(['전체', '일반', '전시', '공모전', '시스템'] as const).map((category) => (
                     <button
                       key={category}
                       onClick={() => handleCategoryChange(category)}

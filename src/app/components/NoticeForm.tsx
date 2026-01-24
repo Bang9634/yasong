@@ -143,6 +143,7 @@ export function NoticeForm() {
                 >
                   <option value="GENERAL">일반</option>
                   <option value="EXHIBITION">전시</option>
+                  <option value="CONTEST">공모전</option>
                   <option value="MAINTENANCE">시스템</option>
                 </select>
               </div>

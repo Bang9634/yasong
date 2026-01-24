@@ -163,24 +163,6 @@ export function MuseumShop() {
             </div>
           </div>
         </div>
-
-        {/* 특별 상품 안내 */}
-        <div className="mt-12 bg-amber-50 border-2 border-amber-300 p-8 rounded-lg">
-          <div className="flex items-center mb-4">
-            <span className="text-3xl mr-3">🎁</span>
-            <h3 className="text-2xl text-teal-900">특별 한정판</h3>
-          </div>
-          <p className="text-gray-700 leading-relaxed mb-4">
-            탄생 100주년 특별전 기념으로 한정판 상품을 출시합니다. 
-            이원좌 화백의 친필 서명이 담긴 특별 에디션 작품집과 
-            화백이 직접 사용하던 팔레트를 모티브로 한 기념품 세트를 만나보세요.
-          </p>
-          <div className="flex justify-center">
-            <button className="px-8 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-colors">
-              한정판 상품 보기
-            </button>
-          </div>
-        </div>
       </div>
     </section>
   );

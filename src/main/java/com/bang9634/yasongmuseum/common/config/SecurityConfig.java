@@ -38,6 +38,7 @@ public class SecurityConfig {
             .requestMatchers("/api/auth/**").permitAll() // permit auth APIs without authentication
             .requestMatchers("/api/notices/**").permitAll() // permit public notice fetching
             .requestMatchers("/api/website/settings/**").permitAll() // permit public website settings fetching
+            .requestMatchers("/api/collections/**").permitAll() // permit public collections fetching
             .requestMatchers("/uploads/**").permitAll() // permit uploaded files access
 
             // Admin and Manager endpoints

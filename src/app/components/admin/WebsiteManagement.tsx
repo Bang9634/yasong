@@ -118,6 +118,18 @@ export function WebsiteManagement() {
   const [exhibitionImage, setExhibitionImage] = useState<File | null>(null);
   const [exhibitionImagePreview, setExhibitionImagePreview] = useState<string>('');
 
+  // 공모전 관리
+  const [contestData, setContestData] = useState({
+    title: '',
+    subtitle: '',
+    content: '',
+    imageUrl: '',
+    isActive: true,
+  });
+  const [contestImage, setContestImage] = useState<File | null>(null);
+  const [contestImagePreview, setContestImagePreview] = useState<string>('');
+  const [isContestLoading, setIsContestLoading] = useState(false);
+
   // 권한 확인
   useEffect(() => {
     if (loading) return;
@@ -217,6 +229,30 @@ export function WebsiteManagement() {
         // 소장품 조회
         const collectionsData = await collectionAPI.getAllCollections();
         setCollections(collectionsData.sort((a, b) => a.displayOrder - b.displayOrder));
+
+        // 공모전 조회
+        const [contestTitleData, contestSubtitleData, contestContentData, contestImageData, contestActiveData] = await Promise.all([
+          websiteAPI.getTextSetting('contest_title'),
+          websiteAPI.getTextSetting('contest_subtitle'),
+          websiteAPI.getTextSetting('contest_content'),
+          websiteAPI.getImage('contest_poster'),
+          websiteAPI.getTextSetting('contest_active'),
+        ]);
+        
+        setContestData({
+          title: contestTitleData.value || '',
+          subtitle: contestSubtitleData.value || '',
+          content: contestContentData.value || '',
+          imageUrl: contestImageData.imageUrl || '',
+          isActive: contestActiveData.value === 'true',
+        });
+        
+        if (contestImageData.imageUrl) {
+          const imageUrl = contestImageData.imageUrl.startsWith('http')
+            ? contestImageData.imageUrl
+            : `${import.meta.env.VITE_API_BASE_URL || ''}${contestImageData.imageUrl}`;
+          setContestImagePreview(imageUrl);
+        }
 
         // 전시 조회
         const exhibitionsData = await exhibitionAPI.getAllExhibitions();
@@ -863,6 +899,72 @@ export function WebsiteManagement() {
     }
   };
 
+  // 공모전 이미지 선택 및 리사이징
+  const handleContestImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const resizedImage = await resizeImage(file, 1200, 1600);
+      setContestImage(resizedImage);
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setContestImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(resizedImage);
+    } catch (err) {
+      console.error('이미지 리사이징 실패:', err);
+      alert('이미지 처리에 실패했습니다.');
+    }
+  };
+
+  // 공모전 정보 저장
+  const handleSaveContest = async () => {
+    if (!contestData.title || !contestData.content) {
+      alert('제목과 내용을 입력해주세요.');
+      return;
+    }
+
+    try {
+      setIsContestLoading(true);
+      
+      // 텍스트 데이터 저장
+      await Promise.all([
+        websiteAPI.updateTextSetting('contest_title', contestData.title),
+        websiteAPI.updateTextSetting('contest_subtitle', contestData.subtitle),
+        websiteAPI.updateTextSetting('contest_content', contestData.content),
+        websiteAPI.updateTextSetting('contest_active', contestData.isActive ? 'true' : 'false'),
+      ]);
+      
+      // 이미지가 있으면 업로드
+      if (contestImage) {
+        const response = await websiteAPI.uploadImage('contest_poster', contestImage);
+        
+        setContestData({
+          ...contestData,
+          imageUrl: response.imageUrl || contestData.imageUrl,
+        });
+        
+        if (response.imageUrl) {
+          const imageUrl = response.imageUrl.startsWith('http')
+            ? response.imageUrl
+            : `${import.meta.env.VITE_API_BASE_URL || ''}${response.imageUrl}`;
+          setContestImagePreview(imageUrl);
+        }
+        
+        setContestImage(null);
+      }
+      
+      alert('공모전 정보가 업데이트되었습니다.');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '업데이트에 실패했습니다.';
+      alert(`실패\n\n${errorMessage}`);
+    } finally {
+      setIsContestLoading(false);
+    }
+  };
+
 
   if (loading || !user || !isManagerOrAbove(user.role)) {
     return null;
@@ -1020,6 +1122,100 @@ export function WebsiteManagement() {
                   className="bg-teal-700 hover:bg-teal-800 text-white"
                 >
                   {isDirectorLoading ? '저장 중...' : '초대관장 정보 저장'}
+                </Button>
+              </div>
+            </div>
+
+            {/* 공모전 관리 */}
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">공모전 정보</h2>
+              <p className="text-sm text-gray-600 mb-4">홈페이지에 표시되는 공모전 정보를 관리할 수 있습니다.</p>
+              <div className="space-y-4">
+                {/* 활성화 여부 */}
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="contestActive"
+                    checked={contestData.isActive}
+                    onChange={(e) => setContestData({ ...contestData, isActive: e.target.checked })}
+                    className="w-4 h-4"
+                  />
+                  <Label htmlFor="contestActive" className="cursor-pointer">
+                    홈페이지에 공모전 섹션 표시
+                  </Label>
+                </div>
+
+                {/* 포스터 이미지 */}
+                {contestImagePreview && (
+                  <div>
+                    <Label>현재 포스터 이미지</Label>
+                    <div className="mt-2 border border-gray-300 rounded-md overflow-hidden">
+                      <img 
+                        src={contestImagePreview} 
+                        alt="공모전 포스터 미리보기" 
+                        className="w-full max-w-md h-auto object-cover"
+                      />
+                    </div>
+                  </div>
+                )}
+                <div>
+                  <Label htmlFor="contestImage">포스터 이미지</Label>
+                  <Input
+                    id="contestImage"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleContestImageChange}
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">권장 비율: 3:4 세로 포스터 (예: 900x1200px)</p>
+                </div>
+
+                {/* 제목 */}
+                <div>
+                  <Label htmlFor="contestTitle">큰 제목 *</Label>
+                  <Input
+                    id="contestTitle"
+                    type="text"
+                    value={contestData.title}
+                    onChange={(e) => setContestData({ ...contestData, title: e.target.value })}
+                    placeholder="예: 제44회 대한민국미술대전 <구상부문> 개최공고"
+                    className="mt-1"
+                  />
+                </div>
+
+                {/* 부제목 */}
+                <div>
+                  <Label htmlFor="contestSubtitle">작은 제목 (선택)</Label>
+                  <Input
+                    id="contestSubtitle"
+                    type="text"
+                    value={contestData.subtitle}
+                    onChange={(e) => setContestData({ ...contestData, subtitle: e.target.value })}
+                    placeholder="예: 대한민국미술대전 구상부문"
+                    className="mt-1"
+                  />
+                </div>
+
+                {/* 내용 */}
+                <div>
+                  <Label htmlFor="contestContent">내용 *</Label>
+                  <Textarea
+                    id="contestContent"
+                    value={contestData.content}
+                    onChange={(e) => setContestData({ ...contestData, content: e.target.value })}
+                    placeholder="전시명: 제44회 대한민국미술대전...&#10;전시장소: 안성예술의전당 화랑전...&#10;전시기간: 2026년 1월 14일(수) ~..."
+                    rows={6}
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">각 항목을 줄바꿈으로 구분해주세요</p>
+                </div>
+
+                <Button
+                  onClick={handleSaveContest}
+                  disabled={isContestLoading}
+                  className="bg-teal-700 hover:bg-teal-800 text-white w-full"
+                >
+                  {isContestLoading ? '저장 중...' : '공모전 정보 저장'}
                 </Button>
               </div>
             </div>

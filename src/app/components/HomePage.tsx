@@ -1,6 +1,7 @@
 import { Header } from '@/app/components/Header';
 import { Hero } from '@/app/components/Hero';
 import { Notice } from '@/app/components/Notice';
+import { Contest } from '@/app/components/Contest';
 import { DirectorIntro } from '@/app/components/DirectorIntro';
 import { About } from '@/app/components/About';
 import { Collections } from '@/app/components/Collections';
@@ -18,6 +19,7 @@ export function HomePage() {
       <main>
         <Hero />
         <Notice />
+        <Contest />
         <DirectorIntro />
         <About />
         <Collections />

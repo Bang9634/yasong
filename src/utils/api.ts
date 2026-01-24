@@ -339,4 +339,112 @@ export const websiteAPI = {
 
 };
 
+/**
+ * Collection API
+ */
+export const collectionAPI = {
+  /**
+   * 전체 소장품 조회 (공개)
+   * GET /api/collections
+   */
+  getAllCollections: async () => {
+    return apiCall('/api/collections', {
+      method: 'GET'
+    });
+  },
+
+  /**
+   * 개별 소장품 조회 (공개)
+   * GET /api/collections/{id}
+   */
+  getCollectionById: async (id: string) => {
+    return apiCall(`/api/collections/${id}`, {
+      method: 'GET'
+    });
+  },
+
+  /**
+   * 소장품 생성 (관리자)
+   * POST /api/management/collections
+   */
+  createCollection: async (data: {
+    title: string;
+    year: string;
+    size: string;
+    description: string;
+    displayOrder: number;
+  }, imageFile: File) => {
+    const formData = new FormData();
+    
+    // JSON 데이터를 Blob으로 변환하여 추가
+    const jsonBlob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+    formData.append('data', jsonBlob);
+    formData.append('image', imageFile);
+
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/api/management/collections`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Failed to create collection' }));
+      throw new Error(error.message || 'Failed to create collection');
+    }
+
+    return await response.json();
+  },
+
+  /**
+   * 소장품 수정 (관리자)
+   * PUT /api/management/collections/{id}
+   */
+  updateCollection: async (id: string, data: {
+    title: string;
+    year: string;
+    size: string;
+    description: string;
+    displayOrder: number;
+  }, imageFile?: File) => {
+    const formData = new FormData();
+    
+    const jsonBlob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+    formData.append('data', jsonBlob);
+    
+    if (imageFile) {
+      formData.append('image', imageFile);
+    }
+
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/api/management/collections/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Failed to update collection' }));
+      throw new Error(error.message || 'Failed to update collection');
+    }
+
+    return await response.json();
+  },
+
+  /**
+   * 소장품 삭제 (관리자)
+   * DELETE /api/management/collections/{id}
+   */
+  deleteCollection: async (id: string) => {
+    return apiCall(`/api/management/collections/${id}`, {
+      method: 'DELETE'
+    });
+  },
+
+};
+
 export default apiCall;

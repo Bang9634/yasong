@@ -142,13 +142,13 @@ export function VisitInfo() {
                 <span className="text-3xl">🅿️</span>
               </div>
               <h4 className="text-teal-800 mb-2">무료 주차장</h4>
-              <p className="text-sm text-gray-600">승용차 200대 수용 가능</p>
+              <p className="text-sm text-gray-600">주차장 무료 이용 및 대형 버스 주차 가능</p>
             </div>
             <div className="text-center bg-white p-6 rounded-lg shadow">
               <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-3">
                 <span className="text-3xl">🛍️</span>
               </div>
-              <h4 className="text-teal-800 mb-2">뮤지엄샵</h4>
+              <h4 className="text-teal-800 mb-2">기념품점</h4>
               <p className="text-sm text-gray-600">기념품 및 문화상품</p>
             </div>
             <div className="text-center bg-white p-6 rounded-lg shadow">
@@ -156,7 +156,7 @@ export function VisitInfo() {
                 <span className="text-3xl">♿</span>
               </div>
               <h4 className="text-teal-800 mb-2">장애인 편의시설</h4>
-              <p className="text-sm text-gray-600">휠체어 대여 가능</p>
+              <p className="text-sm text-gray-600">장애인 화장실 이용 및 휠체어 대여 가능</p>
             </div>
           </div>
         </div>

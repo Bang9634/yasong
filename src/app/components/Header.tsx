@@ -9,6 +9,7 @@ export function Header() {
   const [isAboutDropdownOpen, setIsAboutDropdownOpen] = useState(false);
   const [isNoticeDropdownOpen, setIsNoticeDropdownOpen] = useState(false);
   const [isExhibitionDropdownOpen, setIsExhibitionDropdownOpen] = useState(false);
+  const [isCollectionDropdownOpen, setIsCollectionDropdownOpen] = useState(false);
   const [isSouvenirDropdownOpen, setIsSouvenirDropdownOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -120,13 +121,19 @@ export function Header() {
                     onClick={() => scrollToSection('about')}
                     className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors border-b border-gray-100"
                   >
-                    미술관 연혁
+                    전시관
                   </button>
                   <button
-                    onClick={() => scrollToSection('collections')}
+                    onClick={() => scrollToSection('visit')}
                     className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors border-b border-gray-100"
                   >
-                    대표 소장품
+                    관람 안내
+                  </button>
+                  <button
+                    onClick={() => scrollToSection('location')}
+                    className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors border-b border-gray-100"
+                  >
+                    오시는 길
                   </button>
                 </div>
               )}
@@ -134,7 +141,7 @@ export function Header() {
 
             
 
-            {/* 전시일정 드롭다운 */}
+            {/* 전시/소장품 드롭다운 */}
             <div className="relative group">
               <button
                 className="text-gray-800 hover:text-teal-700 transition-colors flex items-center py-2"
@@ -142,7 +149,7 @@ export function Header() {
                 onMouseEnter={() => setIsExhibitionDropdownOpen(true)}
                 onMouseLeave={() => setIsExhibitionDropdownOpen(false)}
               >
-                전시 일정
+                전시/소장품
                 <ChevronDown className="ml-1 w-4 h-4" />
               </button>
               {isExhibitionDropdownOpen && (
@@ -159,11 +166,22 @@ export function Header() {
                     }}
                     className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
                   >
-                    전시일정 목록
+                    전시 일정
+                  </button>
+                                    <button
+                    onClick={() => {
+                      navigate('/collections');
+                      setIsMenuOpen(false);
+                      setIsCollectionDropdownOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
+                  >
+                    소장품
                   </button>
                 </div>
               )}
             </div>
+            
             
             {/* 기념품 드롭다운 */}
             <div className="relative group">
@@ -196,18 +214,7 @@ export function Header() {
               )}
             </div>
             
-            <button
-              onClick={() => scrollToSection('visit')}
-              className="text-gray-800 hover:text-teal-700 transition-colors"
-            >
-              관람 안내
-            </button>
-            <button
-              onClick={() => scrollToSection('location')}
-              className="text-gray-800 hover:text-teal-700 transition-colors"
-            >
-              오시는 길
-            </button>
+
             
             {/* 로그인 상태에 따른 버튼 */}
             {user ? (
@@ -291,6 +298,29 @@ export function Header() {
         {/* 모바일 메뉴 */}
         {isMenuOpen && (
           <nav className="lg:hidden pb-4 space-y-1">
+            {/* 공지사항 드롭다운 */}
+            <div className="border-b border-teal-100 pb-2 mb-2">
+              <div className="px-4 py-2 text-sm text-teal-800">공지사항</div>
+              <button
+                onClick={() => {
+                  navigate('/notice');
+                  setIsMenuOpen(false);
+                }}
+                className="block w-full text-left px-8 py-2 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
+              >
+                공지사항 목록
+              </button>
+            </div>
+            
+            {/* 미술대전 버튼 */}
+            <button
+              onClick={() => scrollToSection('contest')}
+              className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors rounded"
+            >
+              미술대전
+            </button>
+            
+            {/* 미술관 소개 드롭다운 */}
             <div className="border-b border-teal-100 pb-2 mb-2">
               <div className="px-4 py-2 text-sm text-teal-800">미술관 소개</div>
               <button
@@ -303,53 +333,25 @@ export function Header() {
                 onClick={() => scrollToSection('about')}
                 className="block w-full text-left px-8 py-2 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
               >
-                미술관 연혁
+                전시관
               </button>
               <button
-                onClick={() => scrollToSection('collections')}
+                onClick={() => scrollToSection('visit')}
                 className="block w-full text-left px-8 py-2 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
               >
-                대표 소장품
+                관람 안내
               </button>
               <button
-                onClick={() => scrollToSection('programs')}
+                onClick={() => scrollToSection('location')}
                 className="block w-full text-left px-8 py-2 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
               >
-                교육 프로그램
-              </button>
-              <button
-                onClick={() => scrollToSection('shop')}
-                className="block w-full text-left px-8 py-2 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
-              >
-                뮤지엄샵
+                오시는 길
               </button>
             </div>
+            
+            {/* 전시/소장품 드롭다운 */}
             <div className="border-b border-teal-100 pb-2 mb-2">
-              <div className="px-4 py-2 text-sm text-teal-800">공지사항</div>
-              <button
-                onClick={() => scrollToSection('notice')}
-                className="block w-full text-left px-8 py-2 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
-              >
-                공지사항 보기
-              </button>
-              <button
-                onClick={() => {
-                  navigate('/notice');
-                  setIsMenuOpen(false);
-                }}
-                className="block w-full text-left px-8 py-2 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
-              >
-                공지사항 목록
-              </button>
-            </div>
-            <div className="border-b border-teal-100 pb-2 mb-2">
-              <div className="px-4 py-2 text-sm text-teal-800">전시 일정</div>
-              <button
-                onClick={() => scrollToSection('exhibitions')}
-                className="block w-full text-left px-8 py-2 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
-              >
-                전시 일정 보기
-              </button>
+              <div className="px-4 py-2 text-sm text-teal-800">전시/소장품</div>
               <button
                 onClick={() => {
                   navigate('/exhibitions');
@@ -357,17 +359,22 @@ export function Header() {
                 }}
                 className="block w-full text-left px-8 py-2 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
               >
-                전시일정 목록
+                전시 일정
               </button>
-            </div>
-            <div className="border-b border-teal-100 pb-2 mb-2">
-              <div className="px-4 py-2 text-sm text-teal-800">기념품</div>
               <button
-                onClick={() => scrollToSection('shop')}
+                onClick={() => {
+                  navigate('/collections');
+                  setIsMenuOpen(false);
+                }}
                 className="block w-full text-left px-8 py-2 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
               >
-                기념품 보기
+                소장품
               </button>
+            </div>
+            
+            {/* 기념품 드롭다운 */}
+            <div className="border-b border-teal-100 pb-2 mb-2">
+              <div className="px-4 py-2 text-sm text-teal-800">기념품</div>
               <button
                 onClick={() => {
                   navigate('/souvenirs');
@@ -378,18 +385,6 @@ export function Header() {
                 기념품 목록
               </button>
             </div>
-            <button
-              onClick={() => scrollToSection('visit')}
-              className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors rounded"
-            >
-              관람 안내
-            </button>
-            <button
-              onClick={() => scrollToSection('location')}
-              className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors rounded"
-            >
-              오시는 길
-            </button>
             
             {/* 로그인 상태에 따른 버튼 */}
             <div className="border-t border-teal-100 pt-2 mt-2 space-y-2">

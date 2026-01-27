@@ -48,7 +48,7 @@ export function DirectorIntro() {
   }, []);
 
   return (
-    <section id="director" className="py-20 bg-white">
+    <section id="director" className="y-20 bg-gradient-to-b from-teal-50 to-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl sm:text-5xl mb-4 text-teal-900">초대 관장</h2>

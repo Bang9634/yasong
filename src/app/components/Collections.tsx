@@ -9,7 +9,8 @@ interface Artwork {
   size: string;
   imageUrl: string;
   description: string;
-  displayOrder: number;
+  artist: string;
+  isPinned: boolean;
 }
 
 export function Collections() {
@@ -21,9 +22,9 @@ export function Collections() {
       try {
         setIsLoading(true);
         const data = await collectionAPI.getAllCollections();
-        // displayOrder로 정렬
-        const sorted = data.sort((a: Artwork, b: Artwork) => a.displayOrder - b.displayOrder);
-        setArtworks(sorted);
+        // isPinned가 true인 항목만 필터링
+        const pinnedArtworks = data.filter((artwork: Artwork) => artwork.isPinned);
+        setArtworks(pinnedArtworks);
       } catch (err) {
         console.error('소장품 조회 실패:', err);
       } finally {
@@ -44,7 +45,7 @@ export function Collections() {
 
   if (isLoading) {
     return (
-      <section id="collections" className="py-20 bg-white">
+      <section id="collection" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <p className="text-gray-500">로딩 중...</p>
@@ -55,7 +56,7 @@ export function Collections() {
   }
 
   return (
-    <section id="collections" className="py-20 bg-gradient-to-b from-teal-50 to-white">
+    <section id="collection" className="py-20 bg-gradient-to-b from-teal-50 to-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl sm:text-5xl mb-4 text-teal-900">대표 소장품</h2>
@@ -67,7 +68,7 @@ export function Collections() {
 
         {artworks.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
-            등록된 소장품이 없습니다.
+            등록된 대표 소장품이 없습니다.
           </div>
         ) : (
           <>
@@ -89,6 +90,7 @@ export function Collections() {
                   <div className="p-6 bg-gradient-to-b from-white to-teal-50">
                     <h3 className="text-2xl mb-2 text-teal-900">{artwork.title}</h3>
                     <div className="space-y-1 text-sm text-gray-600 mb-4">
+                      <p>작가: {artwork.artist}</p>
                       <p>{artwork.year}</p>
                       <p>{artwork.size}</p>
                     </div>

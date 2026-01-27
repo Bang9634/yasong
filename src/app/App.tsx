@@ -6,6 +6,7 @@ import { NoticePage } from '@/app/components/NoticePage';
 import { NoticeDetailPage } from '@/app/components/NoticeDetailPage';
 import { NoticeForm } from '@/app/components/NoticeForm';
 import { ExhibitionsPage } from '@/app/components/ExhibitionsPage';
+import { CollectionsPage } from '@/app/components/CollectionsPage';
 import { SouvenirsPage } from '@/app/components/SouvenirsPage';
 import { Profile } from '@/app/components/Profile';
 import { UserManagement } from '@/app/components/admin/UserManagement';
@@ -26,6 +27,7 @@ export default function App() {
           <Route path="/notice/:id" element={<NoticeDetailPage />} />
           <Route path="/notice/write" element={<NoticeForm />} />
           <Route path="/exhibitions" element={<ExhibitionsPage />} />
+          <Route path="/collections" element={<CollectionsPage />} />
           <Route path="/souvenirs" element={<SouvenirsPage />} />
           <Route path="/profile" element={<Profile />} />
           

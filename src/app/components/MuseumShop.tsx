@@ -43,7 +43,7 @@ export function MuseumShop() {
 
   if (loading) {
     return (
-      <section id="shop" className="py-20 bg-gradient-to-b from-white to-teal-50">
+      <section id="shop" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">로딩 중...</div>
         </div>
@@ -52,7 +52,7 @@ export function MuseumShop() {
   }
 
   return (
-    <section id="shop" className="py-20 bg-gradient-to-b from-white to-teal-50">
+    <section id="shop" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <div className="flex items-center justify-center mb-4">

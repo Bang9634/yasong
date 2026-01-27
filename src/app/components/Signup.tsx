@@ -77,8 +77,10 @@ export function Signup() {
     }
 
     setIsLoading(true);
-    // TODO: 백엔드 API 호출로 대체
-    console.log('회원가입 시도:', formData);
+    // 개발 환경에서만 로그 출력 (비밀번호 제외)
+    if (import.meta.env.DEV) {
+      console.log('회원가입 시도:', { email: formData.email, username: formData.username, name: formData.name });
+    }
     try {
         const response = await signup(formData.email, formData.username ,formData.password, formData.name);
         alert("회원가입이 완료되었습니다.");
@@ -87,7 +89,9 @@ export function Signup() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '회원가입에 실패했습니다.';
       alert(`회원가입 실패\n\n${errorMessage}`);
-      console.error('회원가입 실패:', err);
+      if (import.meta.env.DEV) {
+        console.error('회원가입 실패:', err);
+      }
     } finally {
         setIsLoading(false);
     }

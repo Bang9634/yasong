@@ -24,8 +24,9 @@ export const getFullImageUrl = (url: string): string => {
  */
 const apiCall = async (endpoint: string, options: ApiCallOptions = {}): Promise<any> => {
   const url = `${API_BASE_URL}${endpoint}`;
+  // 개발 환경에서만 로그 출력
   if (import.meta.env.DEV) {
-    console.log("API call:"+url);
+    console.log("[API]", url);
   }
 
   
@@ -61,7 +62,10 @@ const apiCall = async (endpoint: string, options: ApiCallOptions = {}): Promise<
 
     return await response.json();
   } catch (error) {
-    console.error('API call failed:', error);
+    // 개발 환경에서만 상세 에러 로그
+    if (import.meta.env.DEV) {
+      console.error('API call failed:', error);
+    }
     throw error;
   }
 };
@@ -524,7 +528,8 @@ export const collectionAPI = {
     year: string;
     size: string;
     description: string;
-    displayOrder: number;
+    artist: string;
+    isPinned: boolean;
   }, imageFile: File) => {
     const formData = new FormData();
     
@@ -559,7 +564,8 @@ export const collectionAPI = {
     year: string;
     size: string;
     description: string;
-    displayOrder: number;
+    artist: string;
+    isPinned: boolean;
   }, imageFile?: File) => {
     const formData = new FormData();
     

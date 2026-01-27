@@ -6,6 +6,20 @@ interface ApiCallOptions extends RequestInit {
 }
 
 /**
+ * 이미지 URL을 완전한 URL로 변환
+ * 상대 경로인 경우 API_BASE_URL을 붙여줌
+ */
+export const getFullImageUrl = (url: string): string => {
+  if (!url) return '';
+  // 이미 완전한 URL인 경우 (http:// 또는 https://로 시작)
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  // 상대 경로인 경우 API_BASE_URL을 붙임
+  return `${API_BASE_URL}${url.startsWith('/') ? url : '/' + url}`;
+};
+
+/**
  * API 호출 헬퍼 함수
  */
 const apiCall = async (endpoint: string, options: ApiCallOptions = {}): Promise<any> => {
@@ -583,6 +597,110 @@ export const collectionAPI = {
     });
   },
 
+};
+
+/**
+ * 기념품 API
+ */
+export const souvenirAPI = {
+  /**
+   * 모든 기념품 조회
+   * GET /api/souvenirs
+   */
+  getAllSouvenirs: async () => {
+    return apiCall('/api/souvenirs', {
+      method: 'GET'
+    });
+  },
+
+  /**
+   * 특정 기념품 조회
+   * GET /api/souvenirs/{id}
+   */
+  getSouvenirById: async (id: number) => {
+    return apiCall(`/api/souvenirs/${id}`, {
+      method: 'GET'
+    });
+  },
+
+  /**
+   * 기념품 생성 (관리자)
+   * POST /api/management/souvenirs
+   */
+  createSouvenir: async (data: {
+    name: string;
+    description: string;
+    price: number;
+    isPinned: boolean;
+  }, imageFile: File) => {
+    const formData = new FormData();
+    
+    const jsonBlob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+    formData.append('data', jsonBlob);
+    formData.append('image', imageFile);
+
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/api/management/souvenirs`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Failed to create souvenir' }));
+      throw new Error(error.message || 'Failed to create souvenir');
+    }
+
+    return await response.json();
+  },
+
+  /**
+   * 기념품 수정 (관리자)
+   * PUT /api/management/souvenirs/{id}
+   */
+  updateSouvenir: async (id: number, data: {
+    name?: string;
+    description?: string;
+    price?: number;
+    isPinned?: boolean;
+  }, imageFile?: File) => {
+    const formData = new FormData();
+    
+    const jsonBlob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+    formData.append('data', jsonBlob);
+    
+    if (imageFile) {
+      formData.append('image', imageFile);
+    }
+
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/api/management/souvenirs/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Failed to update souvenir' }));
+      throw new Error(error.message || 'Failed to update souvenir');
+    }
+
+    return await response.json();
+  },
+
+  /**
+   * 기념품 삭제 (관리자)
+   * DELETE /api/management/souvenirs/{id}
+   */
+  deleteSouvenir: async (id: number) => {
+    return apiCall(`/api/management/souvenirs/${id}`, {
+      method: 'DELETE'
+    });
+  },
 };
 
 

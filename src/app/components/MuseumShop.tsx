@@ -57,7 +57,7 @@ export function MuseumShop() {
         <div className="text-center mb-16">
           <div className="flex items-center justify-center mb-4">
             <ShoppingBag className="w-10 h-10 text-teal-800 mr-3" />
-            <h2 className="text-4xl sm:text-5xl text-teal-900">뮤지엄샵</h2>
+            <h2 className="text-4xl sm:text-5xl text-teal-900">기념품</h2>
           </div>
           <div className="w-20 h-1 bg-amber-600 mx-auto mb-6"></div>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">

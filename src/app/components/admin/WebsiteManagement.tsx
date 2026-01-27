@@ -14,6 +14,7 @@ import { BuildingManagement } from './sections/BuildingManagement';
 import { HistoryManagement } from './sections/HistoryManagement';
 import { FacilityManagement } from './sections/FacilityManagement';
 import { CollectionManagement } from './sections/CollectionManagement';
+import { VisitInfoManagement } from './sections/VisitInfoManagement';
 
 interface HistoryItem {
   year: string;
@@ -62,6 +63,13 @@ export function WebsiteManagement() {
   const [facilityExhibitionRooms, setFacilityExhibitionRooms] = useState('');
   const [facilityCollectionCount, setFacilityCollectionCount] = useState('');
   const [collections, setCollections] = useState<Collection[]>([]);
+  const [visitInfo, setVisitInfo] = useState({
+    operatingHours: '',
+    admissionFee: '',
+    etiquette: '',
+    phone: '',
+    email: '',
+  });
 
   // 권한 확인
   useEffect(() => {
@@ -191,6 +199,23 @@ export function WebsiteManagement() {
           noticeLink: contestNoticeLinkData.value || '',
         });
 
+        // 관람 안내 조회
+        const [visitHoursData, visitFeeData, visitEtiquetteData, visitPhoneData, visitEmailData] = await Promise.all([
+          websiteAPI.getTextSetting('visit_operating_hours'),
+          websiteAPI.getTextSetting('visit_admission_fee'),
+          websiteAPI.getTextSetting('visit_etiquette'),
+          websiteAPI.getTextSetting('visit_phone'),
+          websiteAPI.getTextSetting('visit_email'),
+        ]);
+
+        setVisitInfo({
+          operatingHours: visitHoursData.value || '',
+          admissionFee: visitFeeData.value || '',
+          etiquette: visitEtiquetteData.value || '',
+          phone: visitPhoneData.value || '',
+          email: visitEmailData.value || '',
+        });
+
       } catch (err) {
         console.error('데이터 로드 실패:', err);
       }
@@ -245,6 +270,9 @@ export function WebsiteManagement() {
 
             {/* 소장품 관리 */}
             <CollectionManagement initialCollections={collections} />
+
+            {/* 관람 안내 관리 */}
+            <VisitInfoManagement initialData={visitInfo} />
           </div>
         </div>
       </div>

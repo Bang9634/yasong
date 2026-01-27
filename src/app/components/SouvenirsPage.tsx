@@ -199,7 +199,7 @@ export function SouvenirsPage() {
           <div className="text-center mb-12">
             <div className="flex items-center justify-center mb-4">
               <ShoppingBag className="w-10 h-10 text-teal-800 mr-3" />
-              <h1 className="text-4xl sm:text-5xl text-teal-900">뮤지엄샵</h1>
+              <h1 className="text-4xl sm:text-5xl text-teal-900">기념품</h1>
             </div>
             <div className="w-20 h-1 bg-amber-600 mx-auto mb-6"></div>
             <p className="text-lg text-gray-600">

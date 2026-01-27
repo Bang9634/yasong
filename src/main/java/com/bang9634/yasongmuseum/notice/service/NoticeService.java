@@ -5,13 +5,18 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.bang9634.yasongmuseum.common.service.FileStorageService;
 import com.bang9634.yasongmuseum.notice.dto.CreateNoticeRequest;
+import com.bang9634.yasongmuseum.notice.dto.NoticeAttachmentResponse;
 import com.bang9634.yasongmuseum.notice.dto.NoticeResponse;
 import com.bang9634.yasongmuseum.notice.dto.UpdateNoticeRequest;
 import com.bang9634.yasongmuseum.notice.entity.Notice;
+import com.bang9634.yasongmuseum.notice.entity.NoticeAttachment;
 import com.bang9634.yasongmuseum.notice.exception.NoticeAlreadyDeletedException;
 import com.bang9634.yasongmuseum.notice.exception.NoticeNotFoundException;
+import com.bang9634.yasongmuseum.notice.repository.NoticeAttachmentRepository;
 import com.bang9634.yasongmuseum.notice.repository.NoticeRepository;
 import com.bang9634.yasongmuseum.user.entity.User;
 import com.bang9634.yasongmuseum.user.exception.UserNotFoundException;
@@ -28,6 +33,8 @@ public class NoticeService {
 
     private final NoticeRepository noticeRepository;
     private final UserRepository userRepository;
+    private final NoticeAttachmentRepository noticeAttachmentRepository;
+    private final FileStorageService fileStorageService;
 
     public List<NoticeResponse> getVisibleNotices() {
         log.info("Fetching all visible notices");
@@ -121,5 +128,72 @@ public class NoticeService {
         noticeRepository.save(notice);
 
         log.info("Notice deleted successfully: {}", id);
+    }
+
+    // ==================== Attachment Methods ====================
+
+    /**
+     * Upload attachment to a notice
+     */
+    @Transactional
+    public NoticeAttachmentResponse uploadAttachment(Long noticeId, MultipartFile file) {
+        log.info("Uploading attachment to notice ID: {}", noticeId);
+        
+        Notice notice = noticeRepository.findById(noticeId)
+                .orElseThrow(() -> new NoticeNotFoundException("게시글을 찾을 수 없습니다."));
+
+        // Save file with document validation
+        String fileUrl = fileStorageService.saveDocumentFile(file, "notices", "notice-attachment-");
+
+        // Create attachment entity
+        NoticeAttachment attachment = NoticeAttachment.builder()
+                .notice(notice)
+                .fileName(file.getOriginalFilename())
+                .fileUrl(fileUrl)
+                .fileSize(file.getSize())
+                .contentType(file.getContentType())
+                .build();
+
+        NoticeAttachment savedAttachment = noticeAttachmentRepository.save(attachment);
+        log.info("Attachment uploaded successfully: {}", savedAttachment.getId());
+
+        return NoticeAttachmentResponse.from(savedAttachment);
+    }
+
+    /**
+     * Get all attachments of a notice
+     */
+    public List<NoticeAttachmentResponse> getAttachments(Long noticeId) {
+        log.info("Fetching attachments for notice ID: {}", noticeId);
+        
+        if (!noticeRepository.existsById(noticeId)) {
+            throw new NoticeNotFoundException("게시글을 찾을 수 없습니다.");
+        }
+
+        return noticeAttachmentRepository.findByNoticeId(noticeId).stream()
+                .map(NoticeAttachmentResponse::from)
+                .toList();
+    }
+
+    /**
+     * Delete a specific attachment
+     */
+    @Transactional
+    public void deleteAttachment(Long noticeId, Long attachmentId) {
+        log.info("Deleting attachment ID: {} from notice ID: {}", attachmentId, noticeId);
+        
+        NoticeAttachment attachment = noticeAttachmentRepository.findById(attachmentId)
+                .orElseThrow(() -> new NoticeNotFoundException("첨부파일을 찾을 수 없습니다."));
+
+        if (!attachment.getNotice().getId().equals(noticeId)) {
+            throw new NoticeNotFoundException("해당 게시글의 첨부파일이 아닙니다.");
+        }
+
+        // Delete physical file
+        fileStorageService.deleteFile(attachment.getFileUrl());
+
+        // Delete from database
+        noticeAttachmentRepository.delete(attachment);
+        log.info("Attachment deleted successfully: {}", attachmentId);
     }
 }

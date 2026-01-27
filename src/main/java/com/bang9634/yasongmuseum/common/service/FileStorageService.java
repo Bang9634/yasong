@@ -31,6 +31,7 @@ public class FileStorageService {
     private long maxFileSize;
 
     private static final List<String> ALLOWED_IMAGE_EXTENSIONS = Arrays.asList("jpg", "jpeg", "png", "gif", "webp");
+    private static final List<String> ALLOWED_DOCUMENT_EXTENSIONS = Arrays.asList("pdf", "hwp", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "zip");
 
     /**
      * Save uploaded file to the specified subdirectory
@@ -42,7 +43,27 @@ public class FileStorageService {
      */
     public String saveFile(MultipartFile file, String subDir, String prefix) {
         validateFile(file);
+        return saveFileInternal(file, subDir, prefix);
+    }
 
+    /**
+     * Save uploaded file to the specified subdirectory (for documents)
+     * Use this when you've already validated with validateDocumentFile()
+     * 
+     * @param file MultipartFile to save
+     * @param subDir Subdirectory (e.g., "notices")
+     * @param prefix Filename prefix (e.g., "notice-attachment-")
+     * @return Saved file's relative URL path
+     */
+    public String saveDocumentFile(MultipartFile file, String subDir, String prefix) {
+        validateDocumentFile(file);
+        return saveFileInternal(file, subDir, prefix);
+    }
+
+    /**
+     * Internal method to save file without validation
+     */
+    private String saveFileInternal(MultipartFile file, String subDir, String prefix) {
         try {
             String savedFileName = generateFileName(file.getOriginalFilename(), prefix);
             Path uploadPath = Paths.get(uploadDir, subDir);
@@ -91,7 +112,7 @@ public class FileStorageService {
     }
 
     /**
-     * Validate uploaded file
+     * Validate uploaded file (images only)
      * 
      * @param file MultipartFile to validate
      * @throws FileUploadException if validation fails
@@ -113,6 +134,31 @@ public class FileStorageService {
         String contentType = file.getContentType();
         if (contentType == null || !contentType.startsWith("image/")) {
             throw new FileUploadException("이미지 파일만 업로드 가능합니다.");
+        }
+    }
+
+    /**
+     * Validate uploaded document file (supports images + documents)
+     * 
+     * @param file MultipartFile to validate
+     * @throws FileUploadException if validation fails
+     */boolean hasAllowedDocumentExtension(String filename) {
+        String extension = filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
+        return ALLOWED_IMAGE_EXTENSIONS.contains(extension) || ALLOWED_DOCUMENT_EXTENSIONS.contains(extension);
+    }
+
+    public void validateDocumentFile(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new FileUploadException("파일이 비어있습니다.");
+        }
+
+        if (file.getSize() > maxFileSize) {
+            throw new FileUploadException("파일 크기는 " + (maxFileSize / 1024 / 1024) + "MB를 초과할 수 없습니다.");
+        }
+
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null || !hasAllowedDocumentExtension(originalFilename)) {
+            throw new FileUploadException("허용되지 않는 파일 형식입니다. (pdf, hwp, doc, docx, xls, xlsx, ppt, pptx, txt, zip, jpg, jpeg, png, gif, webp만 가능)");
         }
     }
 

@@ -1,6 +1,8 @@
 package com.bang9634.yasongmuseum.notice.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import com.bang9634.yasongmuseum.notice.entity.Notice;
 import com.bang9634.yasongmuseum.notice.entity.NoticeCategory;
@@ -24,6 +26,7 @@ public class NoticeResponse {
     private String authorName;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private List<NoticeAttachmentResponse> attachments;
     
     public static NoticeResponse from(Notice notice) {
         return NoticeResponse.builder()
@@ -38,6 +41,11 @@ public class NoticeResponse {
                 .authorName(notice.getAuthor().getName())
                 .createdAt(notice.getCreatedAt())
                 .updatedAt(notice.getUpdatedAt())
+                .attachments(notice.getAttachments() != null 
+                    ? notice.getAttachments().stream()
+                        .map(NoticeAttachmentResponse::from)
+                        .collect(Collectors.toList())
+                    : List.of())
                 .build();
     }
 }

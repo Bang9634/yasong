@@ -12,6 +12,20 @@ interface FooterData {
   closedDay: string;
   bottomInfo: string;
   copyright: string;
+  facebookUrl: string;
+  facebookEnabled: boolean;
+  instagramUrl: string;
+  instagramEnabled: boolean;
+  youtubeUrl: string;
+  youtubeEnabled: boolean;
+  privacyPolicyUrl: string;
+  privacyPolicyEnabled: boolean;
+  termsUrl: string;
+  termsEnabled: boolean;
+  locationLinkUrl: string;
+  locationLinkEnabled: boolean;
+  recruitUrl: string;
+  recruitEnabled: boolean;
 }
 
 export function Footer() {
@@ -25,6 +39,20 @@ export function Footer() {
     closedDay: '',
     bottomInfo: '',
     copyright: '',
+    facebookUrl: '',
+    facebookEnabled: false,
+    instagramUrl: '',
+    instagramEnabled: false,
+    youtubeUrl: '',
+    youtubeEnabled: false,
+    privacyPolicyUrl: '',
+    privacyPolicyEnabled: false,
+    termsUrl: '',
+    termsEnabled: false,
+    locationLinkUrl: '',
+    locationLinkEnabled: false,
+    recruitUrl: '',
+    recruitEnabled: false,
   });
 
   useEffect(() => {
@@ -43,6 +71,20 @@ export function Footer() {
         closedDayData,
         bottomInfoData,
         copyrightData,
+        facebookUrlData,
+        facebookEnabledData,
+        instagramUrlData,
+        instagramEnabledData,
+        youtubeUrlData,
+        youtubeEnabledData,
+        privacyPolicyUrlData,
+        privacyPolicyEnabledData,
+        termsUrlData,
+        termsEnabledData,
+        locationLinkUrlData,
+        locationLinkEnabledData,
+        recruitUrlData,
+        recruitEnabledData,
       ] = await Promise.all([
         websiteAPI.getTextSetting('footer_description'),
         websiteAPI.getTextSetting('footer_phone'),
@@ -53,6 +95,20 @@ export function Footer() {
         websiteAPI.getTextSetting('footer_closed_day'),
         websiteAPI.getTextSetting('footer_bottom_info'),
         websiteAPI.getTextSetting('footer_copyright'),
+        websiteAPI.getTextSetting('footer_facebook_url'),
+        websiteAPI.getTextSetting('footer_facebook_enabled'),
+        websiteAPI.getTextSetting('footer_instagram_url'),
+        websiteAPI.getTextSetting('footer_instagram_enabled'),
+        websiteAPI.getTextSetting('footer_youtube_url'),
+        websiteAPI.getTextSetting('footer_youtube_enabled'),
+        websiteAPI.getTextSetting('footer_privacy_policy_url'),
+        websiteAPI.getTextSetting('footer_privacy_policy_enabled'),
+        websiteAPI.getTextSetting('footer_terms_url'),
+        websiteAPI.getTextSetting('footer_terms_enabled'),
+        websiteAPI.getTextSetting('footer_location_link_url'),
+        websiteAPI.getTextSetting('footer_location_link_enabled'),
+        websiteAPI.getTextSetting('footer_recruit_url'),
+        websiteAPI.getTextSetting('footer_recruit_enabled'),
       ]);
 
       setFooterData({
@@ -65,6 +121,20 @@ export function Footer() {
         closedDay: closedDayData.value || '휴관: 매주 월요일',
         bottomInfo: bottomInfoData.value || '군립청송야송미술관 | 관장: 김문희 | 사업자등록번호: 123-45-67890',
         copyright: copyrightData.value || 'Copyright © 2026 Cheongsung Yasong Art Museum. All rights reserved.',
+        facebookUrl: facebookUrlData.value || '',
+        facebookEnabled: facebookEnabledData.value === 'true',
+        instagramUrl: instagramUrlData.value || '',
+        instagramEnabled: instagramEnabledData.value === 'true',
+        youtubeUrl: youtubeUrlData.value || '',
+        youtubeEnabled: youtubeEnabledData.value === 'true',
+        privacyPolicyUrl: privacyPolicyUrlData.value || '',
+        privacyPolicyEnabled: privacyPolicyEnabledData.value === 'true',
+        termsUrl: termsUrlData.value || '',
+        termsEnabled: termsEnabledData.value === 'true',
+        locationLinkUrl: locationLinkUrlData.value || '',
+        locationLinkEnabled: locationLinkEnabledData.value === 'true',
+        recruitUrl: recruitUrlData.value || '',
+        recruitEnabled: recruitEnabledData.value === 'true',
       });
     } catch (error) {
       console.error('Failed to load footer data:', error);
@@ -92,15 +162,36 @@ export function Footer() {
               ))}
             </p>
             <div className="flex space-x-4 mt-6">
-              <button className="w-10 h-10 bg-teal-800 hover:bg-teal-700 rounded-full flex items-center justify-center transition-colors">
-                <Facebook className="w-5 h-5" />
-              </button>
-              <button className="w-10 h-10 bg-teal-800 hover:bg-teal-700 rounded-full flex items-center justify-center transition-colors">
-                <Instagram className="w-5 h-5" />
-              </button>
-              <button className="w-10 h-10 bg-teal-800 hover:bg-teal-700 rounded-full flex items-center justify-center transition-colors">
-                <Youtube className="w-5 h-5" />
-              </button>
+              {footerData.facebookEnabled && footerData.facebookUrl && (
+                <a
+                  href={footerData.facebookUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 bg-teal-800 hover:bg-teal-700 rounded-full flex items-center justify-center transition-colors"
+                >
+                  <Facebook className="w-5 h-5" />
+                </a>
+              )}
+              {footerData.instagramEnabled && footerData.instagramUrl && (
+                <a
+                  href={footerData.instagramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 bg-teal-800 hover:bg-teal-700 rounded-full flex items-center justify-center transition-colors"
+                >
+                  <Instagram className="w-5 h-5" />
+                </a>
+              )}
+              {footerData.youtubeEnabled && footerData.youtubeUrl && (
+                <a
+                  href={footerData.youtubeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 bg-teal-800 hover:bg-teal-700 rounded-full flex items-center justify-center transition-colors"
+                >
+                  <Youtube className="w-5 h-5" />
+                </a>
+              )}
             </div>
           </div>
 
@@ -157,13 +248,61 @@ export function Footer() {
         {/* 하단 링크 */}
         <div className="border-t border-teal-800 pt-8 mb-8">
           <div className="flex flex-wrap justify-center gap-6 text-sm text-teal-200">
-            <button className="hover:text-amber-300 transition-colors">개인정보처리방침</button>
-            <span className="text-teal-700">|</span>
-            <button className="hover:text-amber-300 transition-colors">이용약관</button>
-            <span className="text-teal-700">|</span>
-            <button className="hover:text-amber-300 transition-colors">찾아오시는 길</button>
-            <span className="text-teal-700">|</span>
-            <button className="hover:text-amber-300 transition-colors">채용정보</button>
+            {footerData.privacyPolicyEnabled && footerData.privacyPolicyUrl && (
+              <>
+                <a
+                  href={footerData.privacyPolicyUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-amber-300 transition-colors"
+                >
+                  개인정보처리방침
+                </a>
+                {(footerData.termsEnabled || footerData.locationLinkEnabled || footerData.recruitEnabled) && (
+                  <span className="text-teal-700">|</span>
+                )}
+              </>
+            )}
+            {footerData.termsEnabled && footerData.termsUrl && (
+              <>
+                <a
+                  href={footerData.termsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-amber-300 transition-colors"
+                >
+                  이용약관
+                </a>
+                {(footerData.locationLinkEnabled || footerData.recruitEnabled) && (
+                  <span className="text-teal-700">|</span>
+                )}
+              </>
+            )}
+            {footerData.locationLinkEnabled && footerData.locationLinkUrl && (
+              <>
+                <a
+                  href={footerData.locationLinkUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-amber-300 transition-colors"
+                >
+                  찾아오시는 길
+                </a>
+                {footerData.recruitEnabled && (
+                  <span className="text-teal-700">|</span>
+                )}
+              </>
+            )}
+            {footerData.recruitEnabled && footerData.recruitUrl && (
+              <a
+                href={footerData.recruitUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-amber-300 transition-colors"
+              >
+                채용정보
+              </a>
+            )}
           </div>
         </div>
 

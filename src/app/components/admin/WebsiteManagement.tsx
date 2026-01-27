@@ -16,6 +16,7 @@ import { FacilityManagement } from './sections/FacilityManagement';
 import { CollectionManagement } from './sections/CollectionManagement';
 import { VisitInfoManagement } from './sections/VisitInfoManagement';
 import { LocationManagement } from './sections/LocationManagement';
+import { FooterManagement } from './sections/FooterManagement';
 
 interface HistoryItem {
   year: string;
@@ -78,6 +79,17 @@ export function WebsiteManagement() {
     busInfo: '',
     trainInfo: '',
     parkingInfo: '',
+  });
+  const [footerData, setFooterData] = useState({
+    description: '',
+    phone: '',
+    phoneHours: '',
+    email: '',
+    address: '',
+    operatingHours: '',
+    closedDay: '',
+    bottomInfo: '',
+    copyright: '',
   });
 
   // 권한 확인
@@ -244,6 +256,41 @@ export function WebsiteManagement() {
           parkingInfo: parkingInfoData.value || '',
         });
 
+        // 푸터 정보 조회
+        const [
+          footerDescData,
+          footerPhoneData,
+          footerPhoneHoursData,
+          footerEmailData,
+          footerAddressData,
+          footerOperatingHoursData,
+          footerClosedDayData,
+          footerBottomInfoData,
+          footerCopyrightData,
+        ] = await Promise.all([
+          websiteAPI.getTextSetting('footer_description'),
+          websiteAPI.getTextSetting('footer_phone'),
+          websiteAPI.getTextSetting('footer_phone_hours'),
+          websiteAPI.getTextSetting('footer_email'),
+          websiteAPI.getTextSetting('footer_address'),
+          websiteAPI.getTextSetting('footer_operating_hours'),
+          websiteAPI.getTextSetting('footer_closed_day'),
+          websiteAPI.getTextSetting('footer_bottom_info'),
+          websiteAPI.getTextSetting('footer_copyright'),
+        ]);
+
+        setFooterData({
+          description: footerDescData.value || '',
+          phone: footerPhoneData.value || '',
+          phoneHours: footerPhoneHoursData.value || '',
+          email: footerEmailData.value || '',
+          address: footerAddressData.value || '',
+          operatingHours: footerOperatingHoursData.value || '',
+          closedDay: footerClosedDayData.value || '',
+          bottomInfo: footerBottomInfoData.value || '',
+          copyright: footerCopyrightData.value || '',
+        });
+
       } catch (err) {
         console.error('데이터 로드 실패:', err);
       }
@@ -304,6 +351,12 @@ export function WebsiteManagement() {
 
             {/* 오시는 길 관리 */}
             <LocationManagement initialData={locationData} />
+
+            {/* 푸터 관리 */}
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <h2 className="text-2xl font-semibold text-teal-900 mb-4">푸터 관리</h2>
+              <FooterManagement initialData={footerData} />
+            </div>
           </div>
         </div>
       </div>

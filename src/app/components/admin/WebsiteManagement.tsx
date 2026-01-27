@@ -15,6 +15,7 @@ import { HistoryManagement } from './sections/HistoryManagement';
 import { FacilityManagement } from './sections/FacilityManagement';
 import { CollectionManagement } from './sections/CollectionManagement';
 import { VisitInfoManagement } from './sections/VisitInfoManagement';
+import { LocationManagement } from './sections/LocationManagement';
 
 interface HistoryItem {
   year: string;
@@ -69,6 +70,14 @@ export function WebsiteManagement() {
     etiquette: '',
     phone: '',
     email: '',
+  });
+  const [locationData, setLocationData] = useState({
+    address: '',
+    postalCode: '',
+    carInfo: '',
+    busInfo: '',
+    trainInfo: '',
+    parkingInfo: '',
   });
 
   // 권한 확인
@@ -216,6 +225,25 @@ export function WebsiteManagement() {
           email: visitEmailData.value || '',
         });
 
+        // 오시는 길 조회
+        const [addressData, postalCodeData, carInfoData, busInfoData, trainInfoData, parkingInfoData] = await Promise.all([
+          websiteAPI.getTextSetting('location_address'),
+          websiteAPI.getTextSetting('location_postal_code'),
+          websiteAPI.getTextSetting('location_car_info'),
+          websiteAPI.getTextSetting('location_bus_info'),
+          websiteAPI.getTextSetting('location_train_info'),
+          websiteAPI.getTextSetting('location_parking_info'),
+        ]);
+
+        setLocationData({
+          address: addressData.value || '',
+          postalCode: postalCodeData.value || '',
+          carInfo: carInfoData.value || '',
+          busInfo: busInfoData.value || '',
+          trainInfo: trainInfoData.value || '',
+          parkingInfo: parkingInfoData.value || '',
+        });
+
       } catch (err) {
         console.error('데이터 로드 실패:', err);
       }
@@ -273,6 +301,9 @@ export function WebsiteManagement() {
 
             {/* 관람 안내 관리 */}
             <VisitInfoManagement initialData={visitInfo} />
+
+            {/* 오시는 길 관리 */}
+            <LocationManagement initialData={locationData} />
           </div>
         </div>
       </div>

@@ -186,7 +186,7 @@ export function LocationManagement({ initialData }: Props) {
                 placeholder="36.4347"
               />
               <p className="text-xs text-gray-500 mt-1">
-                기본값: 36.4347 (청송군)
+                기본값: 36.5058617 (청송야송미술관)
               </p>
             </div>
             <div>
@@ -201,7 +201,7 @@ export function LocationManagement({ initialData }: Props) {
                 placeholder="129.0542"
               />
               <p className="text-xs text-gray-500 mt-1">
-                기본값: 129.0542 (청송군)
+                기본값: 129.0542 (청송야송미술관)
               </p>
             </div>
           </div>

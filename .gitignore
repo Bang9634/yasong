@@ -34,9 +34,16 @@ build/
 
 ### Application Properties ###
 src/main/resources/application-local.properties
-src/main/resources/application-prod.properties
 src/main/resources/application-dev.properties
 
+### Environment Variables (보안 중요!) ###
+.env
+.env.local
+.env.prod
+*.env
+!.env.example
+
+### Uploads ###
 uploads/
 
 .mvn/

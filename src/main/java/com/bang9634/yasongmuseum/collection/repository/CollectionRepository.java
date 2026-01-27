@@ -11,7 +11,7 @@ import java.util.List;
 public interface CollectionRepository extends JpaRepository<Collection, Long>{
 
     /**
-     * Find all collections ordered by display order
+     * Find all collections ordered by pinned status (pinned first) and creation date
      */
-    List<Collection> findAllByOrderByDisplayOrderAsc();
+    List<Collection> findAllByOrderByIsPinnedDescCreatedAtDesc();
 }

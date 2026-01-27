@@ -48,7 +48,8 @@ CREATE TABLE IF NOT EXISTS collections (
     size VARCHAR(100) NOT NULL,
     image_url VARCHAR(1000) NOT NULL,
     description TEXT NOT NULL,
-    display_order INT NOT NULL,
+    is_pinned BOOLEAN NOT NULL DEFAULT FALSE,
+    artist VARCHAR(200) NOT NULL,
     created_at DATETIME NOT NULL,
     updated_at DATETIME NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -97,7 +98,6 @@ CREATE INDEX idx_notices_author ON notices(author_id);
 CREATE INDEX idx_notices_category ON notices(category);
 CREATE INDEX idx_notices_status ON notices(status);
 CREATE INDEX idx_notices_created_at ON notices(created_at);
-CREATE INDEX idx_collections_display_order ON collections(display_order);
 CREATE INDEX idx_exhibitions_start_date ON exhibitions(start_date);
 CREATE INDEX idx_exhibitions_end_date ON exhibitions(end_date);
 CREATE INDEX idx_website_settings_key ON website_settings(setting_key);

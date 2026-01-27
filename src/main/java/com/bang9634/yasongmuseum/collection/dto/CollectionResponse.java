@@ -19,7 +19,8 @@ public class CollectionResponse {
     private String size;
     private String imageUrl;
     private String description;
-    private Integer displayOrder;
+    private String artist;
+    private Boolean isPinned;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

@@ -23,6 +23,8 @@ public class UpdateCollectionRequest {
     @NotBlank(message = "설명은 필수입니다.")
     private String description;
 
-    @NotNull(message = "정렬 순서는 필수입니다.")
-    private Integer displayOrder;
+    @NotBlank(message = "작가명은 필수입니다.")
+    private String artist;
+
+    private Boolean isPinned;
 }

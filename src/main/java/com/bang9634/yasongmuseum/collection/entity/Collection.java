@@ -43,7 +43,10 @@ public class Collection {
     private String description;
 
     @Column(nullable = false)
-    private Integer displayOrder;
+    private String artist;
+
+    @Column(nullable = false)
+    private Boolean isPinned;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

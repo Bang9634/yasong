@@ -29,10 +29,10 @@ public class CollectionService {
     private static final String COLLECTION_IMAGE_PREFIX = "collection-";
 
     /**
-     * Get all collections ordered by display order
+     * Get all collections ordered by pinned status and creation date
      */
     public List<CollectionResponse> getAllCollections() {
-        return collectionRepository.findAllByOrderByDisplayOrderAsc()
+        return collectionRepository.findAllByOrderByIsPinnedDescCreatedAtDesc()
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
@@ -62,7 +62,8 @@ public class CollectionService {
                 .size(request.getSize())
                 .imageUrl(imageUrl)
                 .description(request.getDescription())
-                .displayOrder(request.getDisplayOrder())
+                .artist(request.getArtist())
+                .isPinned(request.getIsPinned() != null ? request.getIsPinned() : false)
                 .build();
 
         Collection savedCollection = collectionRepository.save(collection);
@@ -94,7 +95,10 @@ public class CollectionService {
         collection.setYear(request.getYear());
         collection.setSize(request.getSize());
         collection.setDescription(request.getDescription());
-        collection.setDisplayOrder(request.getDisplayOrder());
+        collection.setArtist(request.getArtist());
+        if (request.getIsPinned() != null) {
+            collection.setIsPinned(request.getIsPinned());
+        }
 
         log.info("Collection updated: id={}, title={}", collection.getId(), collection.getTitle());
 
@@ -129,7 +133,8 @@ public class CollectionService {
                 .size(collection.getSize())
                 .imageUrl(collection.getImageUrl())
                 .description(collection.getDescription())
-                .displayOrder(collection.getDisplayOrder())
+                .artist(collection.getArtist())
+                .isPinned(collection.getIsPinned())
                 .createdAt(collection.getCreatedAt())
                 .updatedAt(collection.getUpdatedAt())
                 .build();

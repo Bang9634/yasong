@@ -35,6 +35,8 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> auth
             // Public endpoints
             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // permit all OPTIONS requests
+            .requestMatchers("/", "/index.html").permitAll() // permit root and index.html for SPA
+            .requestMatchers("/static/**", "/assets/**", "/*.js", "/*.css", "/*.ico", "/*.png", "/*.jpg", "/*.svg").permitAll() // permit static resources
             .requestMatchers("/api/auth/**").permitAll() // permit auth APIs without authentication
             .requestMatchers("/api/notices/**").permitAll() // permit public notice fetching
             .requestMatchers("/api/website/settings/**").permitAll() // permit public website settings fetching
@@ -49,7 +51,9 @@ public class SecurityConfig {
             // Admin endpoints
             .requestMatchers("/api/admin/**").hasRole("ADMIN") // restrict admin APIs to ADMIN role
 
-            .anyRequest().authenticated() // authenticate other API requests
+            // API 경로만 인증 필요, 나머지는 허용 (SPA 라우팅)
+            .requestMatchers("/api/**").authenticated()
+            .anyRequest().permitAll() // permit all non-API requests for SPA routing
         )
         .sessionManagement(session ->
             session.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // no session will be created or used by spring security

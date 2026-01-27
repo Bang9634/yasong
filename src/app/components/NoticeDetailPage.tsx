@@ -1,12 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ChevronLeft, Calendar, Eye, User } from 'lucide-react';
+import { ChevronLeft, Calendar, Eye, User, Download, FileText } from 'lucide-react';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { Button } from '@/app/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { isManagerOrAbove } from '@/utils/auth';
-import { noticeAPI } from '@/utils/api';
+import { noticeAPI, getFullImageUrl } from '@/utils/api';
+
+interface NoticeAttachment {
+  id: number;
+  fileName: string;
+  fileUrl: string;
+  fileSize: number;
+  contentType: string;
+  uploadedAt: string;
+}
 
 interface NoticeDetail {
   id: number;
@@ -20,6 +29,7 @@ interface NoticeDetail {
   authorName: string;
   createdAt: string;
   updatedAt: string;
+  attachments?: NoticeAttachment[];
 }
 
 export function NoticeDetailPage() {
@@ -65,6 +75,28 @@ export function NoticeDetailPage() {
       'MAINTENANCE': '시스템'
     };
     return categoryMap[category] || category;
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  };
+
+  // Markdown을 HTML로 변환
+  const convertMarkdownToHtml = (text: string): string => {
+    let html = text;
+    
+    // 이미지: ![alt](url) -> <img>
+    html = html.replace(/!\[([^\]]*)\]\(([^\)]+)\)/g, '<img src="$2" alt="$1" class="max-w-full h-auto rounded-lg my-4" />');
+    
+    // 링크: [text](url) -> <a>
+    html = html.replace(/\[([^\]]+)\]\(([^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-teal-600 hover:underline">$1</a>');
+    
+    // 줄바꿈을 <br>로 변환
+    html = html.replace(/\n/g, '<br />');
+    
+    return html;
   };
 
   const handleDelete = async () => {
@@ -180,11 +212,44 @@ export function NoticeDetailPage() {
             <div className="p-8">
               <div 
                 className="prose prose-lg max-w-none"
-                style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
-              >
-                {notice.content}
-              </div>
+                dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(notice.content) }}
+              />
             </div>
+
+            {/* 첨부파일 섹션 */}
+            {notice.attachments && notice.attachments.length > 0 && (
+              <div className="px-8 pb-8">
+                <div className="border-t border-gray-200 pt-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <FileText className="w-5 h-5 mr-2" />
+                    첨부파일 ({notice.attachments.length})
+                  </h3>
+                  <div className="space-y-2">
+                    {notice.attachments.map((attachment) => (
+                      <a
+                        key={attachment.id}
+                        href={getFullImageUrl(attachment.fileUrl)}
+                        download={attachment.fileName}
+                        className="flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors group"
+                      >
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <FileText className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {attachment.fileName}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {formatFileSize(attachment.fileSize)}
+                            </p>
+                          </div>
+                        </div>
+                        <Download className="w-5 h-5 text-gray-400 group-hover:text-teal-600 flex-shrink-0" />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* 하단 버튼 */}
             <div className="border-t border-gray-200 p-6 bg-gray-50">

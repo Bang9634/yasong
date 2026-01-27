@@ -286,6 +286,55 @@ export const noticeAPI = {
       method: 'DELETE'
     });
   },
+
+  /**
+   * 관리자 - 첨부파일 업로드
+   * POST /api/management/notices/{noticeId}/attachments
+   */
+  uploadAttachment: async (noticeId: string, file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const token = localStorage.getItem('token');
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const url = `${API_BASE_URL}/api/management/notices/${noticeId}/attachments`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Upload failed' }));
+      throw new Error(error.message || `HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  },
+
+  /**
+   * 관리자 - 첨부파일 목록 조회
+   * GET /api/management/notices/{noticeId}/attachments
+   */
+  getAttachments: async (noticeId: string) => {
+    return apiCall(`/api/management/notices/${noticeId}/attachments`, {
+      method: 'GET'
+    });
+  },
+
+  /**
+   * 관리자 - 첨부파일 삭제
+   * DELETE /api/management/notices/{noticeId}/attachments/{attachmentId}
+   */
+  deleteAttachment: async (noticeId: string, attachmentId: number) => {
+    return apiCall(`/api/management/notices/${noticeId}/attachments/${attachmentId}`, {
+      method: 'DELETE'
+    });
+  },
 };
 /**
  * Exhibition API

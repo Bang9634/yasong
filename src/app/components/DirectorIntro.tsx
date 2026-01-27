@@ -80,20 +80,24 @@ export function DirectorIntro() {
 
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-12 items-start mb-16">
-          <div className="space-y-6">
-            <div className="bg-teal-50 p-8 rounded-lg border-l-4 border-teal-700">
+        <div className="grid lg:grid-cols-2 gap-12 items-stretch mb-16">
+          <div className="flex flex-col space-y-6">
+            <div className="bg-teal-50 p-8 rounded-lg border-l-4 border-teal-700 flex-1">
               <h4 className="text-2xl mb-4 text-teal-900">화백 약력</h4>
-              <div className="space-y-3 text-gray-700 whitespace-pre-line">
-                {directorData.bio}
+              <div className="space-y-1 text-gray-700">
+                {directorData.bio.split('\n').filter(line => line.trim()).map((line, index) => (
+                  <p key={index} className="leading-relaxed">
+                    {line.trim().startsWith('•') ? line : `• ${line}`}
+                  </p>
+                ))}
               </div>
             </div>
 
     
           </div>
 
-          <div className="space-y-6">
-            <div className="bg-gradient-to-br from-teal-900 to-teal-700 p-8 rounded-lg text-white">
+          <div className="flex flex-col space-y-6">
+            <div className="bg-gradient-to-br from-teal-900 to-teal-700 p-8 rounded-lg text-white flex-1">
               <h4 className="text-2xl mb-6 border-b-2 border-amber-400 pb-3">예술 세계</h4>
               <div className="space-y-4 leading-relaxed whitespace-pre-line">
                 {directorData.philosophy}

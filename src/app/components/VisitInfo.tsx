@@ -99,7 +99,7 @@ export function VisitInfo() {
                     key={index}
                     className={`py-2 ${index < array.length - 1 ? 'border-b border-teal-200' : ''}`}
                   >
-                    <p className="font-semibold text-lg leading-relaxed">{line}</p>
+                    <p className="font-semibold text-lg leading-relaxed">• {line}</p>
                   </div>
                 ))
               ) : (
@@ -123,7 +123,7 @@ export function VisitInfo() {
                     key={index}
                     className={`py-2 ${index < array.length - 1 ? 'border-b border-teal-200' : ''}`}
                   >
-                    <p className="font-semibold text-lg leading-relaxed">{line}</p>
+                    <p className="font-semibold text-lg leading-relaxed">• {line}</p>
                   </div>
                 ))
               ) : (
@@ -168,12 +168,12 @@ export function VisitInfo() {
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 {etiquetteSplit.left.map((line, index) => (
-                  <p key={index}>{line}</p>
+                  <p key={index}>{line.startsWith('•') ? line : `• ${line}`}</p>
                 ))}
               </div>
               <div className="space-y-2">
                 {etiquetteSplit.right.map((line, index) => (
-                  <p key={index}>{line}</p>
+                  <p key={index}>{line.startsWith('•') ? line : `• ${line}`}</p>
                 ))}
               </div>
             </div>

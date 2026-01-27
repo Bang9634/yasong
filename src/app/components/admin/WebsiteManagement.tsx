@@ -79,6 +79,8 @@ export function WebsiteManagement() {
     busInfo: '',
     trainInfo: '',
     parkingInfo: '',
+    latitude: '',
+    longitude: '',
   });
   const [footerData, setFooterData] = useState({
     description: '',
@@ -252,13 +254,15 @@ export function WebsiteManagement() {
         });
 
         // 오시는 길 조회
-        const [addressData, postalCodeData, carInfoData, busInfoData, trainInfoData, parkingInfoData] = await Promise.all([
+        const [addressData, postalCodeData, carInfoData, busInfoData, trainInfoData, parkingInfoData, latitudeData, longitudeData] = await Promise.all([
           websiteAPI.getTextSetting('location_address'),
           websiteAPI.getTextSetting('location_postal_code'),
           websiteAPI.getTextSetting('location_car_info'),
           websiteAPI.getTextSetting('location_bus_info'),
           websiteAPI.getTextSetting('location_train_info'),
           websiteAPI.getTextSetting('location_parking_info'),
+          websiteAPI.getTextSetting('location_latitude'),
+          websiteAPI.getTextSetting('location_longitude'),
         ]);
 
         setLocationData({
@@ -268,6 +272,8 @@ export function WebsiteManagement() {
           busInfo: busInfoData.value || '',
           trainInfo: trainInfoData.value || '',
           parkingInfo: parkingInfoData.value || '',
+          latitude: latitudeData.value || '36.4347',
+          longitude: longitudeData.value || '129.0542',
         });
 
         // 푸터 정보 조회

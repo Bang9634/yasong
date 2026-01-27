@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { MapPin, Bus, Train, Car, Navigation } from 'lucide-react';
 import { websiteAPI } from '@/utils/api';
+import { NaverMap } from './NaverMap';
 
 interface LocationData {
   address: string;
@@ -9,6 +10,8 @@ interface LocationData {
   busInfo: string;
   trainInfo: string;
   parkingInfo: string;
+  latitude: string;
+  longitude: string;
 }
 
 export function Location() {
@@ -19,6 +22,8 @@ export function Location() {
     busInfo: '',
     trainInfo: '',
     parkingInfo: '',
+    latitude: '36.4347',
+    longitude: '129.0542',
   });
   const [loading, setLoading] = useState(true);
 
@@ -28,13 +33,15 @@ export function Location() {
 
   const loadLocationData = async () => {
     try {
-      const [addressData, postalCodeData, carData, busData, trainData, parkingData] = await Promise.all([
+      const [addressData, postalCodeData, carData, busData, trainData, parkingData, latData, lngData] = await Promise.all([
         websiteAPI.getTextSetting('location_address'),
         websiteAPI.getTextSetting('location_postal_code'),
         websiteAPI.getTextSetting('location_car_info'),
         websiteAPI.getTextSetting('location_bus_info'),
         websiteAPI.getTextSetting('location_train_info'),
         websiteAPI.getTextSetting('location_parking_info'),
+        websiteAPI.getTextSetting('location_latitude'),
+        websiteAPI.getTextSetting('location_longitude'),
       ]);
 
       setLocationData({
@@ -44,6 +51,8 @@ export function Location() {
         busInfo: busData.value || '',
         trainInfo: trainData.value || '',
         parkingInfo: parkingData.value || '',
+        latitude: latData.value || '36.4347',
+        longitude: lngData.value || '129.0542',
       });
     } catch (error) {
       console.error('Failed to load location data:', error);
@@ -80,24 +89,34 @@ export function Location() {
         </div>
 
         {/* 지도 영역 */}
-        <div className="bg-white rounded-lg shadow-xl overflow-hidden mb-12 border-2 border-teal-200">
-          <div className="relative h-96 bg-gradient-to-br from-teal-100 via-teal-50 to-emerald-50 flex items-center justify-center">
-            <div className="text-center">
-              <Navigation className="w-20 h-20 text-teal-600 mx-auto mb-4" />
-              <p className="text-2xl text-teal-800 mb-2">지도 영역</p>
-              <p className="text-gray-600 mt-2 max-w-md mx-auto">
-                실제 구현 시 카카오맵 또는 네이버 지도 API 연동
-              </p>
-              <div className="mt-6 space-x-4">
-                <button className="px-6 py-2 bg-teal-700 text-white rounded-lg hover:bg-teal-800 transition-colors">
-                  카카오맵으로 보기
-                </button>
-                <button className="px-6 py-2 bg-emerald-700 text-white rounded-lg hover:bg-emerald-800 transition-colors">
-                  네이버 지도로 보기
-                </button>
-              </div>
-            </div>
-          </div>
+        <div className="bg-white rounded-lg shadow-xl overflow-hidden mb-6 border-2 border-teal-200">
+          <NaverMap 
+            latitude={parseFloat(locationData.latitude)} 
+            longitude={parseFloat(locationData.longitude)}
+            markerTitle="군립청송야송미술관"
+          />
+        </div>
+
+        {/* 지도 링크 버튼 */}
+        <div className="flex items-center justify-center space-x-4 mb-12">
+          <a
+            href={`https://map.naver.com/v5/search/${encodeURIComponent(locationData.address)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center shadow-lg"
+          >
+            <Navigation className="w-5 h-5 mr-2" />
+            네이버 지도로 보기
+          </a>
+          <a
+            href={`https://map.kakao.com/?q=${encodeURIComponent(locationData.address)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-6 py-3 bg-yellow-500 text-gray-900 rounded-lg hover:bg-yellow-600 transition-colors flex items-center shadow-lg"
+          >
+            <Navigation className="w-5 h-5 mr-2" />
+            카카오맵으로 보기
+          </a>
         </div>
 
         {/* 교통수단별 안내 */}

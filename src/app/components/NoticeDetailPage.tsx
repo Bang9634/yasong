@@ -12,6 +12,7 @@ interface NoticeAttachment {
   id: number;
   fileName: string;
   fileUrl: string;
+  downloadUrl: string;
   fileSize: number;
   contentType: string;
   uploadedAt: string;
@@ -228,8 +229,7 @@ export function NoticeDetailPage() {
                     {notice.attachments.map((attachment) => (
                       <a
                         key={attachment.id}
-                        href={getFullImageUrl(attachment.fileUrl)}
-                        download={attachment.fileName}
+                        href={attachment.downloadUrl}
                         className="flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors group"
                       >
                         <div className="flex items-center gap-3 flex-1 min-w-0">

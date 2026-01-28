@@ -168,6 +168,17 @@ export const adminUsersAPI = {
   },
 
   /**
+   * 사용자 추가 (관리자전용)
+   * POST /api/admin/users
+   */
+  createUser: async (email: string, username: string, password: string, name: string) => {
+    return apiCall('/api/auth/signup', {
+      method: 'POST',
+      body: JSON.stringify({ email, username, password, name})
+    });
+  },
+
+  /**
    * 특정 사용자 정보 조회
    * GET /api/admin/users/{userId}
    */

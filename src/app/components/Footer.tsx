@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { MapPin, Phone, Mail, Clock, Facebook, Instagram, Youtube } from 'lucide-react';
 import { websiteAPI } from '@/utils/api';
 
@@ -310,6 +311,12 @@ export function Footer() {
           <div className="text-center text-teal-300 text-sm space-y-2">
             <p>{footerData.bottomInfo}</p>
             <p>{footerData.copyright}</p>
+            <Link 
+              to="/login" 
+              className="inline-block mt-4 text-xs text-teal-700 hover:text-teal-600 opacity-30 hover:opacity-50 transition-opacity"
+            >
+              관리자 로그인
+            </Link>
           </div>
         </div>
       </div>

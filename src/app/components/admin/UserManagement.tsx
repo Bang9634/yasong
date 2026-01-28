@@ -4,7 +4,7 @@ import { Header } from '../Header';
 import { Footer } from '../Footer';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Plus } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,6 +33,14 @@ export function UserManagement() {
   const [roleFilter, setRoleFilter] = useState<string>('전체');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [newRole, setNewRole] = useState<string>('');
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [newUser, setNewUser] = useState({
+    email: '',
+    username: '',
+    password: '',
+    name: '',
+    role: 'USER'
+  });
 
   // 권한 확인
   useEffect(() => {
@@ -103,6 +111,54 @@ export function UserManagement() {
     }
   };
 
+  // 사용자 추가
+  const handleAddUser = async () => {
+    if (!newUser.email || !newUser.username || !newUser.password || !newUser.name) {
+      alert('모든 필드를 입력해주세요.');
+      return;
+    }
+
+    // 이메일 형식 검증
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newUser.email)) {
+      alert('올바른 이메일 형식을 입력해주세요.');
+      return;
+    }
+
+    // 비밀번호 검증
+    if (newUser.password.length < 8) {
+      alert('비밀번호는 8자 이상이어야 합니다.');
+      return;
+    }
+
+    try {
+      await adminUsersAPI.createUser(
+        newUser.email,
+        newUser.username,
+        newUser.password,
+        newUser.name,
+      );
+      alert('사용자가 추가되었습니다.');
+      
+      // 목록 새로고침
+      const data = await adminUsersAPI.getAllUsers();
+      setUsers(data);
+      
+      // 폼 초기화
+      setNewUser({
+        email: '',
+        username: '',
+        password: '',
+        name: '',
+        role: 'USER'
+      });
+      setShowAddUserModal(false);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '사용자 추가에 실패했습니다.';
+      alert(`실패\n\n${errorMessage}`);
+    }
+  };
+
   // 검색 및 권한 필터링
   const filteredUsers = users.filter(u => {
     const matchesSearch = u.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -128,9 +184,18 @@ export function UserManagement() {
       <div className="pt-24 pb-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* 페이지 헤더 */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-teal-900 mb-2">사용자 관리</h1>
-            <p className="text-gray-600">전체 사용자 계정을 관리하고 권한을 수정할 수 있습니다.</p>
+          <div className="mb-8 flex justify-between items-start">
+            <div>
+              <h1 className="text-4xl font-bold text-teal-900 mb-2">사용자 관리</h1>
+              <p className="text-gray-600">전체 사용자 계정을 관리하고 권한을 수정할 수 있습니다.</p>
+            </div>
+            <Button
+              onClick={() => setShowAddUserModal(true)}
+              className="bg-teal-700 hover:bg-teal-800"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              사용자 추가
+            </Button>
           </div>
 
           {/* 검색 및 필터 */}
@@ -285,6 +350,89 @@ export function UserManagement() {
                     onClick={() => {
                       setSelectedUser(null);
                       setNewRole('');
+                    }}
+                    className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800"
+                  >
+                    취소
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 사용자 추가 모달 */}
+          {showAddUserModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">사용자 추가</h2>
+                
+                <div className="space-y-4 mb-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      이메일 <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                      type="email"
+                      value={newUser.email}
+                      onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                      placeholder="example@email.com"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      사용자명 <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                      type="text"
+                      value={newUser.username}
+                      onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+                      placeholder="username"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      이름 <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                      type="text"
+                      value={newUser.name}
+                      onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                      placeholder="홍길동"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      비밀번호 <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                      type="password"
+                      value={newUser.password}
+                      onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                      placeholder="8자 이상"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex space-x-3">
+                  <Button
+                    onClick={handleAddUser}
+                    className="flex-1 bg-teal-600 hover:bg-teal-700 text-white"
+                  >
+                    추가
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setShowAddUserModal(false);
+                      setNewUser({
+                        email: '',
+                        username: '',
+                        password: '',
+                        name: '',
+                        role: 'USER'
+                      });
                     }}
                     className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800"
                   >

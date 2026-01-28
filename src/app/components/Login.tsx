@@ -83,12 +83,12 @@ export function Login() {
               />
             </div>
 
-            {/* 비밀번호 찾기 */}
+            {/* 비밀번호 찾기
             <div className="text-right">
               <Link to="#" className="text-sm text-teal-700 hover:text-teal-800">
                 비밀번호를 잊으셨나요?
               </Link>
-            </div>
+            </div> */}
 
             {/* 로그인 버튼 */}
             <Button type="submit" className="w-full bg-teal-700 hover:bg-teal-800 text-white">
@@ -100,19 +100,6 @@ export function Login() {
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-300"></div>
               </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">또는</span>
-              </div>
-            </div>
-
-            {/* 회원가입 링크 */}
-            <div className="text-center">
-              <p className="text-sm text-gray-600">
-                아직 계정이 없으신가요?{' '}
-                <Link to="/signup" className="text-teal-700 hover:text-teal-800 font-semibold">
-                  회원가입
-                </Link>
-              </p>
             </div>
 
             {/* 홈으로 돌아가기 */}

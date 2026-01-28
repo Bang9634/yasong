@@ -18,7 +18,7 @@ if ! command -v ngrok &> /dev/null; then
 fi
 
 echo "애플리케이션을 먼저 실행하세요:"
-echo "  java -jar yasongmuseum-0.0.1-SNAPSHOT.jar"
+echo "  java -jar yasong-art-gallery.jar"
 echo ""
 read -p "애플리케이션이 실행 중입니까? (y/n): " -n 1 -r
 echo

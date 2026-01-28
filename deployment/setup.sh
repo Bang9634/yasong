@@ -2,10 +2,10 @@
 
 # Yasongmuseum 초기 설정 스크립트 (서버에서 최초 1회 실행)
 
-APP_NAME="yasongmuseum"
-APP_USER="yasongmuseum"
+APP_NAME="yasong-art-gallery"
+APP_USER="yasong-art-gallery"
 APP_DIR="/home/$APP_USER"
-SERVICE_FILE="yasongmuseum.service"
+SERVICE_FILE="yasong-art-gallery.service"
 
 echo "=========================================="
 echo "  Yasongmuseum 초기 설정"
@@ -25,12 +25,12 @@ echo "디렉토리 구조 생성 중..."
 sudo mkdir -p $APP_DIR/deployment
 sudo mkdir -p $APP_DIR/backups
 sudo mkdir -p $APP_DIR/uploads
-sudo mkdir -p /var/log/yasongmuseum
+sudo mkdir -p /var/log/yasong-art-gallery
 
 # 3. 권한 설정
 echo "권한 설정 중..."
 sudo chown -R $APP_USER:$APP_USER $APP_DIR
-sudo chown -R $APP_USER:$APP_USER /var/log/yasongmuseum
+sudo chown -R $APP_USER:$APP_USER /var/log/yasong-art-gallery
 sudo chmod 755 $APP_DIR
 
 # 4. Systemd 서비스 파일 복사

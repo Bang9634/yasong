@@ -1,4 +1,4 @@
-# 🏛️ Yasongmuseum - 야송미술관 웹사이트
+# 🏛️ Yasong Art Gallery - 야송미술관 웹사이트
 
 Spring Boot 기반 미술관 웹사이트 백엔드 API 서버
 
@@ -39,8 +39,8 @@ Spring Boot 기반 미술관 웹사이트 백엔드 API 서버
 ### 1. 프로젝트 클론
 
 ```bash
-git clone https://github.com/bang9634/yasongmuseum.git
-cd yasongmuseum
+git clone https://github.com/bang9634/yasong-art-gallery.git
+cd yasong-art-gallery
 ```
 
 ### 2. 데이터베이스 설정
@@ -116,12 +116,12 @@ SPRING_PROFILES_ACTIVE=local
 ./mvnw clean package -DskipTests
 
 # 2. 서버에 파일 업로드
-scp target/yasongmuseum-0.0.1-SNAPSHOT.jar user@server:/home/yasongmuseum/
-scp -r deployment user@server:/home/yasongmuseum/
+scp target/yasong-art-gallery.jar user@server:/home/yasong-art-gallery/
+scp -r deployment user@server:/home/yasong-art-gallery/
 
 # 3. 서버에서 초기 설정 (최초 1회)
 ssh user@server
-cd /home/yasongmuseum
+cd /home/yasong-art-gallery
 chmod +x deployment/*.sh
 sudo ./deployment/setup.sh
 
@@ -136,19 +136,19 @@ sudo ./deployment/deploy.sh
 
 ```bash
 # 서비스 시작
-sudo systemctl start yasongmuseum
+sudo systemctl start yasong-art-gallery
 
 # 서비스 중지
-sudo systemctl stop yasongmuseum
+sudo systemctl stop yasong-art-gallery
 
 # 서비스 재시작
-sudo systemctl restart yasongmuseum
+sudo systemctl restart yasong-art-gallery
 
 # 서비스 상태 확인
 ./deployment/status.sh
 
 # 실시간 로그
-sudo journalctl -u yasongmuseum -f
+sudo journalctl -u yasong-art-gallery -f
 ```
 
 ### 방법 2: 직접 실행
@@ -158,7 +158,7 @@ sudo journalctl -u yasongmuseum -f
 ./deployment/start-prod.sh
 
 # 백그라운드 실행
-nohup java -jar yasongmuseum-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod > logs/app.log 2>&1 &
+nohup java -jar yasong-art-gallery.jar --spring.profiles.active=prod > logs/app.log 2>&1 &
 ```
 
 ### HTTPS 설정
@@ -213,7 +213,7 @@ sudo ./deployment/setup-ssl.sh
 ## 📁 프로젝트 구조
 
 ```
-yasongmuseum/
+yasong-art-gallery/
 ├── src/
 │   ├── main/
 │   │   ├── java/com/bang9634/yasongmuseum/
@@ -238,7 +238,7 @@ yasongmuseum/
 │   ├── stop.sh                  # 서비스 중지
 │   ├── status.sh                # 상태 확인
 │   ├── setup-ssl.sh             # HTTPS 설정
-│   ├── yasongmuseum.service     # Systemd 서비스
+│   ├── yasong-art-gallery.service  # Systemd 서비스
 │   └── nginx/                   # Nginx 설정
 ├── .env.example                 # 환경 변수 예제
 ├── pom.xml                      # Maven 설정
@@ -277,8 +277,8 @@ yasongmuseum/
 # 테스트 없이 빌드
 ./mvnw clean package -DskipTests
 
-# 빌드된 파일 위치
-target/yasongmuseum-0.0.1-SNAPSHOT.jar
+# 빌드된 파일 위치 (버전 없는 고정 파일명)
+target/yasong-art-gallery.jar
 ```
 
 ## 🐛 문제 해결
@@ -299,10 +299,10 @@ netstat -an | grep 3306
 
 ```bash
 # 로그 확인
-sudo journalctl -u yasongmuseum -n 50
+sudo journalctl -u yasong-art-gallery -n 50
 
 # 또는 직접 실행하여 에러 확인
-java -jar yasongmuseum-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
+java -jar yasong-art-gallery.jar --spring.profiles.active=prod
 ```
 
 ### 포트 이미 사용 중

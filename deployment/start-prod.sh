@@ -3,8 +3,8 @@
 # Yasongmuseum 프로덕션 시작 스크립트
 # 1GB 서버 최적화 설정 포함
 
-APP_NAME="yasongmuseum"
-JAR_FILE="target/yasongmuseum-0.0.1-SNAPSHOT.jar"
+APP_NAME="yasong-art-gallery"
+JAR_FILE="target/yasong-art-gallery.jar"
 
 # Load environment variables
 if [ -f .env ]; then

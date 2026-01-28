@@ -109,6 +109,7 @@
 	</dependencies>
 
 	<build>
+		<finalName>yasong-art-gallery</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

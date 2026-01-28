@@ -2,7 +2,7 @@
 
 # Yasongmuseum 상태 확인 스크립트 (Systemd)
 
-APP_NAME="yasongmuseum"
+APP_NAME="yasong-art-gallery"
 
 echo "=========================================="
 echo "  $APP_NAME 상태"

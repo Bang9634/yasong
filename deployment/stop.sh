@@ -2,7 +2,7 @@
 
 # Yasongmuseum 중지 스크립트 (Systemd)
 
-APP_NAME="yasongmuseum"
+APP_NAME="yasong-art-gallery"
 
 echo "[$APP_NAME] 중지합니다..."
 

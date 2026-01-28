@@ -2,10 +2,10 @@
 
 # Yasongmuseum Systemd 배포 스크립트
 
-APP_NAME="yasongmuseum"
-JAR_FILE="yasongmuseum-0.0.1-SNAPSHOT.jar"
-APP_DIR="/home/yasongmuseum"
-SERVICE_FILE="yasongmuseum.service"
+APP_NAME="yasong-art-gallery"
+JAR_FILE="yasong-art-gallery.jar"
+APP_DIR="/home/yasong-art-gallery"
+SERVICE_FILE="yasong-art-gallery.service"
 BACKUP_DIR="$APP_DIR/backups"
 
 echo "=========================================="

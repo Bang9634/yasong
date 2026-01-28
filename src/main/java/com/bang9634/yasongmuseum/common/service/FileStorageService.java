@@ -31,7 +31,7 @@ public class FileStorageService {
     private long maxFileSize;
 
     private static final List<String> ALLOWED_IMAGE_EXTENSIONS = Arrays.asList("jpg", "jpeg", "png", "gif", "webp");
-    private static final List<String> ALLOWED_DOCUMENT_EXTENSIONS = Arrays.asList("pdf", "hwp", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "zip");
+    private static final List<String> ALLOWED_DOCUMENT_EXTENSIONS = Arrays.asList("pdf", "hwp", "hwpx", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "zip");
 
     /**
      * Save uploaded file to the specified subdirectory
@@ -158,7 +158,7 @@ public class FileStorageService {
 
         String originalFilename = file.getOriginalFilename();
         if (originalFilename == null || !hasAllowedDocumentExtension(originalFilename)) {
-            throw new FileUploadException("허용되지 않는 파일 형식입니다. (pdf, hwp, doc, docx, xls, xlsx, ppt, pptx, txt, zip, jpg, jpeg, png, gif, webp만 가능)");
+            throw new FileUploadException("허용되지 않는 파일 형식입니다. (pdf, hwp, hwpx, doc, docx, xls, xlsx, ppt, pptx, txt, zip, jpg, jpeg, png, gif, webp만 가능)");
         }
     }
 

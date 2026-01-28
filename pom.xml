@@ -9,8 +9,8 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.bang9634</groupId>
-	<artifactId>yasongmuseum</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<artifactId>yasong-art-gallery</artifactId>
+	<version>1.0.0-RELEASE</version>
 	<name>yasongmuseum</name>
 	<description>Website project for Yasong Art Gallery</description>
 	<url/>

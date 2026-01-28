@@ -37,7 +37,14 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // permit all OPTIONS requests
             .requestMatchers("/", "/index.html").permitAll() // permit root and index.html for SPA
             .requestMatchers("/static/**", "/assets/**", "/*.js", "/*.css", "/*.ico", "/*.png", "/*.jpg", "/*.svg").permitAll() // permit static resources
-            .requestMatchers("/api/auth/**").permitAll() // permit auth APIs without authentication
+            
+            // Admin-only auth endpoints (MUST be before /api/auth/**)
+            .requestMatchers("/api/auth/signup").hasRole("ADMIN") // restrict signup to ADMIN role
+            
+            // Public auth endpoints
+            .requestMatchers("/api/auth/**").permitAll() // permit other auth APIs without authentication
+            
+            // Public file and content endpoints
             .requestMatchers("/api/files/**").permitAll() // permit file downloads
             .requestMatchers("/api/notices/**").permitAll() // permit public notice fetching
             .requestMatchers("/api/website/settings/**").permitAll() // permit public website settings fetching

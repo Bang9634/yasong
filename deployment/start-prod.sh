@@ -8,10 +8,13 @@ JAR_FILE="target/yasongmuseum-0.0.1-SNAPSHOT.jar"
 
 # Load environment variables
 if [ -f .env ]; then
+    set -a  # automatically export all variables
     source .env
-    echo "Environment variables loaded from .env"
+    set +a
+    echo "✓ Environment variables loaded from .env"
 else
-    echo "Warning: .env file not found. Using default values."
+    echo "⚠ Warning: .env file not found. Using default values."
+    echo "  Create .env file with: ./deployment/setup-env.sh"
 fi
 
 # JVM Memory Optimization for 1GB server

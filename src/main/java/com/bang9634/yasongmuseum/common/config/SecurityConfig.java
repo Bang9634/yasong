@@ -38,6 +38,7 @@ public class SecurityConfig {
             .requestMatchers("/", "/index.html").permitAll() // permit root and index.html for SPA
             .requestMatchers("/static/**", "/assets/**", "/*.js", "/*.css", "/*.ico", "/*.png", "/*.jpg", "/*.svg").permitAll() // permit static resources
             .requestMatchers("/api/auth/**").permitAll() // permit auth APIs without authentication
+            .requestMatchers("/api/files/**").permitAll() // permit file downloads
             .requestMatchers("/api/notices/**").permitAll() // permit public notice fetching
             .requestMatchers("/api/website/settings/**").permitAll() // permit public website settings fetching
             .requestMatchers("/api/collections/**").permitAll() // permit public collections fetching

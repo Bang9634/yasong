@@ -17,6 +17,7 @@ public class NoticeAttachmentResponse {
     private Long id;
     private String fileName;
     private String fileUrl;
+    private String downloadUrl; // Download URL with original filename
     private Long fileSize;
     private String contentType;
     private LocalDateTime uploadedAt;
@@ -26,6 +27,7 @@ public class NoticeAttachmentResponse {
                 .id(attachment.getId())
                 .fileName(attachment.getFileName())
                 .fileUrl(attachment.getFileUrl())
+                .downloadUrl("/api/files/attachments/" + attachment.getId())
                 .fileSize(attachment.getFileSize())
                 .contentType(attachment.getContentType())
                 .uploadedAt(attachment.getUploadedAt())

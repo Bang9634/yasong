@@ -60,7 +60,7 @@ export function Contest() {
     <section id="contest" className="py-20 bg-gradient-to-b from-white to-teal-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-4xl sm:text-5xl mb-4 text-teal-900">미술대전</h2>
+          <h2 className="text-4xl sm:text-5xl mb-4 text-teal-900">공모전</h2>
           <div className="w-20 h-1 bg-amber-600 mx-auto"></div>
         </div>
         
@@ -109,7 +109,7 @@ export function Contest() {
                 aria-label="미술대전 소개"
               >
                 <Trophy className="w-5 h-5" />
-                <span className="font-medium">미술대전 소개</span>
+                <span className="font-medium">공모전 정보</span>
               </button>
               <button
                 onClick={() => noticeLink && window.open(noticeLink, '_blank', 'noopener,noreferrer')}
@@ -118,7 +118,7 @@ export function Contest() {
                 aria-label="공지사항 보기"
               >
                 <FileText className="w-5 h-5" />
-                <span className="font-medium">공지사항 보기</span>
+                <span className="font-medium">카카오톡 문의</span>
               </button>
             </div>
           </div>

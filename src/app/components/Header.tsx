@@ -92,7 +92,7 @@ export function Header() {
               onClick={() => scrollToSection('contest')}
               className="text-gray-800 hover:text-teal-700 transition-colors"
             >
-              미술대전
+              공모전
             </button>
             {/* 미술관 소개 드롭다운 */}
             <div className="relative group">
@@ -297,12 +297,12 @@ export function Header() {
               </button>
             </div>
             
-            {/* 미술대전 버튼 */}
+            {/* 공모전 버튼 */}
             <button
               onClick={() => scrollToSection('contest')}
               className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors rounded"
             >
-              미술대전
+              공모전
             </button>
             
             {/* 미술관 소개 드롭다운 */}

@@ -5,6 +5,14 @@ import { isManagerOrAbove } from '@/utils/auth';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { Search, Plus, X, Edit2, Trash2, Pin, PinOff } from 'lucide-react';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/app/components/ui/pagination';
 
 interface Collection {
   id: number;
@@ -24,6 +32,8 @@ export function CollectionsPage() {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [filteredCollections, setFilteredCollections] = useState<Collection[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentCollection, setCurrentCollection] = useState<Collection | null>(null);
@@ -56,7 +66,19 @@ export function CollectionsPage() {
         )
       );
     }
+    setCurrentPage(1); // 검색 시 1페이지로 리셋
   }, [searchQuery, collections]);
+
+  // 페이지네이션 계산
+  const totalPages = Math.ceil(filteredCollections.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentCollections = filteredCollections.slice(startIndex, endIndex);
+
+  // 페이지 변경 시 맨 위로 스크롤
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentPage]);
 
   const loadCollections = async () => {
     try {
@@ -207,7 +229,7 @@ export function CollectionsPage() {
 
           {/* 소장품 그리드 */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredCollections.map((collection) => (
+            {currentCollections.map((collection) => (
               <div key={collection.id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
                 <div className="relative">
                   <img
@@ -252,6 +274,41 @@ export function CollectionsPage() {
               </div>
             ))}
           </div>
+
+          {/* 페이지네이션 */}
+          {totalPages > 1 && (
+            <div className="mt-12">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                    />
+                  </PaginationItem>
+                  
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <PaginationItem key={page}>
+                      <PaginationLink
+                        onClick={() => setCurrentPage(page)}
+                        isActive={currentPage === page}
+                        className="cursor-pointer"
+                      >
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
+                  
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          )}
 
           {filteredCollections.length === 0 && (
             <div className="text-center py-12">

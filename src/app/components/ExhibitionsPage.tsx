@@ -2,12 +2,20 @@ import { useState, useEffect } from 'react';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { ImageWithFallback } from '@/app/components/figma/ImageWithFallback';
-import { Calendar, MapPin, Search, Plus, Edit, Trash2 } from 'lucide-react';
+import { Calendar, MapPin, Search, Plus, Edit, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { exhibitionAPI } from '@/utils/api';
 import { Input } from '@/app/components/ui/input';
 import { Button } from '@/app/components/ui/button';
 import { Label } from '@/app/components/ui/label';
 import { Textarea } from '@/app/components/ui/textarea';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/app/components/ui/pagination';
 import { useAuth } from '@/context/AuthContext';
 import { isManagerOrAbove } from '@/utils/auth';
 import { resizeImage } from '@/utils/imageUtils';
@@ -32,6 +40,8 @@ export function ExhibitionsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
   // 관리자 권한 확인
   const canManage = user && isManagerOrAbove(user.role);
@@ -296,6 +306,22 @@ export function ExhibitionsPage() {
     return matchesStatus && matchesSearch;
   });
 
+  // 페이지네이션 계산
+  const totalPages = Math.ceil(filteredExhibitions.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentExhibitions = filteredExhibitions.slice(startIndex, endIndex);
+
+  // 필터나 검색이 변경되면 1페이지로 리셋
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, searchQuery]);
+
+  // 페이지 변경 시 맨 위로 스크롤
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentPage]);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -360,8 +386,9 @@ export function ExhibitionsPage() {
               <p className="text-gray-500">조건에 맞는 전시가 없습니다.</p>
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredExhibitions.map((exhibition) => (
+            <>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {currentExhibitions.map((exhibition) => (
                 <div
                   key={exhibition.id}
                   className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow border border-teal-100"
@@ -421,7 +448,43 @@ export function ExhibitionsPage() {
                   </div>
                 </div>
               ))}
-            </div>
+              </div>
+
+              {/* 페이지네이션 */}
+              {totalPages > 1 && (
+                <div className="mt-12">
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                          className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                        />
+                      </PaginationItem>
+                      
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        <PaginationItem key={page}>
+                          <PaginationLink
+                            onClick={() => setCurrentPage(page)}
+                            isActive={currentPage === page}
+                            className="cursor-pointer"
+                          >
+                            {page}
+                          </PaginationLink>
+                        </PaginationItem>
+                      ))}
+                      
+                      <PaginationItem>
+                        <PaginationNext
+                          onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                          className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </div>
+              )}
+            </>
           )}
 
           {/* 결과 개수 */}

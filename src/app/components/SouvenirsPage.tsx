@@ -6,6 +6,14 @@ import { ImageWithFallback } from '@/app/components/figma/ImageWithFallback';
 import { ShoppingBag, Search, Plus, Edit, Trash2, X } from 'lucide-react';
 import { souvenirAPI, getFullImageUrl } from '@/utils/api';
 import { useAuth } from '@/context/AuthContext';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/app/components/ui/pagination';
 
 interface Souvenir {
   id: number;
@@ -24,6 +32,8 @@ export function SouvenirsPage() {
   const [souvenirs, setSouvenirs] = useState<Souvenir[]>([]);
   const [filteredSouvenirs, setFilteredSouvenirs] = useState<Souvenir[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -53,7 +63,19 @@ export function SouvenirsPage() {
       );
       setFilteredSouvenirs(filtered);
     }
+    setCurrentPage(1); // 검색 시 1페이지로 리셋
   }, [searchQuery, souvenirs]);
+
+  // 페이지네이션 계산
+  const totalPages = Math.ceil(filteredSouvenirs.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentSouvenirs = filteredSouvenirs.slice(startIndex, endIndex);
+
+  // 페이지 변경 시 맨 위로 스크롤
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentPage]);
 
   const loadSouvenirs = async () => {
     try {
@@ -239,8 +261,9 @@ export function SouvenirsPage() {
               {searchQuery ? '검색 결과가 없습니다.' : '등록된 기념품이 없습니다.'}
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredSouvenirs.map((souvenir) => (
+            <>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {currentSouvenirs.map((souvenir) => (
                 <div
                   key={souvenir.id}
                   className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow border border-gray-200 group"
@@ -290,7 +313,43 @@ export function SouvenirsPage() {
                   </div>
                 </div>
               ))}
-            </div>
+              </div>
+
+              {/* 페이지네이션 */}
+              {totalPages > 1 && (
+                <div className="mt-12">
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                          className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                        />
+                      </PaginationItem>
+                      
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        <PaginationItem key={page}>
+                          <PaginationLink
+                            onClick={() => setCurrentPage(page)}
+                            isActive={currentPage === page}
+                            className="cursor-pointer"
+                          >
+                            {page}
+                          </PaginationLink>
+                        </PaginationItem>
+                      ))}
+                      
+                      <PaginationItem>
+                        <PaginationNext
+                          onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                          className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </div>
+              )}
+            </>
           )}
         </div>
       </main>

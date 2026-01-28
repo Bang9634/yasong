@@ -133,6 +133,21 @@ public class NoticeService {
     // ==================== Attachment Methods ====================
 
     /**
+     * Upload image for notice content (editor)
+     * Returns image URL to be inserted in <img> tag
+     */
+    @Transactional
+    public String uploadContentImage(MultipartFile file) {
+        log.info("Uploading content image: {}", file.getOriginalFilename());
+        
+        // Use saveFile (image validation only)
+        String imageUrl = fileStorageService.saveFile(file, "notice_content", "notice-content-");
+        
+        log.info("Content image uploaded successfully: {}", imageUrl);
+        return imageUrl;
+    }
+
+    /**
      * Upload attachment to a notice
      */
     @Transactional

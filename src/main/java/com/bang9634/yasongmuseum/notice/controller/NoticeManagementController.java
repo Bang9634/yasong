@@ -12,10 +12,12 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.bang9634.yasongmuseum.notice.dto.CreateNoticeRequest;
+import com.bang9634.yasongmuseum.notice.dto.ImageUploadResponse;
 import com.bang9634.yasongmuseum.notice.dto.NoticeAttachmentResponse;
 import com.bang9634.yasongmuseum.notice.dto.NoticeResponse;
 import com.bang9634.yasongmuseum.notice.dto.UpdateNoticeRequest;
@@ -66,6 +68,18 @@ public class NoticeManagementController {
     }
 
     // ==================== Attachment Endpoints ====================
+
+    /**
+     * Upload image for notice content (for editor)
+     * POST /api/management/notices/upload-image
+     * Returns image URL to be inserted in content
+     */
+    @PostMapping("/upload-image")
+    public ResponseEntity<ImageUploadResponse> uploadContentImage(
+            @RequestPart("file") MultipartFile file) {
+        String imageUrl = noticeService.uploadContentImage(file);
+        return ResponseEntity.ok(new ImageUploadResponse(imageUrl));
+    }
 
     /**
      * Upload attachment to a notice

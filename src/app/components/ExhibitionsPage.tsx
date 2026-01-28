@@ -191,7 +191,7 @@ export function ExhibitionsPage() {
       return;
     }
 
-    if (new Date(exhibitionForm.startDate) >= new Date(exhibitionForm.endDate)) {
+    if (new Date(exhibitionForm.startDate) > new Date(exhibitionForm.endDate)) {
       alert('종료일은 시작일보다 늦어야 합니다.');
       return;
     }
@@ -199,13 +199,14 @@ export function ExhibitionsPage() {
     try {
       setIsSubmitting(true);
       
-      const startDateTime = new Date(exhibitionForm.startDate + 'T00:00:00');
-      const endDateTime = new Date(exhibitionForm.endDate + 'T23:59:59');
+      // LocalDateTime 형식 (YYYY-MM-DDTHH:mm:ss)
+      const startDateTime = exhibitionForm.startDate + 'T00:00:01';
+      const endDateTime = exhibitionForm.endDate + 'T23:59:59';
       
       const formData = {
         ...exhibitionForm,
-        startDate: startDateTime.toISOString(),
-        endDate: endDateTime.toISOString(),
+        startDate: startDateTime,
+        endDate: endDateTime,
       };
       
       await exhibitionAPI.createExhibition(formData, exhibitionImage);
@@ -241,13 +242,14 @@ export function ExhibitionsPage() {
     try {
       setIsSubmitting(true);
       
-      const startDateTime = new Date(exhibitionForm.startDate + 'T00:00:00');
-      const endDateTime = new Date(exhibitionForm.endDate + 'T23:59:59');
+      // LocalDateTime 형식 (YYYY-MM-DDTHH:mm:ss)
+      const startDateTime = exhibitionForm.startDate + 'T00:00:00';
+      const endDateTime = exhibitionForm.endDate + 'T23:59:59';
       
       const formData = {
         ...exhibitionForm,
-        startDate: startDateTime.toISOString(),
-        endDate: endDateTime.toISOString(),
+        startDate: startDateTime,
+        endDate: endDateTime,
       };
       
       await exhibitionAPI.updateExhibition(editingExhibition.id, formData, exhibitionImage || undefined);

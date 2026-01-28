@@ -405,9 +405,6 @@ export function WebsiteManagement() {
               collectionCount={facilityCollectionCount}
             />
 
-            {/* 소장품 관리 */}
-            <CollectionManagement initialCollections={collections} />
-
             {/* 관람 안내 관리 */}
             <VisitInfoManagement initialData={visitInfo} />
 

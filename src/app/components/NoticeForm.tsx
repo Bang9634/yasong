@@ -399,11 +399,11 @@ export function NoticeForm() {
                       onChange={isEdit && noticeId ? handleFileUpload : handleAddPendingFile}
                       disabled={uploadingFile}
                       className="hidden"
-                      accept=".pdf,.hwp,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.jpg,.jpeg,.png,.gif,.webp"
+                      accept=".pdf,.hwp,.hwpx,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.jpg,.jpeg,.png,.gif,.webp"
                     />
                   </label>
                   <p className="text-xs text-gray-500 mt-1">
-                    지원 형식: PDF, HWP, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, ZIP, 이미지
+                    지원 형식: PDF, HWP, HWPX, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, ZIP, 이미지
                   </p>
                 </div>
 

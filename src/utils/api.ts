@@ -335,6 +335,35 @@ export const noticeAPI = {
       method: 'DELETE'
     });
   },
+
+  /**
+   * 관리자 - 공지사항 본문용 이미지 업로드
+   * POST /api/management/notices/upload-image
+   */
+  uploadContentImage: async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const headers: Record<string, string> = {};
+    const token = localStorage.getItem('token');
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const url = `${API_BASE_URL}/api/management/notices/upload-image`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Upload failed' }));
+      throw new Error(error.message || `HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  },
 };
 /**
  * Exhibition API

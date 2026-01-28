@@ -227,10 +227,28 @@ export function NoticeDetailPage() {
                   </h3>
                   <div className="space-y-2">
                     {notice.attachments.map((attachment) => (
-                      <a
+                      <button
                         key={attachment.id}
-                        href={attachment.downloadUrl}
-                        className="flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors group"
+                        onClick={async () => {
+                          try {
+                            const response = await fetch(attachment.downloadUrl);
+                            if (!response.ok) throw new Error('다운로드 실패');
+                            
+                            const blob = await response.blob();
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = attachment.fileName;
+                            document.body.appendChild(a);
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                            document.body.removeChild(a);
+                          } catch (error) {
+                            console.error('파일 다운로드 실패:', error);
+                            alert('파일 다운로드에 실패했습니다.');
+                          }
+                        }}
+                        className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors group cursor-pointer"
                       >
                         <div className="flex items-center gap-3 flex-1 min-w-0">
                           <FileText className="w-5 h-5 text-gray-400 flex-shrink-0" />
@@ -244,7 +262,7 @@ export function NoticeDetailPage() {
                           </div>
                         </div>
                         <Download className="w-5 h-5 text-gray-400 group-hover:text-teal-600 flex-shrink-0" />
-                      </a>
+                      </button>
                     ))}
                   </div>
                 </div>

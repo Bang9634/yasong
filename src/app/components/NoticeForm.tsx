@@ -110,8 +110,8 @@ export function NoticeForm() {
 
     try {
       setUploadingImage(true);
-      // 임시 이미지 타입으로 업로드
-      const result = await websiteAPI.uploadImage('notice_content', file);
+      // 공지사항 본문용 이미지 업로드
+      const result = await noticeAPI.uploadContentImage(file);
       const imageUrl = getFullImageUrl(result.imageUrl);
       
       // 현재 커서 위치에 이미지 마크다운 삽입

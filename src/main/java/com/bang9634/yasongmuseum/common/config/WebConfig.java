@@ -51,7 +51,7 @@ public class WebConfig implements WebMvcConfigurer {
     }
 
     /**
-     * Configure CORS settings to allow requests from frontend development servers.
+     * Configure CORS settings to allow requests from frontend development servers and production domain.
      * 
      * @apiNote This is typically used during development to enable communication
      *          between the frontend (e.g., Vite, React) and backend servers.
@@ -59,7 +59,11 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-                .allowedOriginPatterns("http://localhost:*", "https://*.ngrok-free.dev") // local + ngrok
+                .allowedOriginPatterns(
+                    "http://localhost:*", 
+                    "https://yasong.co.kr",
+                    "https://www.yasong.co.kr"
+                )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);

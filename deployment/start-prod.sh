@@ -17,11 +17,12 @@ else
     echo "  Create .env file with: ./deployment/setup-env.sh"
 fi
 
-# JVM Memory Optimization for 1GB server
-# Heap: 256MB ~ 512MB, Metaspace: 128MB ~ 256MB
-JAVA_OPTS="-Xms256m -Xmx512m"
+# JVM Memory Optimization for 1GB dedicated web server (DB separated)
+# Heap: 512MB ~ 768MB (더 많은 메모리 할당 가능), Metaspace: 128MB ~ 256MB
+JAVA_OPTS="-Xms512m -Xmx768m"
 JAVA_OPTS="$JAVA_OPTS -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=256m"
 JAVA_OPTS="$JAVA_OPTS -XX:+UseG1GC"
+JAVA_OPTS="$JAVA_OPTS -XX:MaxGCPauseMillis=200"
 JAVA_OPTS="$JAVA_OPTS -XX:+HeapDumpOnOutOfMemoryError"
 JAVA_OPTS="$JAVA_OPTS -XX:HeapDumpPath=logs/heapdump.hprof"
 

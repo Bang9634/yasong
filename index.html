@@ -15,6 +15,175 @@
       <meta name="description" content="청송 야송 미술관의 관람 정보, 작품 소개를 제공하는 비공식 팬 페이지입니다. (공식 홈페이지 아님)" />
     <!-- 네이버 지도 API - 환경변수로 관리 권장 -->
     <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=w4ibj79d4r"></script>
+    
+    <!-- 브라우저 호환성 체크 -->
+    <style>
+      #browser-warning-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        z-index: 9999;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      }
+      #browser-warning-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: white;
+        padding: 30px;
+        border-radius: 10px;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      }
+      #browser-warning-content h2 {
+        margin: 0 0 15px 0;
+        font-size: 24px;
+        color: #d32f2f;
+      }
+      #browser-warning-content p {
+        margin: 10px 0;
+        line-height: 1.6;
+        color: #333;
+      }
+      #browser-warning-content ul {
+        margin: 15px 0;
+        padding-left: 20px;
+        line-height: 1.8;
+        color: #555;
+      }
+      #browser-warning-content button {
+        margin-top: 20px;
+        padding: 10px 20px;
+        background-color: #0d9488;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      #browser-warning-content button:hover {
+        background-color: #0f766e;
+      }
+      .warning-icon {
+        font-size: 48px;
+        text-align: center;
+        margin-bottom: 15px;
+      }
+    </style>
+    
+    <script>
+      (function() {
+        function getBrowserInfo() {
+          var ua = navigator.userAgent;
+          var browser = {
+            name: 'unknown',
+            version: 0,
+            isSupported: true
+          };
+
+          // IE 감지
+          if (ua.indexOf('MSIE') !== -1 || ua.indexOf('Trident/') !== -1) {
+            browser.name = 'IE';
+            browser.version = 0;
+            browser.isSupported = false;
+            return browser;
+          }
+
+          // Edge Legacy 감지 (EdgeHTML)
+          if (ua.indexOf('Edge/') !== -1) {
+            var match = ua.match(/Edge\/(\d+)/);
+            browser.name = 'Edge Legacy';
+            browser.version = match ? parseInt(match[1]) : 0;
+            browser.isSupported = false;
+            return browser;
+          }
+
+          // Chrome 감지
+          if (ua.indexOf('Chrome/') !== -1 && ua.indexOf('Edg/') === -1) {
+            var match = ua.match(/Chrome\/(\d+)/);
+            browser.name = 'Chrome';
+            browser.version = match ? parseInt(match[1]) : 0;
+            browser.isSupported = browser.version >= 61;
+            return browser;
+          }
+
+          // Edge Chromium 감지
+          if (ua.indexOf('Edg/') !== -1) {
+            var match = ua.match(/Edg\/(\d+)/);
+            browser.name = 'Edge';
+            browser.version = match ? parseInt(match[1]) : 0;
+            browser.isSupported = browser.version >= 79;
+            return browser;
+          }
+
+          // Firefox 감지
+          if (ua.indexOf('Firefox/') !== -1) {
+            var match = ua.match(/Firefox\/(\d+)/);
+            browser.name = 'Firefox';
+            browser.version = match ? parseInt(match[1]) : 0;
+            browser.isSupported = browser.version >= 60;
+            return browser;
+          }
+
+          // Safari 감지
+          if (ua.indexOf('Safari/') !== -1 && ua.indexOf('Chrome') === -1) {
+            var match = ua.match(/Version\/(\d+)/);
+            browser.name = 'Safari';
+            browser.version = match ? parseInt(match[1]) : 0;
+            browser.isSupported = browser.version >= 11;
+            return browser;
+          }
+
+          return browser;
+        }
+
+        function showBrowserWarning(browserInfo) {
+          var modal = document.createElement('div');
+          modal.id = 'browser-warning-modal';
+          modal.innerHTML = 
+            '<div id="browser-warning-content">' +
+            '<div class="warning-icon">⚠️</div>' +
+            '<h2>브라우저 호환성 경고</h2>' +
+            '<p>현재 사용 중인 브라우저(' + browserInfo.name + 
+            (browserInfo.version > 0 ? ' ' + browserInfo.version : '') + 
+            ')는 이 웹사이트를 정상적으로 표시하지 못할 수 있습니다.</p>' +
+            '<p><strong>권장 브라우저:</strong></p>' +
+            '<ul>' +
+            '<li>Chrome 61 이상 (2017년 9월 이후)</li>' +
+            '<li>Firefox 60 이상 (2018년 5월 이후)</li>' +
+            '<li>Safari 11 이상 (2017년 9월 이후)</li>' +
+            '<li>Edge 79 이상 (2020년 1월 이후)</li>' +
+            '</ul>' +
+            '<p>최신 브라우저로 업데이트하시면 더 나은 경험을 제공받으실 수 있습니다.</p>' +
+            '<button onclick="document.getElementById(\'browser-warning-modal\').style.display=\'none\'">계속 진행</button>' +
+            '</div>';
+          
+          document.body.appendChild(modal);
+          modal.style.display = 'block';
+        }
+
+        // 페이지 로드 시 브라우저 체크
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', function() {
+            var browserInfo = getBrowserInfo();
+            if (!browserInfo.isSupported) {
+              showBrowserWarning(browserInfo);
+            }
+          });
+        } else {
+          var browserInfo = getBrowserInfo();
+          if (!browserInfo.isSupported) {
+            showBrowserWarning(browserInfo);
+          }
+        }
+      })();
+    </script>
   </head>
 
   <body>

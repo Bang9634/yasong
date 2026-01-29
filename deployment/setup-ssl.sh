@@ -69,21 +69,44 @@ echo ""
 echo "🔧 Step 3: Configuring Nginx..."
 
 # Backup existing config if exists
-if [ -f /etc/nginx/sites-available/yasongmuseum ]; then
-    cp /etc/nginx/sites-available/yasongmuseum \
-       /etc/nginx/sites-available/yasongmuseum.backup.$(date +%Y%m%d_%H%M%S)
-    echo "✅ Existing config backed up"
+if [ -f /etc/nginx/sites-available/yasong-art-gallery ]; then
+    cp /etc/nginx/sites-available/yasong-art-gallery \
+       /etc/nginx/sites-available/yasong-art-gallery.backup.$(date +%Y%m%d_%H%M%S)
+    echo "✅ Existing HTTP config backed up"
 fi
 
-# Copy Nginx config
-cp /home/yasongmuseum/deployment/nginx/yasongmuseum.conf \
-   /etc/nginx/sites-available/yasongmuseum
-
-# Update domain in config
-sed -i "s/yasongmuseum.com/$DOMAIN/g" /etc/nginx/sites-available/yasongmuseum
+# Create HTTPS-ready Nginx config
+cat > /etc/nginx/sites-available/yasong-art-gallery <<EOF
+server {
+    listen 80;
+    listen [::]:80;
+    server_name $DOMAIN www.$DOMAIN;
+    
+    # Let's Encrypt will add SSL config here
+    
+    location / {
+        proxy_pass http://localhost:8080;
+        proxy_http_version 1.1;
+        
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection "upgrade";
+        
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+    
+    client_max_body_size 100M;
+}
+EOF
 
 # Enable site
-ln -sf /etc/nginx/sites-available/yasongmuseum \
+ln -sf /etc/nginx/sites-available/yasong-art-gallery \
        /etc/nginx/sites-enabled/
 
 # Remove default site
@@ -156,7 +179,7 @@ fi
 echo ""
 echo "🔧 Step 8: Restarting services..."
 systemctl restart nginx
-systemctl restart yasongmuseum
+systemctl restart yasong-art-gallery
 
 echo ""
 echo "======================================"
@@ -180,7 +203,9 @@ echo "📊 SSL Grade Check:"
 echo "   https://www.ssllabs.com/ssltest/analyze.html?d=$DOMAIN"
 echo ""
 echo "📝 Logs:"
-echo "   Nginx: tail -f /var/log/nginx/yasongmuseum_*.log"
+echo "   Nginx Access: tail -f /var/log/nginx/access.log"
+echo "   Nginx Error: tail -f /var/log/nginx/error.log"
+echo "   Application: sudo journalctl -u yasong-art-gallery -f"
 echo "   Certbot: journalctl -u certbot.timer"
 echo ""
 echo "🔄 Certificate Renewal:"

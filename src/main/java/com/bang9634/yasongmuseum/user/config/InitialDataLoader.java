@@ -1,7 +1,7 @@
 package com.bang9634.yasongmuseum.user.config;
 
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,14 +16,15 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class InitialDataLoader implements ApplicationRunner {
+public class InitialDataLoader {
     
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Override
+    @EventListener(ApplicationReadyEvent.class)
     @Transactional
-    public void run(ApplicationArguments args) {
+    public void onApplicationReady() {
+        log.info("ApplicationReadyEvent received, starting InitialDataLoader...");
         createDefaultAdmin();
     }
 

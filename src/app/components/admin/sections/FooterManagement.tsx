@@ -17,6 +17,8 @@ interface FooterData {
   instagramEnabled: boolean;
   youtubeUrl: string;
   youtubeEnabled: boolean;
+  kakaoUrl: string;
+  kakaoEnabled: boolean;
   privacyPolicyUrl: string;
   privacyPolicyEnabled: boolean;
   termsUrl: string;
@@ -47,6 +49,8 @@ export function FooterManagement({ initialData }: FooterManagementProps) {
   const [instagramEnabled, setInstagramEnabled] = useState(initialData.instagramEnabled);
   const [youtubeUrl, setYoutubeUrl] = useState(initialData.youtubeUrl);
   const [youtubeEnabled, setYoutubeEnabled] = useState(initialData.youtubeEnabled);
+  const [kakaoUrl, setKakaoUrl] = useState(initialData.kakaoUrl);
+  const [kakaoEnabled, setKakaoEnabled] = useState(initialData.kakaoEnabled);
   const [privacyPolicyUrl, setPrivacyPolicyUrl] = useState(initialData.privacyPolicyUrl);
   const [privacyPolicyEnabled, setPrivacyPolicyEnabled] = useState(initialData.privacyPolicyEnabled);
   const [termsUrl, setTermsUrl] = useState(initialData.termsUrl);
@@ -72,6 +76,8 @@ export function FooterManagement({ initialData }: FooterManagementProps) {
     setInstagramEnabled(initialData.instagramEnabled);
     setYoutubeUrl(initialData.youtubeUrl);
     setYoutubeEnabled(initialData.youtubeEnabled);
+    setKakaoUrl(initialData.kakaoUrl);
+    setKakaoEnabled(initialData.kakaoEnabled);
     setPrivacyPolicyUrl(initialData.privacyPolicyUrl);
     setPrivacyPolicyEnabled(initialData.privacyPolicyEnabled);
     setTermsUrl(initialData.termsUrl);
@@ -108,6 +114,10 @@ export function FooterManagement({ initialData }: FooterManagementProps) {
       if (youtubeUrl || youtubeEnabled) {
         promises.push(websiteAPI.updateTextSetting('footer_youtube_url', youtubeUrl || '-'));
         promises.push(websiteAPI.updateTextSetting('footer_youtube_enabled', youtubeEnabled ? 'true' : 'false'));
+      }
+      if (kakaoUrl || kakaoEnabled) {
+        promises.push(websiteAPI.updateTextSetting('footer_kakao_url', kakaoUrl || '-'));
+        promises.push(websiteAPI.updateTextSetting('footer_kakao_enabled', kakaoEnabled ? 'true' : 'false'));
       }
       if (privacyPolicyUrl || privacyPolicyEnabled) {
         promises.push(websiteAPI.updateTextSetting('footer_privacy_policy_url', privacyPolicyUrl || '-'));
@@ -330,6 +340,29 @@ export function FooterManagement({ initialData }: FooterManagementProps) {
             className="w-full p-3 border border-gray-300 rounded-lg"
             placeholder="https://youtube.com/@yasong-museum (선택사항)"
             disabled={!youtubeEnabled}
+          />
+        </div>
+
+        {/* 카카오톡 채널 */}
+        <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+          <div className="flex items-center mb-3">
+            <input
+              type="checkbox"
+              checked={kakaoEnabled}
+              onChange={(e) => setKakaoEnabled(e.target.checked)}
+              className="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500"
+            />
+            <label className="ml-2 text-sm font-medium text-gray-700">
+              카카오톡 채널 버튼 표시
+            </label>
+          </div>
+          <input
+            type="url"
+            value={kakaoUrl}
+            onChange={(e) => setKakaoUrl(e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-lg"
+            placeholder="https://pf.kakao.com/_xxxxx (선택사항)"
+            disabled={!kakaoEnabled}
           />
         </div>
       </div>

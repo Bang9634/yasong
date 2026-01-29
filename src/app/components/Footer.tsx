@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Phone, Mail, Clock, Facebook, Instagram, Youtube } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock, Facebook, Instagram, Youtube, MessageCircle } from 'lucide-react';
 import { websiteAPI } from '@/utils/api';
 
 interface FooterData {
@@ -19,6 +19,8 @@ interface FooterData {
   instagramEnabled: boolean;
   youtubeUrl: string;
   youtubeEnabled: boolean;
+  kakaoUrl: string;
+  kakaoEnabled: boolean;
   privacyPolicyUrl: string;
   privacyPolicyEnabled: boolean;
   termsUrl: string;
@@ -46,6 +48,8 @@ export function Footer() {
     instagramEnabled: false,
     youtubeUrl: '',
     youtubeEnabled: false,
+    kakaoUrl: '',
+    kakaoEnabled: false,
     privacyPolicyUrl: '',
     privacyPolicyEnabled: false,
     termsUrl: '',
@@ -78,6 +82,8 @@ export function Footer() {
         instagramEnabledData,
         youtubeUrlData,
         youtubeEnabledData,
+        kakaoUrlData,
+        kakaoEnabledData,
         privacyPolicyUrlData,
         privacyPolicyEnabledData,
         termsUrlData,
@@ -102,6 +108,8 @@ export function Footer() {
         websiteAPI.getTextSetting('footer_instagram_enabled').catch(() => ({ value: 'false' })),
         websiteAPI.getTextSetting('footer_youtube_url').catch(() => ({ value: '' })),
         websiteAPI.getTextSetting('footer_youtube_enabled').catch(() => ({ value: 'false' })),
+        websiteAPI.getTextSetting('footer_kakao_url').catch(() => ({ value: '' })),
+        websiteAPI.getTextSetting('footer_kakao_enabled').catch(() => ({ value: 'false' })),
         websiteAPI.getTextSetting('footer_privacy_policy_url').catch(() => ({ value: '' })),
         websiteAPI.getTextSetting('footer_privacy_policy_enabled').catch(() => ({ value: 'false' })),
         websiteAPI.getTextSetting('footer_terms_url').catch(() => ({ value: '' })),
@@ -128,6 +136,8 @@ export function Footer() {
         instagramEnabled: instagramEnabledData.value === 'true',
         youtubeUrl: youtubeUrlData.value || '',
         youtubeEnabled: youtubeEnabledData.value === 'true',
+        kakaoUrl: kakaoUrlData.value || '',
+        kakaoEnabled: kakaoEnabledData.value === 'true',
         privacyPolicyUrl: privacyPolicyUrlData.value || '',
         privacyPolicyEnabled: privacyPolicyEnabledData.value === 'true',
         termsUrl: termsUrlData.value || '',
@@ -192,6 +202,16 @@ export function Footer() {
                   className="w-10 h-10 bg-teal-800 hover:bg-teal-700 rounded-full flex items-center justify-center transition-colors"
                 >
                   <Youtube className="w-5 h-5" />
+                </a>
+              )}
+              {footerData.kakaoEnabled && footerData.kakaoUrl && (
+                <a
+                  href={footerData.kakaoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 bg-teal-800 hover:bg-teal-700 rounded-full flex items-center justify-center transition-colors"
+                >
+                  <MessageCircle className="w-5 h-5" />
                 </a>
               )}
             </div>
@@ -312,7 +332,7 @@ export function Footer() {
           <div className="text-center text-teal-300 text-sm space-y-2">
             <p>{footerData.bottomInfo}</p>
             {footerData.copyright.split('\n').map((line, index) => (
-              <p key={index}>{line}</p>
+              <p key={index} dangerouslySetInnerHTML={{ __html: line }} />
             ))}
             <Link 
               to="/login" 

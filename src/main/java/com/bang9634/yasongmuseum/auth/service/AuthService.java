@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.bang9634.yasongmuseum.auth.dto.AuthResponse;
 import com.bang9634.yasongmuseum.auth.dto.LoginRequest;
 import com.bang9634.yasongmuseum.auth.dto.SignupRequest;
+import com.bang9634.yasongmuseum.auth.exception.TooManyLoginAttemptsException;
 import com.bang9634.yasongmuseum.common.security.JwtTokenProvider;
 import com.bang9634.yasongmuseum.user.entity.User;
 import com.bang9634.yasongmuseum.user.exception.DuplicateEmailException;
@@ -33,6 +34,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final LoginLogService loginLogService;
+    private final LoginAttemptService loginAttemptService;
 
     public AuthResponse signup(SignupRequest request) {
         log.info("Attempting to sign up user: {}", request.getUsername());
@@ -66,9 +68,32 @@ public class AuthService {
 
 
     public AuthResponse login(LoginRequest request, HttpServletRequest httpRequest) {
+        String ipAddress = getClientIp(httpRequest);
+        String username = request.getUsername();
+        
+        // Check if IP is blocked
+        if (loginAttemptService.isIpBlocked(ipAddress)) {
+            int remainingTime = loginAttemptService.getRemainingBlockTime(ipAddress, true);
+            log.warn("Login blocked - too many attempts from IP: {}", ipAddress);
+            throw new TooManyLoginAttemptsException(
+                String.format("너무 많은 로그인 시도로 인해 차단되었습니다. %d분 후 다시 시도해주세요.", remainingTime),
+                remainingTime
+            );
+        }
+        
+        // Check if username is blocked
+        if (loginAttemptService.isUsernameBlocked(username)) {
+            int remainingTime = loginAttemptService.getRemainingBlockTime(username, false);
+            log.warn("Login blocked - too many attempts for username: {}", username);
+            throw new TooManyLoginAttemptsException(
+                String.format("해당 계정은 너무 많은 로그인 시도로 인해 일시적으로 차단되었습니다. %d분 후 다시 시도해주세요.", remainingTime),
+                remainingTime
+            );
+        }
+        
         try {
-            log.info("Attempting to log in user: {}", request.getUsername());
-            User user = userRepository.findByUsername(request.getUsername())
+            log.info("Attempting to log in user: {} from IP: {}", username, ipAddress);
+            User user = userRepository.findByUsername(username)
                     .orElseThrow(() -> {
                         return new UserNotFoundException("사용자를 찾을 수 없습니다.");
             });
@@ -78,6 +103,8 @@ public class AuthService {
                 throw new InvalidPasswordException("비밀번호가 일치하지 않습니다.");
             }
 
+            // Login succeeded - clear attempts
+            loginAttemptService.loginSucceeded(ipAddress, username);
             loginLogService.logSuccessfulLogin(user, httpRequest);
 
             String token = jwtTokenProvider.createToken(
@@ -98,26 +125,72 @@ public class AuthService {
                     .message("로그인 성공")
                     .build();
         } catch (UserNotFoundException e) {
+            loginAttemptService.loginFailed(ipAddress, username);
             loginLogService.logFailedLogin(
-                request.getUsername(), 
+                username, 
                 "User not found", 
                 httpRequest
             );
             throw e;
         } catch (InvalidPasswordException e) {
+            loginAttemptService.loginFailed(ipAddress, username);
             loginLogService.logFailedLogin(
-                request.getUsername(), 
+                username, 
                 "Invalid password", 
                 httpRequest
             );
             throw e;
         } catch (Exception e) {
             loginLogService.logFailedLogin(
-                request.getUsername(), 
+                username, 
                 "Unexpected system error: " + e.getMessage(), 
                 httpRequest
             );
             throw e;
         }
+    }
+    
+    /**
+     * Extract real client IP address from request
+     */
+    private String getClientIp(HttpServletRequest request) {
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("Proxy-Client-IP");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("WL-Proxy-Client-IP");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("HTTP_X_FORWARDED_FOR");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("HTTP_X_FORWARDED");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("HTTP_X_CLUSTER_CLIENT_IP");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("HTTP_CLIENT_IP");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("HTTP_FORWARDED_FOR");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("HTTP_FORWARDED");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("HTTP_VIA");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
+        }
+        
+        // Handle multiple IPs (take the first one)
+        if (ip != null && ip.contains(",")) {
+            ip = ip.split(",")[0].trim();
+        }
+        
+        return ip;
     }
 }

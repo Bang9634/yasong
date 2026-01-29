@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
+import com.bang9634.yasongmuseum.auth.exception.TooManyLoginAttemptsException;
 import com.bang9634.yasongmuseum.common.dto.ErrorResponse;
 
 import lombok.extern.slf4j.Slf4j;
@@ -58,6 +59,23 @@ public class GlobalExceptionHandler {
             .build();
         
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+    
+    @ExceptionHandler(TooManyLoginAttemptsException.class)
+    public ResponseEntity<ErrorResponse> handleTooManyLoginAttemptsException(
+        TooManyLoginAttemptsException ex,
+        WebRequest request) {
+        
+        log.warn("Too many login attempts: {}", ex.getMessage());
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+            .status(HttpStatus.TOO_MANY_REQUESTS.value())
+            .error("Too Many Login Attempts")
+            .message(ex.getMessage())
+            .path(request.getDescription(false).replace("uri=", ""))
+            .build();
+        
+        return new ResponseEntity<>(errorResponse, HttpStatus.TOO_MANY_REQUESTS);
     }
 
     @ExceptionHandler(Exception.class)

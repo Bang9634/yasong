@@ -190,7 +190,7 @@ export function ContestManagement({ initialData }: ContestManagementProps) {
         </div>
 
         <div>
-          <Label htmlFor="contestIntroLink">미술대전 소개 버튼 링크</Label>
+          <Label htmlFor="contestIntroLink">공모전 정보 버튼 링크</Label>
           <Input
             id="contestIntroLink"
             type="url"
@@ -199,11 +199,11 @@ export function ContestManagement({ initialData }: ContestManagementProps) {
             placeholder="https://example.com/intro"
             className="mt-1"
           />
-          <p className="text-xs text-gray-500 mt-1">미술대전 소개 버튼 클릭 시 이동할 URL을 입력하세요</p>
+          <p className="text-xs text-gray-500 mt-1">공모전 정ㅂ 버튼 클릭 시 이동할 URL을 입력하세요</p>
         </div>
 
         <div>
-          <Label htmlFor="contestNoticeLink">공지사항 보기 버튼 링크</Label>
+          <Label htmlFor="contestNoticeLink">커카오톡 문의 버튼 링크</Label>
           <Input
             id="contestNoticeLink"
             type="url"
@@ -212,7 +212,7 @@ export function ContestManagement({ initialData }: ContestManagementProps) {
             placeholder="https://example.com/notice"
             className="mt-1"
           />
-          <p className="text-xs text-gray-500 mt-1">공지사항 보기 버튼 클릭 시 이동할 URL을 입력하세요</p>
+          <p className="text-xs text-gray-500 mt-1">커카오톡 문의 버튼 클릭 시 이동할 URL을 입력하세요</p>
         </div>
 
         <Button

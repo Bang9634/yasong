@@ -78,9 +78,9 @@ export function MuseumShop() {
               {souvenirs.map((souvenir) => (
                 <div
                   key={souvenir.id}
-                  className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow border border-teal-100 group"
+                  className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow border border-teal-100 group flex flex-col h-[450px]"
                 >
-                  <div className="relative overflow-hidden">
+                  <div className="relative overflow-hidden flex-shrink-0">
                     <ImageWithFallback
                       src={getFullImageUrl(souvenir.imageUrl)}
                       alt={souvenir.name}
@@ -88,12 +88,12 @@ export function MuseumShop() {
                     />
                   </div>
                   
-                  <div className="p-6">
+                  <div className="p-6 flex-1 flex flex-col">
                     <h3 className="text-xl mb-2 text-teal-900">{souvenir.name}</h3>
-                    <p className="text-gray-600 text-sm mb-4 leading-relaxed">
+                    <p className="text-gray-600 text-sm mb-4 leading-relaxed line-clamp-3 h-[63px]">
                       {souvenir.description}
                     </p>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mt-auto">
                       <span className="text-2xl text-teal-700">{formatPrice(souvenir.price)}</span>
                     </div>
                   </div>

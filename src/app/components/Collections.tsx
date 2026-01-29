@@ -76,9 +76,9 @@ export function Collections() {
               {artworks.map((artwork) => (
                 <div
                   key={artwork.id}
-                  className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow border border-teal-100"
+                  className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow border border-teal-100 flex flex-col h-[550px]"
                 >
-                  <div className="relative group">
+                  <div className="relative group flex-shrink-0">
                     <ImageWithFallback
                       src={getImageUrl(artwork.imageUrl)}
                       alt={artwork.title}
@@ -87,14 +87,14 @@ export function Collections() {
                     <div className="absolute inset-0 bg-teal-900/0 group-hover:bg-teal-900/20 transition-colors"></div>
                   </div>
                   
-                  <div className="p-6 bg-gradient-to-b from-white to-teal-50">
+                  <div className="p-6 bg-gradient-to-b from-white to-teal-50 flex-1 flex flex-col">
                     <h3 className="text-2xl mb-2 text-teal-900">{artwork.title}</h3>
                     <div className="space-y-1 text-sm text-gray-600 mb-4">
                       <p>작가: {artwork.artist}</p>
                       <p>{artwork.year}</p>
                       <p>{artwork.size}</p>
                     </div>
-                    <p className="text-gray-700 leading-relaxed border-t border-teal-200 pt-4">
+                    <p className="text-gray-700 leading-relaxed border-t border-teal-200 pt-4 line-clamp-3">
                       {artwork.description}
                     </p>
                   </div>

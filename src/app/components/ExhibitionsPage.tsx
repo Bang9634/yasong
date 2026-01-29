@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { ImageWithFallback } from '@/app/components/figma/ImageWithFallback';
-import { Calendar, MapPin, Search, Plus, Edit, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, MapPin, Search, Plus, Edit, Trash2, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { exhibitionAPI } from '@/utils/api';
 import { Input } from '@/app/components/ui/input';
 import { Button } from '@/app/components/ui/button';
@@ -60,6 +60,8 @@ export function ExhibitionsPage() {
   const [exhibitionImage, setExhibitionImage] = useState<File | null>(null);
   const [exhibitionImagePreview, setExhibitionImagePreview] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [selectedExhibition, setSelectedExhibition] = useState<Exhibition | null>(null);
 
   useEffect(() => {
     const fetchExhibitions = async () => {
@@ -82,6 +84,16 @@ export function ExhibitionsPage() {
       return imageUrl;
     }
     return `${import.meta.env.VITE_API_BASE_URL || ''}${imageUrl}`;
+  };
+
+  const openDetailModal = (exhibition: Exhibition) => {
+    setSelectedExhibition(exhibition);
+    setIsDetailModalOpen(true);
+  };
+
+  const closeDetailModal = () => {
+    setIsDetailModalOpen(false);
+    setSelectedExhibition(null);
   };
 
   const formatDate = (dateStr: string) => {
@@ -391,9 +403,9 @@ export function ExhibitionsPage() {
                 {currentExhibitions.map((exhibition) => (
                 <div
                   key={exhibition.id}
-                  className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow border border-teal-100"
+                  className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow border border-teal-100 flex flex-col h-[550px]"
                 >
-                  <div className="relative">
+                  <div className="relative flex-shrink-0 cursor-pointer" onClick={() => openDetailModal(exhibition)}>
                     <ImageWithFallback
                       src={getImageUrl(exhibition.imageUrl)}
                       alt={exhibition.title}
@@ -404,24 +416,26 @@ export function ExhibitionsPage() {
                     </div>
                   </div>
 
-                  <div className="p-6 bg-gradient-to-b from-white to-teal-50">
-                    <h3 className="text-2xl mb-2 text-teal-900">{exhibition.title}</h3>
-                    <p className="text-gray-600 mb-4">{exhibition.artist}</p>
+                  <div className="p-6 bg-gradient-to-b from-white to-teal-50 flex-1 flex flex-col">
+                    <div className="cursor-pointer flex-1" onClick={() => openDetailModal(exhibition)}>
+                      <h3 className="text-2xl mb-2 text-teal-900 hover:text-teal-700 transition-colors">{exhibition.title}</h3>
+                      <p className="text-gray-600 mb-4">{exhibition.artist}</p>
 
-                    <div className="space-y-2 text-sm text-gray-600 mb-4">
-                      <div className="flex items-start">
-                        <Calendar className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0 text-teal-600" />
-                        <span>{formatDate(exhibition.startDate)} - {formatDate(exhibition.endDate)}</span>
+                      <div className="space-y-2 text-sm text-gray-600 mb-4">
+                        <div className="flex items-start">
+                          <Calendar className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0 text-teal-600" />
+                          <span>{formatDate(exhibition.startDate)} - {formatDate(exhibition.endDate)}</span>
+                        </div>
+                        <div className="flex items-start">
+                          <MapPin className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0 text-teal-600" />
+                          <span>{exhibition.location}</span>
+                        </div>
                       </div>
-                      <div className="flex items-start">
-                        <MapPin className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0 text-teal-600" />
-                        <span>{exhibition.location}</span>
-                      </div>
+
+                      <p className="text-gray-700 leading-relaxed border-t border-teal-200 pt-4 line-clamp-3">
+                        {exhibition.description}
+                      </p>
                     </div>
-
-                    <p className="text-gray-700 leading-relaxed border-t border-teal-200 pt-4">
-                      {exhibition.description}
-                    </p>
 
                     {canManage && (
                       <div className="flex gap-2 mt-4 pt-4 border-t border-teal-200">
@@ -636,6 +650,101 @@ export function ExhibitionsPage() {
           )}
         </div>
       </div>
+
+      {/* 상세보기 모달 */}
+      {isDetailModalOpen && selectedExhibition && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={closeDetailModal}>
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center z-10">
+              <h2 className="text-2xl font-bold text-teal-900">전시 상세</h2>
+              <button onClick={closeDetailModal} className="text-gray-500 hover:text-gray-700">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-6">
+              <div className="grid md:grid-cols-2 gap-8">
+                {/* 이미지 */}
+                <div className="relative">
+                  <ImageWithFallback
+                    src={getImageUrl(selectedExhibition.imageUrl)}
+                    alt={selectedExhibition.title}
+                    className="w-full h-auto rounded-lg shadow-lg object-contain max-h-[500px]"
+                  />
+                  <div className="absolute top-4 right-4">
+                    {getStatusBadge(selectedExhibition.status)}
+                  </div>
+                </div>
+
+                {/* 정보 */}
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-3xl font-bold text-teal-900 mb-2">{selectedExhibition.title}</h3>
+                    <p className="text-xl text-gray-600 mb-4">{selectedExhibition.artist}</p>
+                    
+                    <div className="space-y-3 text-gray-700">
+                      <div className="flex items-start">
+                        <Calendar className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0 text-teal-600" />
+                        <div>
+                          <span className="font-semibold">전시 기간:</span>
+                          <br />
+                          <span>{formatDate(selectedExhibition.startDate)} - {formatDate(selectedExhibition.endDate)}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-start">
+                        <MapPin className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0 text-teal-600" />
+                        <div>
+                          <span className="font-semibold">장소:</span>
+                          <br />
+                          <span>{selectedExhibition.location}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-gray-200 pt-6">
+                    <h4 className="font-semibold text-lg text-teal-900 mb-3">전시 소개</h4>
+                    <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                      {selectedExhibition.description}
+                    </p>
+                  </div>
+
+                  {canManage && (
+                    <div className="border-t border-gray-200 pt-6">
+                      <div className="flex gap-3">
+                        <Button
+                          onClick={() => {
+                            closeDetailModal();
+                            handleOpenEditForm(selectedExhibition);
+                          }}
+                          variant="outline"
+                          className="flex-1"
+                        >
+                          <Edit className="w-4 h-4 mr-2" />
+                          수정
+                        </Button>
+                        <Button
+                          onClick={async () => {
+                            if (confirm('정말 삭제하시겠습니까?')) {
+                              await handleDelete(selectedExhibition.id);
+                              closeDetailModal();
+                            }
+                          }}
+                          variant="outline"
+                          className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          삭제
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>

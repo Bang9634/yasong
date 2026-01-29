@@ -102,9 +102,9 @@ export function Exhibitions() {
               {allExhibitions.slice(0, 6).map((exhibition) => (
                 <div
                   key={exhibition.id}
-                  className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow border border-teal-100"
+                  className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow border border-teal-100 flex flex-col h-[550px]"
                 >
-                  <div className="relative">
+                  <div className="relative flex-shrink-0">
                     <ImageWithFallback
                       src={getImageUrl(exhibition.imageUrl)}
                       alt={exhibition.title}
@@ -115,7 +115,7 @@ export function Exhibitions() {
                     </div>
                   </div>
 
-                  <div className="p-6 bg-gradient-to-b from-white to-teal-50">
+                  <div className="p-6 bg-gradient-to-b from-white to-teal-50 flex-1 flex flex-col">
                     <h3 className="text-2xl mb-2 text-teal-900">{exhibition.title}</h3>
                     <p className="text-gray-600 mb-4">{exhibition.artist}</p>
 

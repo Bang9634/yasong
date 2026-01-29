@@ -46,6 +46,8 @@ export function SouvenirsPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
   const [currentImageUrl, setCurrentImageUrl] = useState<string>('');
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [selectedSouvenir, setSelectedSouvenir] = useState<Souvenir | null>(null);
 
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'MANAGER';
 
@@ -211,6 +213,16 @@ export function SouvenirsPage() {
     return `${price.toLocaleString()}원`;
   };
 
+  const openDetailModal = (souvenir: Souvenir) => {
+    setSelectedSouvenir(souvenir);
+    setIsDetailModalOpen(true);
+  };
+
+  const closeDetailModal = () => {
+    setIsDetailModalOpen(false);
+    setSelectedSouvenir(null);
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Header />
@@ -266,9 +278,9 @@ export function SouvenirsPage() {
                 {currentSouvenirs.map((souvenir) => (
                 <div
                   key={souvenir.id}
-                  className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow border border-gray-200 group"
+                  className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow border border-gray-200 group flex flex-col h-[450px]"
                 >
-                  <div className="relative overflow-hidden">
+                  <div className="relative overflow-hidden flex-shrink-0 cursor-pointer" onClick={() => openDetailModal(souvenir)}>
                     <ImageWithFallback
                       src={getFullImageUrl(souvenir.imageUrl)}
                       alt={souvenir.name}
@@ -283,12 +295,14 @@ export function SouvenirsPage() {
                     )}
                   </div>
                   
-                  <div className="p-6">
-                    <h3 className="text-xl font-semibold mb-2 text-teal-900">{souvenir.name}</h3>
-                    <p className="text-gray-600 text-sm mb-4 leading-relaxed">
-                      {souvenir.description}
-                    </p>
-                    <div className="flex items-center justify-between">
+                  <div className="p-6 flex-1 flex flex-col">
+                    <div className="cursor-pointer" onClick={() => openDetailModal(souvenir)}>
+                      <h3 className="text-xl font-semibold mb-2 text-teal-900 hover:text-teal-700 transition-colors">{souvenir.name}</h3>
+                      <p className="text-gray-600 text-sm mb-4 leading-relaxed line-clamp-3 h-[63px]">
+                        {souvenir.description}
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-between mt-auto">
                       <span className="text-2xl font-bold text-teal-700">{formatPrice(souvenir.price)}</span>
                       
                       {isAdmin && (
@@ -470,6 +484,95 @@ export function SouvenirsPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* 상세보기 모달 */}
+      {isDetailModalOpen && selectedSouvenir && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={closeDetailModal}>
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center z-10">
+              <h2 className="text-2xl font-bold text-teal-900">기념품 상세</h2>
+              <button onClick={closeDetailModal} className="text-gray-500 hover:text-gray-700">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-6">
+              <div className="grid md:grid-cols-2 gap-8">
+                {/* 이미지 */}
+                <div className="relative">
+                  <ImageWithFallback
+                    src={getFullImageUrl(selectedSouvenir.imageUrl)}
+                    alt={selectedSouvenir.name}
+                    className="w-full h-auto rounded-lg shadow-lg object-contain max-h-[500px]"
+                  />
+                  {selectedSouvenir.isPinned && (
+                    <div className="absolute top-4 left-4">
+                      <span className="bg-amber-600 text-white px-4 py-2 rounded-full font-semibold">
+                        홈페이지 고정
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* 정보 */}
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-3xl font-bold text-teal-900 mb-4">{selectedSouvenir.name}</h3>
+                    <div className="text-4xl font-bold text-teal-700 mb-6">
+                      {formatPrice(selectedSouvenir.price)}
+                    </div>
+                  </div>
+
+                  <div className="border-t border-gray-200 pt-6">
+                    <h4 className="font-semibold text-lg text-teal-900 mb-3">상품 설명</h4>
+                    <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                      {selectedSouvenir.description}
+                    </p>
+                  </div>
+
+                  <div className="border-t border-gray-200 pt-6">
+                    <div className="bg-teal-50 p-4 rounded-lg">
+                      <p className="text-sm text-teal-800">
+                        <ShoppingBag className="w-4 h-4 inline mr-2" />
+                        청량대운도전시관에서 구매하실 수 있습니다
+                      </p>
+                    </div>
+                  </div>
+
+                  {isAdmin && (
+                    <div className="border-t border-gray-200 pt-6">
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => {
+                            closeDetailModal();
+                            openEditForm(selectedSouvenir);
+                          }}
+                          className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
+                        >
+                          <Edit className="w-4 h-4 mr-2" />
+                          수정
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (confirm('정말 삭제하시겠습니까?')) {
+                              handleDelete(selectedSouvenir.id, selectedSouvenir.name);
+                              closeDetailModal();
+                            }
+                          }}
+                          className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          삭제
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

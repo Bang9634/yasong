@@ -334,6 +334,16 @@ export function Footer() {
             {footerData.copyright.split('\n').map((line, index) => (
               <p key={index} dangerouslySetInnerHTML={{ __html: line }} />
             ))}
+            <p className="text-teal-400 text-xs mt-2">
+              <a 
+                href="https://github.com/Bang9634" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hover:text-teal-200 transition-colors"
+              >
+                Developed by Deok-jae Bang
+              </a>
+            </p>
             <Link 
               to="/login" 
               className="inline-block mt-4 text-xs text-teal-700 hover:text-teal-600 opacity-30 hover:opacity-50 transition-opacity"

@@ -12,11 +12,31 @@ import { UserManagement } from '@/app/components/admin/UserManagement';
 import { WebsiteManagement } from '@/app/components/admin/WebsiteManagement';
 import { ScrollToTop } from '@/app/components/ScrollToTop';
 import { AuthProvider } from '@/context/AuthContext';
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import ReactGA from 'react-ga4'
+
+// Google Analytics 추적을 위한 컴포넌트
+function GoogleAnalytics() {
+  const location = useLocation();
+  
+  useEffect(() => {
+    ReactGA.send({ hitType: "pageview", page: location.pathname });
+  }, [location]);
+  
+  return null;
+}
 
 export default function App() {
+  // Google Analytics 초기화 (한 번만 실행)
+  useEffect(() => {
+    ReactGA.initialize("G-LNQ8J9TSN5");
+  }, []);
+
   return (
     <AuthProvider>
       <Router>
+        <GoogleAnalytics />
         <ScrollToTop />
         <Routes>
           <Route path="/" element={<HomePage />} />

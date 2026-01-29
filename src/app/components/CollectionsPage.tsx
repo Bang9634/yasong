@@ -37,6 +37,8 @@ export function CollectionsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentCollection, setCurrentCollection] = useState<Collection | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
   
   // Form states
   const [title, setTitle] = useState('');
@@ -94,6 +96,16 @@ export function CollectionsPage() {
     resetForm();
     setIsEditing(false);
     setIsModalOpen(true);
+  };
+
+  const openDetailModal = (collection: Collection) => {
+    setSelectedCollection(collection);
+    setIsDetailModalOpen(true);
+  };
+
+  const closeDetailModal = () => {
+    setIsDetailModalOpen(false);
+    setSelectedCollection(null);
   };
 
   const openEditModal = (collection: Collection) => {
@@ -231,7 +243,7 @@ export function CollectionsPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {currentCollections.map((collection) => (
               <div key={collection.id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-                <div className="relative">
+                <div className="relative cursor-pointer" onClick={() => openDetailModal(collection)}>
                   <img
                     src={getFullImageUrl(collection.imageUrl)}
                     alt={collection.title}
@@ -246,11 +258,13 @@ export function CollectionsPage() {
                 </div>
                 
                 <div className="p-6">
-                  <h3 className="text-xl font-bold text-teal-900 mb-2">{collection.title}</h3>
-                  <p className="text-gray-600 mb-2">작가: {collection.artist}</p>
-                  <p className="text-gray-600 mb-2">제작년도: {collection.year}</p>
-                  <p className="text-gray-600 mb-4">크기: {collection.size}</p>
-                  <p className="text-gray-700 text-sm line-clamp-3">{collection.description}</p>
+                  <div className="cursor-pointer" onClick={() => openDetailModal(collection)}>
+                    <h3 className="text-xl font-bold text-teal-900 mb-2 hover:text-teal-700 transition-colors">{collection.title}</h3>
+                    <p className="text-gray-600 mb-2">작가: {collection.artist}</p>
+                    <p className="text-gray-600 mb-2">제작년도: {collection.year}</p>
+                    <p className="text-gray-600 mb-4">크기: {collection.size}</p>
+                    <p className="text-gray-700 text-sm line-clamp-3">{collection.description}</p>
+                  </div>
                   
                   {isAdmin && (
                     <div className="flex gap-2 mt-4 pt-4 border-t border-gray-200">
@@ -446,6 +460,100 @@ export function CollectionsPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* 상세보기 모달 */}
+      {isDetailModalOpen && selectedCollection && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={closeDetailModal}>
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center z-10">
+              <h2 className="text-2xl font-bold text-teal-900">소장품 상세</h2>
+              <button onClick={closeDetailModal} className="text-gray-500 hover:text-gray-700">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-6">
+              <div className="grid md:grid-cols-2 gap-8">
+                {/* 이미지 */}
+                <div className="relative">
+                  <img
+                    src={getFullImageUrl(selectedCollection.imageUrl)}
+                    alt={selectedCollection.title}
+                    className="w-full h-auto rounded-lg shadow-lg object-contain max-h-[500px]"
+                  />
+                  {selectedCollection.isPinned && (
+                    <div className="absolute top-4 right-4 bg-amber-500 text-white px-4 py-2 rounded-full flex items-center">
+                      <Pin className="w-5 h-5 mr-2" />
+                      대표 소장품
+                    </div>
+                  )}
+                </div>
+
+                {/* 정보 */}
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-3xl font-bold text-teal-900 mb-4">{selectedCollection.title}</h3>
+                    <div className="space-y-3 text-gray-700">
+                      <div className="flex items-start">
+                        <span className="font-semibold min-w-[80px]">작가:</span>
+                        <span>{selectedCollection.artist}</span>
+                      </div>
+                      <div className="flex items-start">
+                        <span className="font-semibold min-w-[80px]">제작년도:</span>
+                        <span>{selectedCollection.year}</span>
+                      </div>
+                      <div className="flex items-start">
+                        <span className="font-semibold min-w-[80px]">크기:</span>
+                        <span>{selectedCollection.size}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-gray-200 pt-6">
+                    <h4 className="font-semibold text-lg text-teal-900 mb-3">작품 설명</h4>
+                    <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                      {selectedCollection.description}
+                    </p>
+                  </div>
+
+                  {isAdmin && (
+                    <div className="border-t border-gray-200 pt-6">
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => {
+                            closeDetailModal();
+                            openEditModal(selectedCollection);
+                          }}
+                          className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
+                        >
+                          <Edit2 className="w-4 h-4 mr-2" />
+                          수정
+                        </button>
+                        <button
+                          onClick={async () => {
+                            if (confirm('정말 삭제하시겠습니까?')) {
+                              try {
+                                await handleDelete(selectedCollection.id);
+                                closeDetailModal();
+                              } catch (error) {
+                                console.error('삭제 실패:', error);
+                              }
+                            }
+                          }}
+                          className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          삭제
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

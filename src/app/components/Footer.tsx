@@ -311,7 +311,9 @@ export function Footer() {
         <div className="border-t border-teal-800 pt-8">
           <div className="text-center text-teal-300 text-sm space-y-2">
             <p>{footerData.bottomInfo}</p>
-            <p>{footerData.copyright}</p>
+            {footerData.copyright.split('\n').map((line, index) => (
+              <p key={index}>{line}</p>
+            ))}
             <Link 
               to="/login" 
               className="inline-block mt-4 text-xs text-teal-700 hover:text-teal-600 opacity-30 hover:opacity-50 transition-opacity"

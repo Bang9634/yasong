@@ -249,14 +249,14 @@ export function FooterManagement({ initialData }: FooterManagementProps) {
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          저작권 정보
+          저작권 정보 (여러 줄 입력 가능)
         </label>
-        <input
-          type="text"
+        <textarea
           value={copyright}
           onChange={(e) => setCopyright(e.target.value)}
           className="w-full p-3 border border-gray-300 rounded-lg"
-          placeholder="Copyright © 2026 Cheongsung Yasong Art Museum. All rights reserved."
+          rows={3}
+          placeholder="Copyright © 2026 Cheongsung Yasong Art Museum. All rights reserved.&#10;본 사이트의 모든 콘텐츠는 저작권법의 보호를 받습니다."
         />
       </div>
 

@@ -50,9 +50,28 @@ const apiCall = async (endpoint: string, options: ApiCallOptions = {}): Promise<
 
     // 에러 응답 처리
     if (!response.ok) {
-      const error = await response.json().catch(() => ({
-        message: 'An error occurred'
-      }));
+      const contentType = response.headers.get('content-type');
+      let error;
+      
+      if (contentType && contentType.includes('application/json')) {
+        error = await response.json().catch(() => ({
+          message: 'An error occurred'
+        }));
+      } else {
+        const text = await response.text();
+        error = { message: text || `HTTP error! status: ${response.status}` };
+      }
+      
+      // 개발 환경에서만 상세 에러 로그
+      if (import.meta.env.DEV) {
+        console.error('[API Error]', {
+          url,
+          status: response.status,
+          statusText: response.statusText,
+          error
+        });
+      }
+      
       throw new Error(error.message || `HTTP error! status: ${response.status}`);
     }
 

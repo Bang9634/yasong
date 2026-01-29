@@ -10,6 +10,12 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  build: {
+    target: 'es2015',
+    cssTarget: 'chrome61',
+    minify: 'esbuild',
+    cssMinify: true,
+  },
   resolve: {
     alias: {
       // Alias @ to the src directory

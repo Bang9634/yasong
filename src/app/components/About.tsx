@@ -19,9 +19,9 @@ export function About() {
     { year: '-', description: '연혁 정보가 없습니다.' }
   ]);
 
-  const [facilitySiteArea, setFacilitySiteArea] = useState<string>('3,500');
-  const [facilityExhibitionRooms, setFacilityExhibitionRooms] = useState<string>('6');
-  const [facilityCollectionCount, setFacilityCollectionCount] = useState<string>('420');
+  const [facilitySiteArea, setFacilitySiteArea] = useState<string>('-');
+  const [facilityExhibitionRooms, setFacilityExhibitionRooms] = useState<string>('-');
+  const [facilityCollectionCount, setFacilityCollectionCount] = useState<string>('-');
 
   useEffect(() => {
     const fetchBuildingData = async () => {

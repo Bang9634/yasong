@@ -2,15 +2,12 @@ import { useState, useEffect } from 'react';
 import { websiteAPI } from '@/utils/api';
 
 interface FooterData {
-  description: string;
   phone: string;
   phoneHours: string;
   email: string;
-  address: string;
   operatingHours: string;
   closedDay: string;
   bottomInfo: string;
-  copyright: string;
   facebookUrl: string;
   facebookEnabled: boolean;
   instagramUrl: string;
@@ -34,15 +31,12 @@ interface FooterManagementProps {
 }
 
 export function FooterManagement({ initialData }: FooterManagementProps) {
-  const [description, setDescription] = useState(initialData.description);
   const [phone, setPhone] = useState(initialData.phone);
   const [phoneHours, setPhoneHours] = useState(initialData.phoneHours);
   const [email, setEmail] = useState(initialData.email);
-  const [address, setAddress] = useState(initialData.address);
   const [operatingHours, setOperatingHours] = useState(initialData.operatingHours);
   const [closedDay, setClosedDay] = useState(initialData.closedDay);
   const [bottomInfo, setBottomInfo] = useState(initialData.bottomInfo);
-  const [copyright, setCopyright] = useState(initialData.copyright);
   const [facebookUrl, setFacebookUrl] = useState(initialData.facebookUrl);
   const [facebookEnabled, setFacebookEnabled] = useState(initialData.facebookEnabled);
   const [instagramUrl, setInstagramUrl] = useState(initialData.instagramUrl);
@@ -61,15 +55,12 @@ export function FooterManagement({ initialData }: FooterManagementProps) {
   const [recruitEnabled, setRecruitEnabled] = useState(initialData.recruitEnabled);
 
   useEffect(() => {
-    setDescription(initialData.description);
     setPhone(initialData.phone);
     setPhoneHours(initialData.phoneHours);
     setEmail(initialData.email);
-    setAddress(initialData.address);
     setOperatingHours(initialData.operatingHours);
     setClosedDay(initialData.closedDay);
     setBottomInfo(initialData.bottomInfo);
-    setCopyright(initialData.copyright);
     setFacebookUrl(initialData.facebookUrl);
     setFacebookEnabled(initialData.facebookEnabled);
     setInstagramUrl(initialData.instagramUrl);
@@ -91,15 +82,12 @@ export function FooterManagement({ initialData }: FooterManagementProps) {
   const handleSave = async () => {
     try {
       const promises = [
-        websiteAPI.updateTextSetting('footer_description', description),
         websiteAPI.updateTextSetting('footer_phone', phone),
         websiteAPI.updateTextSetting('footer_phone_hours', phoneHours),
         websiteAPI.updateTextSetting('footer_email', email),
-        websiteAPI.updateTextSetting('footer_address', address),
         websiteAPI.updateTextSetting('footer_operating_hours', operatingHours),
         websiteAPI.updateTextSetting('footer_closed_day', closedDay),
         websiteAPI.updateTextSetting('footer_bottom_info', bottomInfo),
-        websiteAPI.updateTextSetting('footer_copyright', copyright),
       ];
 
       // 소셜미디어 링크는 값이 있을 때만 저장
@@ -147,21 +135,6 @@ export function FooterManagement({ initialData }: FooterManagementProps) {
 
   return (
     <div className="space-y-6">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          미술관 설명
-        </label>
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-lg"
-          rows={3}
-          placeholder="이원좌 화백의 예술 정신을 계승하고
-지역 문화예술 발전에 기여하는
-청송의 문화 중심지"
-        />
-      </div>
-
       <div className="grid md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -205,47 +178,6 @@ export function FooterManagement({ initialData }: FooterManagementProps) {
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          주소
-        </label>
-        <textarea
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-lg"
-          rows={2}
-          placeholder="경상북도 청송군
-청송읍 월막길 123"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          운영 시간 (줄바꿈으로 구분)
-        </label>
-        <textarea
-          value={operatingHours}
-          onChange={(e) => setOperatingHours(e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-lg"
-          rows={3}
-          placeholder="화-금: 10:00 - 18:00
-토-일: 10:00 - 19:00"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          휴관일
-        </label>
-        <input
-          type="text"
-          value={closedDay}
-          onChange={(e) => setClosedDay(e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-lg"
-          placeholder="휴관: 매주 월요일"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
           하단 정보
         </label>
         <input
@@ -254,19 +186,6 @@ export function FooterManagement({ initialData }: FooterManagementProps) {
           onChange={(e) => setBottomInfo(e.target.value)}
           className="w-full p-3 border border-gray-300 rounded-lg"
           placeholder="군립청송야송미술관 | 관장: 김문희 | 사업자등록번호: 123-45-67890"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          저작권 정보 (여러 줄 입력 가능)
-        </label>
-        <textarea
-          value={copyright}
-          onChange={(e) => setCopyright(e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-lg"
-          rows={3}
-          placeholder="Copyright © 2026 Cheongsung Yasong Art Museum. All rights reserved.&#10;본 사이트의 모든 콘텐츠는 저작권법의 보호를 받습니다."
         />
       </div>
 

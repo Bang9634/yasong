@@ -13,7 +13,6 @@ import { DirectorManagement } from './sections/DirectorManagement';
 import { BuildingManagement } from './sections/BuildingManagement';
 import { HistoryManagement } from './sections/HistoryManagement';
 import { FacilityManagement } from './sections/FacilityManagement';
-import { CollectionManagement } from './sections/CollectionManagement';
 import { VisitInfoManagement } from './sections/VisitInfoManagement';
 import { LocationManagement } from './sections/LocationManagement';
 import { FooterManagement } from './sections/FooterManagement';
@@ -36,6 +35,7 @@ interface Collection {
 export function WebsiteManagement() {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const [activeTab, setActiveTab] = useState<'hero' | 'contest' | 'director' | 'exhibition' | 'visit' | 'location' | 'footer'>('hero');
   
   // 초기 데이터 상태
   const [heroImageUrl, setHeroImageUrl] = useState('');
@@ -64,9 +64,9 @@ export function WebsiteManagement() {
   const [facilitySiteArea, setFacilitySiteArea] = useState('');
   const [facilityExhibitionRooms, setFacilityExhibitionRooms] = useState('');
   const [facilityCollectionCount, setFacilityCollectionCount] = useState('');
-  const [collections, setCollections] = useState<Collection[]>([]);
   const [visitInfo, setVisitInfo] = useState({
     operatingHours: '',
+    closedDay: '',
     admissionFee: '',
     etiquette: '',
     phone: '',
@@ -206,10 +206,6 @@ export function WebsiteManagement() {
         setFacilityExhibitionRooms(exhibitionRoomsData.value || '');
         setFacilityCollectionCount(collectionCountData.value || '');
 
-        // 소장품 조회
-        const collectionsData = await collectionAPI.getAllCollections();
-        setCollections(collectionsData.sort((a, b) => a.displayOrder - b.displayOrder));
-
         // 공모전 조회
         const [contestTitleData, contestSubtitleData, contestContentData, contestImageData, contestActiveData, contestIntroLinkData, contestNoticeLinkData] = await Promise.all([
           websiteAPI.getTextSetting('contest_title'),
@@ -239,8 +235,9 @@ export function WebsiteManagement() {
         });
 
         // 관람 안내 조회
-        const [visitHoursData, visitFeeData, visitEtiquetteData, visitPhoneData, visitEmailData] = await Promise.all([
+        const [visitHoursData, visitClosedDayData, visitFeeData, visitEtiquetteData, visitPhoneData, visitEmailData] = await Promise.all([
           websiteAPI.getTextSetting('visit_operating_hours'),
+          websiteAPI.getTextSetting('visit_closed_day'),
           websiteAPI.getTextSetting('visit_admission_fee'),
           websiteAPI.getTextSetting('visit_etiquette'),
           websiteAPI.getTextSetting('visit_phone'),
@@ -249,6 +246,7 @@ export function WebsiteManagement() {
 
         setVisitInfo({
           operatingHours: visitHoursData.value || '',
+          closedDay: visitClosedDayData.value || '',
           admissionFee: visitFeeData.value || '',
           etiquette: visitEtiquetteData.value || '',
           phone: visitPhoneData.value || '',
@@ -381,49 +379,143 @@ export function WebsiteManagement() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* 페이지 헤더 */}
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-teal-900 mb-2">홈페이지 관리</h1>
-            <p className="text-gray-600">웹사이트의 배경 이미지, 텍스트, 기념품 목록을 관리할 수 있습니다.</p>
+            <h1 className="text-3xl font-bold text-teal-900 mb-2">홈페이지 관리</h1>
+            <p className="text-gray-600">웹사이트의 각 섹션을 탭별로 관리할 수 있습니다.</p>
           </div>
 
+          {/* 탭 네비게이션 */}
+          <div className="mb-6 border-b border-gray-200">
+            <nav className="flex space-x-8">
+              <button
+                onClick={() => setActiveTab('hero')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'hero'
+                    ? 'border-teal-600 text-teal-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Hero 배경
+              </button>
+              <button
+                onClick={() => setActiveTab('contest')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'contest'
+                    ? 'border-teal-600 text-teal-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                공모전
+              </button>
+              <button
+                onClick={() => setActiveTab('director')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'director'
+                    ? 'border-teal-600 text-teal-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                초대 관장
+              </button>
+              <button
+                onClick={() => setActiveTab('exhibition')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'exhibition'
+                    ? 'border-teal-600 text-teal-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                전시관
+              </button>
+              <button
+                onClick={() => setActiveTab('visit')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'visit'
+                    ? 'border-teal-600 text-teal-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                관람안내
+              </button>
+              <button
+                onClick={() => setActiveTab('location')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'location'
+                    ? 'border-teal-600 text-teal-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                오시는 길
+              </button>
+              <button
+                onClick={() => setActiveTab('footer')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'footer'
+                    ? 'border-teal-600 text-teal-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                푸터
+              </button>
+            </nav>
+          </div>
+
+          {/* 탭 콘텐츠 */}
           <div className="space-y-6">
-            {/* Hero 이미지 관리 */}
-            <HeroImageManagement initialImageUrl={heroImageUrl} />
+            {/* Hero 배경 탭 */}
+            {activeTab === 'hero' && (
+              <HeroImageManagement initialImageUrl={heroImageUrl} />
+            )}
 
-            {/* 공모전 관리 */}
-            <ContestManagement initialData={contestData} />
+            {/* 공모전 탭 */}
+            {activeTab === 'contest' && (
+              <ContestManagement initialData={contestData} />
+            )}
             
-            {/* 초대관장 관리 */}
-            <DirectorManagement initialData={directorData} initialImageUrl={directorImageUrl} />
+            {/* 초대 관장 탭 */}
+            {activeTab === 'director' && (
+              <DirectorManagement initialData={directorData} initialImageUrl={directorImageUrl} />
+            )}
 
-            {/* 건물 관리 (본관 + 청량대운도전시관) */}
-            <BuildingManagement
-              mainBuildingImageUrl={mainBuildingImageUrl}
-              mainBuildingText={mainBuildingText}
-              cheongryangImageUrl={cheongryangImageUrl}
-              cheongryangText={cheongryangText}
-            />
+            {/* 전시관 탭 */}
+            {activeTab === 'exhibition' && (
+              <>
+                {/* 건물 관리 (본관 + 청량대운도전시관) */}
+                <BuildingManagement
+                  mainBuildingImageUrl={mainBuildingImageUrl}
+                  mainBuildingText={mainBuildingText}
+                  cheongryangImageUrl={cheongryangImageUrl}
+                  cheongryangText={cheongryangText}
+                />
 
-            {/* 미술관 연혁 관리 */}
-            <HistoryManagement initialItems={historyItems} />
+                {/* 미술관 연혁 관리 */}
+                <HistoryManagement initialItems={historyItems} />
 
-            {/* 시설 규모 관리 */}
-            <FacilityManagement
-              siteArea={facilitySiteArea}
-              exhibitionRooms={facilityExhibitionRooms}
-              collectionCount={facilityCollectionCount}
-            />
+                {/* 시설 규모 관리 */}
+                <FacilityManagement
+                  siteArea={facilitySiteArea}
+                  exhibitionRooms={facilityExhibitionRooms}
+                  collectionCount={facilityCollectionCount}
+                />
+              </>
+            )}
 
-            {/* 관람 안내 관리 */}
-            <VisitInfoManagement initialData={visitInfo} />
+            {/* 관람안내 탭 */}
+            {activeTab === 'visit' && (
+              <VisitInfoManagement initialData={visitInfo} />
+            )}
 
-            {/* 오시는 길 관리 */}
-            <LocationManagement initialData={locationData} />
+            {/* 오시는 길 탭 */}
+            {activeTab === 'location' && (
+              <LocationManagement initialData={locationData} />
+            )}
 
-            {/* 푸터 관리 */}
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h2 className="text-2xl font-semibold text-teal-900 mb-4">푸터 관리</h2>
-              <FooterManagement initialData={footerData} />
-            </div>
+            {/* 푸터 탭 */}
+            {activeTab === 'footer' && (
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h2 className="text-2xl font-semibold text-teal-900 mb-4">푸터 관리</h2>
+                <FooterManagement initialData={footerData} />
+              </div>
+            )}
           </div>
         </div>
       </div>

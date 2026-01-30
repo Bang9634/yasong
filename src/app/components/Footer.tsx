@@ -34,12 +34,12 @@ interface FooterData {
 export function Footer() {
   const [footerData, setFooterData] = useState<FooterData>({
     description: '이원좌 화백의 예술 정신을 계승하고\n지역 문화예술 발전에 기여하는\n청송의 문화 중심지',
-    phone: '000-000-0000',
+    phone: '',
     phoneHours: '',
     email: '',
     address: '경상북도 청송군',
     operatingHours: '',
-    closedDay: '휴관: 매주 월요일',
+    closedDay: '',
     bottomInfo: '',
     copyright: 'Copyright © 2026 Cheongsong Yasong Art Gallery. All rights reserved.',
     facebookUrl: '',
@@ -237,13 +237,8 @@ export function Footer() {
               <div className="flex items-start">
                 <MapPin className="w-4 h-4 mr-2 mt-1 flex-shrink-0" />
                 <div>
-                  <p className="text-white">
-                    {parseLines(footerData.address).map((line, idx) => (
-                      <span key={idx}>
-                        {line}
-                        {idx < parseLines(footerData.address).length - 1 && <br />}
-                      </span>
-                    ))}
+                  <p className="text-white break-keep">
+                    경상북도 청송군 진보면 경동로 5162 청송야송미술관
                   </p>
                 </div>
               </div>
@@ -331,9 +326,8 @@ export function Footer() {
         <div className="border-t border-teal-800 pt-8">
           <div className="text-center text-teal-300 text-sm space-y-2">
             <p>{footerData.bottomInfo}</p>
-            {footerData.copyright.split('\n').map((line, index) => (
-              <p key={index} dangerouslySetInnerHTML={{ __html: line }} />
-            ))}
+            <p>본 웹사이트는 군립청송야송미술관의 공식 홈페이지가 아니며, 미술관 정보를 제공하기 위해 개인이 제작한 비공식 팬 페이지입니다.<br />
+            Copyright © 2026 Yasong Art Gallery Archive. All rights reserved.</p>
             <p className="text-teal-400 text-xs mt-2">
               <a 
                 href="https://github.com/Bang9634" 
@@ -341,7 +335,7 @@ export function Footer() {
                 rel="noopener noreferrer"
                 className="hover:text-teal-200 transition-colors"
               >
-                Developed by Deok-jae Bang
+                Designed & Developed by Deok-jae Bang
               </a>
             </p>
             <Link 

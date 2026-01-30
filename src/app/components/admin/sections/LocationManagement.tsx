@@ -3,14 +3,10 @@ import { MapPin, Info } from 'lucide-react';
 import { websiteAPI } from '@/utils/api';
 
 interface LocationData {
-  address: string;
-  postalCode: string;
   carInfo: string;
   busInfo: string;
   trainInfo: string;
   parkingInfo: string;
-  latitude: string;
-  longitude: string;
 }
 
 interface Props {
@@ -28,22 +24,13 @@ export function LocationManagement({ initialData }: Props) {
   }, [initialData]);
 
   const handleSave = async () => {
-    if (!locationData.address || !locationData.postalCode) {
-      alert('주소와 우편번호는 필수 항목입니다.');
-      return;
-    }
-
     setIsSaving(true);
     try {
       await Promise.all([
-        websiteAPI.updateTextSetting('location_address', locationData.address),
-        websiteAPI.updateTextSetting('location_postal_code', locationData.postalCode),
         websiteAPI.updateTextSetting('location_car_info', locationData.carInfo),
         websiteAPI.updateTextSetting('location_bus_info', locationData.busInfo),
         websiteAPI.updateTextSetting('location_train_info', locationData.trainInfo),
         websiteAPI.updateTextSetting('location_parking_info', locationData.parkingInfo),
-        websiteAPI.updateTextSetting('location_latitude', locationData.latitude || '36.4347'),
-        websiteAPI.updateTextSetting('location_longitude', locationData.longitude || '129.0542'),
       ]);
       alert('오시는 길 정보가 저장되었습니다.');
     } catch (error) {
@@ -65,34 +52,6 @@ export function LocationManagement({ initialData }: Props) {
       </div>
 
       <div className="space-y-6">
-        {/* 주소 */}
-        <div>
-          <label className="block text-lg font-semibold text-gray-700 mb-2">
-            주소 <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            value={locationData.address}
-            onChange={(e) => setLocationData({ ...locationData, address: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-            placeholder="경상북도 청송군 청송읍 월막길 123"
-          />
-        </div>
-
-        {/* 우편번호 */}
-        <div>
-          <label className="block text-lg font-semibold text-gray-700 mb-2">
-            우편번호 <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            value={locationData.postalCode}
-            onChange={(e) => setLocationData({ ...locationData, postalCode: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-            placeholder="37420"
-          />
-        </div>
-
         {/* 자가용 안내 */}
         <div>
           <label className="block text-lg font-semibold text-gray-700 mb-2">
@@ -159,60 +118,6 @@ export function LocationManagement({ initialData }: Props) {
           <p className="text-sm text-gray-500 mt-2">
             각 줄에 항목과 내용을 입력하세요. (예: 주차 요금: 무료)
           </p>
-        </div>
-
-        {/* 지도 좌표 */}
-        <div className="border-t pt-6 mt-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-            <MapPin className="w-5 h-5 mr-2 text-teal-600" />
-            네이버 지도 마커 위치
-          </h3>
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-            <Info className="w-5 h-5 text-blue-600 inline mr-2" />
-            <span className="text-sm text-blue-800">
-              네이버 지도에서 미술관 위치에 표시될 마커의 좌표를 입력하세요.
-            </span>
-          </div>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                위도 (Latitude)
-              </label>
-              <input
-                type="text"
-                value={locationData.latitude}
-                onChange={(e) => setLocationData({ ...locationData, latitude: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                placeholder="36.4347"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                기본값: 36.5058617 (청송야송미술관)
-              </p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                경도 (Longitude)
-              </label>
-              <input
-                type="text"
-                value={locationData.longitude}
-                onChange={(e) => setLocationData({ ...locationData, longitude: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                placeholder="129.0542"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                기본값: 129.0542 (청송야송미술관)
-              </p>
-            </div>
-          </div>
-          <div className="mt-3 p-3 bg-gray-50 rounded border border-gray-200">
-            <p className="text-xs text-gray-600">
-              💡 <strong>좌표 찾는 방법:</strong><br />
-              1. <a href="https://map.naver.com" target="_blank" rel="noopener noreferrer" className="text-teal-600 underline">네이버 지도</a>에서 미술관 위치 검색<br />
-              2. 해당 위치에서 우클릭 → "여기가 어딘가요?" 클릭<br />
-              3. 하단에 표시되는 좌표 복사 (예: 36.4347, 129.0542)
-            </p>
-          </div>
         </div>
 
         {/* 저장 버튼 */}

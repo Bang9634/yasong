@@ -1,0 +1,17 @@
+{
+  "name": "군립청송야송미술관 아카이브",
+  "short_name": "야송미술관",
+  "description": "청송 야송 미술관의 관람 정보, 작품 소개, 공모전 소식",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0f766e",
+  "icons": [
+    {
+      "src": "/yasong-icon.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

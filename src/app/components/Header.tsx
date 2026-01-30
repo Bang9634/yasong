@@ -49,11 +49,18 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-24">
           {/* 로고 */}
-          <div className="cursor-pointer" onClick={() => scrollToSection('hero')}>
-            <h1 className="text-xl sm:text-2xl text-teal-900">
-              군립청송야송미술관 아카이브
-            </h1>
-            <p className="text-xs sm:text-xs text-teal-700">Unofficial Info Page</p>
+          <div className="cursor-pointer flex items-center gap-3" onClick={() => scrollToSection('hero')}>
+            <img 
+              src="/yasong-icon.png" 
+              alt="야송미술관 로고" 
+              className="w-12 h-12 sm:w-14 sm:h-14"
+            />
+            <div>
+              <h1 className="text-xl sm:text-2xl text-teal-900">
+                군립청송야송미술관 아카이브
+              </h1>
+              <p className="text-xs sm:text-xs text-teal-700">Unofficial Info Page</p>
+            </div>
           </div>
 
           {/* 데스크톱 네비게이션 */}

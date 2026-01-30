@@ -4,6 +4,7 @@ import { websiteAPI } from '@/utils/api';
 
 interface VisitInfoData {
   operatingHours: string;
+  closedDay: string;
   admissionFee: string;
   etiquette: string;
   phone: string;
@@ -13,6 +14,7 @@ interface VisitInfoData {
 export function VisitInfo() {
   const [visitInfo, setVisitInfo] = useState<VisitInfoData>({
     operatingHours: '',
+    closedDay: '',
     admissionFee: '',
     etiquette: '',
     phone: '',
@@ -26,8 +28,9 @@ export function VisitInfo() {
 
   const loadVisitInfo = async () => {
     try {
-      const [hoursData, feeData, etiquetteData, phoneData, emailData] = await Promise.all([
+      const [hoursData, closedDayData, feeData, etiquetteData, phoneData, emailData] = await Promise.all([
         websiteAPI.getTextSetting('visit_operating_hours'),
+        websiteAPI.getTextSetting('visit_closed_day'),
         websiteAPI.getTextSetting('visit_admission_fee'),
         websiteAPI.getTextSetting('visit_etiquette'),
         websiteAPI.getTextSetting('visit_phone'),
@@ -36,6 +39,7 @@ export function VisitInfo() {
 
       setVisitInfo({
         operatingHours: hoursData.value || '',
+        closedDay: closedDayData.value || '',
         admissionFee: feeData.value || '',
         etiquette: etiquetteData.value || '',
         phone: phoneData.value || '',
@@ -104,6 +108,11 @@ export function VisitInfo() {
                 ))
               ) : (
                 <p>운영 시간 정보가 없습니다.</p>
+              )}
+              {visitInfo.closedDay && (
+                <div className="mt-4 pt-4 border-t border-teal-300">
+                  <p className="text-amber-600 font-semibold">휴관일: {visitInfo.closedDay}</p>
+                </div>
               )}
             </div>
           </div>

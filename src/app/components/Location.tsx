@@ -83,16 +83,16 @@ export function Location() {
           <div className="w-20 h-1 bg-amber-600 mx-auto mb-6"></div>
           <div className="flex items-center justify-center text-lg text-gray-700 mb-2">
             <MapPin className="w-6 h-6 mr-2 text-teal-600" />
-            {locationData.address}
+            경상북도 청송군 진보면 경동로 5162 청송야송미술관
           </div>
-          <p className="text-gray-600">우편번호: {locationData.postalCode}</p>
+          <p className="text-gray-600">우편번호: 37452</p>
         </div>
 
         {/* 지도 영역 */}
         <div className="bg-white rounded-lg shadow-xl overflow-hidden mb-6 border-2 border-teal-200">
           <NaverMap 
-            latitude={parseFloat(locationData.latitude)} 
-            longitude={parseFloat(locationData.longitude)}
+            latitude={parseFloat("36.5058617")} 
+            longitude={parseFloat("129.1191556")}
             markerTitle="군립청송야송미술관"
           />
         </div>
@@ -100,7 +100,7 @@ export function Location() {
         {/* 지도 링크 버튼 */}
         <div className="flex items-center justify-center space-x-4 mb-12">
           <a
-            href={`https://map.naver.com/v5/search/${encodeURIComponent(locationData.address)}`}
+            href={`https://map.naver.com/v5/search/${encodeURIComponent("경상북도 청송군 진보면 경동로 5162 청송야송미술관")}`}
             target="_blank"
             rel="noopener noreferrer"
             className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center shadow-lg"
@@ -109,7 +109,7 @@ export function Location() {
             네이버 지도로 보기
           </a>
           <a
-            href={`https://map.kakao.com/?q=${encodeURIComponent(locationData.address)}`}
+            href={`https://map.kakao.com/?q=${encodeURIComponent("경상북도 청송군 진보면 경동로 5162 청송야송미술관")}`}
             target="_blank"
             rel="noopener noreferrer"
             className="px-6 py-3 bg-yellow-500 text-gray-900 rounded-lg hover:bg-yellow-600 transition-colors flex items-center shadow-lg"

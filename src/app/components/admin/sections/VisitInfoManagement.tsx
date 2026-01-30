@@ -4,6 +4,7 @@ import { websiteAPI } from '@/utils/api';
 
 interface VisitInfoData {
   operatingHours: string;
+  closedDay: string;
   admissionFee: string;
   etiquette: string;
   phone: string;
@@ -25,7 +26,7 @@ export function VisitInfoManagement({ initialData }: Props) {
   }, [initialData]);
 
   const handleSave = async () => {
-    if (!visitInfo.operatingHours || !visitInfo.admissionFee || !visitInfo.etiquette || 
+    if (!visitInfo.operatingHours || !visitInfo.closedDay || !visitInfo.admissionFee || !visitInfo.etiquette || 
         !visitInfo.phone || !visitInfo.email) {
       alert('모든 필드를 입력해주세요.');
       return;
@@ -35,12 +36,16 @@ export function VisitInfoManagement({ initialData }: Props) {
     try {
       await Promise.all([
         websiteAPI.updateTextSetting('visit_operating_hours', visitInfo.operatingHours),
+        websiteAPI.updateTextSetting('visit_closed_day', visitInfo.closedDay),
         websiteAPI.updateTextSetting('visit_admission_fee', visitInfo.admissionFee),
         websiteAPI.updateTextSetting('visit_etiquette', visitInfo.etiquette),
         websiteAPI.updateTextSetting('visit_phone', visitInfo.phone),
         websiteAPI.updateTextSetting('visit_email', visitInfo.email),
+        // 푸터 설정도 동기화
+        websiteAPI.updateTextSetting('footer_operating_hours', visitInfo.operatingHours),
+        websiteAPI.updateTextSetting('footer_closed_day', visitInfo.closedDay),
       ]);
-      alert('관람 안내 정보가 저장되었습니다.');
+      alert('관람 안내 정보가 저장되었습니다. (푸터도 자동으로 업데이트되었습니다)');
     } catch (error) {
       console.error('Failed to save visit info:', error);
       alert('저장에 실패했습니다.');
@@ -70,11 +75,29 @@ export function VisitInfoManagement({ initialData }: Props) {
             value={visitInfo.operatingHours}
             onChange={(e) => setVisitInfo({ ...visitInfo, operatingHours: e.target.value })}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-            rows={8}
-            placeholder="예:&#10;화요일 - 금요일: 10:00 - 18:00&#10;토요일 - 일요일: 10:00 - 19:00&#10;공휴일: 10:00 - 18:00&#10;휴관일: 매주 월요일, 1월 1일, 설날·추석 당일&#10;※ 입장 마감은 폐관 30분 전까지입니다"
+            rows={5}
+            placeholder="예:&#10;화요일 - 금요일: 10:00 - 18:00&#10;토요일 - 일요일: 10:00 - 19:00&#10;공휴일: 10:00 - 18:00&#10;※ 입장 마감은 폐관 30분 전까지입니다"
           />
           <p className="text-sm text-gray-500 mt-2">
             각 줄에 요일과 시간을 입력하세요. (예: 화요일 - 금요일: 10:00 - 18:00)
+          </p>
+        </div>
+
+        {/* 휴관일 */}
+        <div>
+          <label className="flex items-center text-lg font-semibold text-gray-700 mb-3">
+            <Clock className="w-5 h-5 mr-2 text-teal-600" />
+            휴관일
+          </label>
+          <input
+            type="text"
+            value={visitInfo.closedDay}
+            onChange={(e) => setVisitInfo({ ...visitInfo, closedDay: e.target.value })}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+            placeholder="예: 매주 월요일, 1월 1일, 설날·추석 당일"
+          />
+          <p className="text-sm text-gray-500 mt-2">
+            휴관일 정보를 입력하세요. (예: 매주 월요일, 1월 1일, 설날·추석 당일)
           </p>
         </div>
 

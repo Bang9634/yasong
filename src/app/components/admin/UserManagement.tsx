@@ -188,6 +188,7 @@ export function UserManagement() {
             <div>
               <h1 className="text-4xl font-bold text-teal-900 mb-2">사용자 관리</h1>
               <p className="text-gray-600">전체 사용자 계정을 관리하고 권한을 수정할 수 있습니다.</p>
+              <p className="text-gray-600"> * 기본으로 생성되는 admin 계정은 사용하지 않는 것을 권장합니다.</p>
             </div>
             <Button
               onClick={() => setShowAddUserModal(true)}

@@ -110,6 +110,13 @@
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-mysql</artifactId>
 		</dependency>
+
+		<!-- Google Analytics Data API -->
+		<dependency>
+			<groupId>com.google.analytics</groupId>
+			<artifactId>google-analytics-data</artifactId>
+			<version>0.50.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>

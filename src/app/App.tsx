@@ -10,6 +10,7 @@ import { SouvenirsPage } from '@/app/components/SouvenirsPage';
 import { Profile } from '@/app/components/Profile';
 import { UserManagement } from '@/app/components/admin/UserManagement';
 import { WebsiteManagement } from '@/app/components/admin/WebsiteManagement';
+import { AnalyticsPage } from '@/app/components/admin/AnalyticsPage';
 import { ScrollToTop } from '@/app/components/ScrollToTop';
 import { AuthProvider } from '@/context/AuthContext';
 import { useEffect } from "react";
@@ -52,6 +53,7 @@ export default function App() {
           {/* 관리자 페이지 */}
           <Route path="/admin/users" element={<UserManagement />} />
           <Route path="/admin/website" element={<WebsiteManagement />} />
+          <Route path="/admin/analytics" element={<AnalyticsPage />} />
         </Routes>
       </Router>
     </AuthProvider>

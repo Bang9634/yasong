@@ -10,19 +10,13 @@ interface HistoryItem {
 
 export function About() {
   const [mainBuildingImage, setMainBuildingImage] = useState<string>('');
-  const [mainBuildingText, setMainBuildingText] = useState<string>('군립청송야송미술관은 이원좌 화백의 예술 세계를 기리고 지역 문화예술 발전을 위해 2020년 개관한 복합 문화공간입니다. 다양한 기획전시와 교육 프로그램을 운영하며, 상설전시실에서는 이원좌 화백의 대표작들을 감상할 수 있습니다.');
+  const [mainBuildingText, setMainBuildingText] = useState<string>('소개 정보가 없습니다.');
   
   const [cheongryangImage, setCheongryangImage] = useState<string>('');
-  const [cheongryangText, setCheongryangText] = useState<string>('청량대운도전시관은 이원좌 화백의 필생의 역작인 「청량대운도」를 전시하기 위해 특별히 건립된 전시관입니다. 청송의 명승 청량산의 아름다움을 담은 이 대작을 최적의 환경에서 감상할 수 있도록 설계되었습니다.');
+  const [cheongryangText, setCheongryangText] = useState<string>('소개 정보가 없습니다.');
 
   const [historyItems, setHistoryItems] = useState<HistoryItem[]>([
-    { year: '2020.10', description: '군립청송야송미술관 개관 (이원좌 화백 초대 관장 취임)' },
-    { year: '2021.03', description: '첫 기획전 \'이원좌, 청송을 그리다\' 개최' },
-    { year: '2021.09', description: '야외 조각공원 조성 완료' },
-    { year: '2022.05', description: '어린이 미술관 개관, 교육 프로그램 본격 운영' },
-    { year: '2023.07', description: '대한민국 공공디자인대상 수상' },
-    { year: '2024.04', description: '누적 관람객 20만 명 돌파' },
-    { year: '2026.03', description: '이원좌 화백 탄생 100주년 특별전 개최 예정' },
+    { year: '-', description: '연혁 정보가 없습니다.' }
   ]);
 
   const [facilitySiteArea, setFacilitySiteArea] = useState<string>('3,500');

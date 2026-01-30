@@ -5,10 +5,10 @@ import { websiteAPI } from '@/utils/api';
 export function DirectorIntro() {
   const [directorData, setDirectorData] = useState({
     name: '야송 이원좌 李元佐 (1939-2019)',
-    bio: '• 1941년 경상북도 청송 출생\n• 서울대학교 미술대학 회화과 졸업\n• 프랑스 파리 국립미술학교 수학\n• 대한민국 미술대전 심사위원 역임\n• 한국미술협회 이사장 역임\n• 서울대학교 미술대학 명예교수\n• 2020년 타계, 금관문화훈장 추서',
-    philosophy: '이원좌 화백은 한국 근현대 미술사에서 독보적인 위치를 차지하는 서양화가입니다. 그의 작품은 동양의 정신성과 서양의 조형성을 조화롭게 융합하여 독창적인 예술 세계를 구축했습니다.\n\n특히 고향 청송의 자연을 주제로 한 풍경화는 한국적 정서와 현대적 감각이 어우러진 걸작으로 평가받고 있습니다. 맑고 투명한 색채와 서정적인 구도는 보는 이로 하여금 자연의 숭고함과 생명의 신비를 느끼게 합니다.\n\n평생 동안 500여 회의 개인전과 1,000여 회의 단체전에 참여하며 한국 미술의 위상을 세계에 알렸으며, 후학 양성에도 헌신하여 많은 제자들을 배출했습니다.',
-    quote: '"예술은 자연을 닮아가는 과정이며, 화가는 자연의 목소리를 전하는 사람이다."',
-    collection: '주요 소장처',
+    bio: '-',
+    philosophy: '-',
+    quote: '-',
+    collection: '-',
   });
   const [directorImageUrl, setDirectorImageUrl] = useState<string>('');
 

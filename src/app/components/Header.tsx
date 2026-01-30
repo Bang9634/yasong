@@ -51,9 +51,9 @@ export function Header() {
           {/* 로고 */}
           <div className="cursor-pointer" onClick={() => scrollToSection('hero')}>
             <h1 className="text-xl sm:text-2xl text-teal-900">
-              군립청송야송미술관
+              군립청송야송미술관 아카이브
             </h1>
-            <p className="text-xs sm:text-sm text-teal-700">Cheongsong Yasong Art Gallery</p>
+            <p className="text-xs sm:text-xs text-teal-700">Unofficial Info Page</p>
           </div>
 
           {/* 데스크톱 네비게이션 */}
@@ -243,10 +243,21 @@ export function Header() {
                           navigate('/admin/website');
                           setIsMenuOpen(false);
                         }}
-                        className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
+                        className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors border-b border-gray-100"
                       >
                         홈페이지 관리
                       </button>
+                      {isAdmin(user.role) && (
+                        <button
+                          onClick={() => {
+                            navigate('/admin/analytics');
+                            setIsMenuOpen(false);
+                          }}
+                          className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
+                        >
+                          통계
+                        </button>
+                      )}
                     </div>
                   </div>
                 )}
@@ -395,10 +406,21 @@ export function Header() {
                           navigate('/admin/website');
                           setIsMenuOpen(false);
                         }}
-                        className="block w-full text-left px-8 py-2 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
+                        className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors border-b border-gray-100"
                       >
                         홈페이지 관리
                       </button>
+                      {isAdmin(user.role) && (
+                        <button
+                          onClick={() => {
+                            navigate('/admin/analytics');
+                            setIsMenuOpen(false);
+                          }}
+                          className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors"
+                        >
+                          통계
+                        </button>
+                      )}
                     </div>
                   )}
                   

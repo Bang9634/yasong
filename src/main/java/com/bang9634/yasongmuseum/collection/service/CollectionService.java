@@ -3,7 +3,7 @@ package com.bang9634.yasongmuseum.collection.service;
 import com.bang9634.yasongmuseum.collection.dto.CollectionResponse;
 import com.bang9634.yasongmuseum.collection.dto.CreateCollectionRequest;
 import com.bang9634.yasongmuseum.collection.dto.UpdateCollectionRequest;
-import com.bang9634.yasongmuseum.collection.entity.Collection;
+import com.bang9634.yasongmuseum.collection.entity.ArtCollection;
 import com.bang9634.yasongmuseum.collection.exception.CollectionNotFoundException;
 import com.bang9634.yasongmuseum.collection.repository.CollectionRepository;
 import com.bang9634.yasongmuseum.common.service.FileStorageService;
@@ -42,7 +42,7 @@ public class CollectionService {
      * Get collection by ID
      */
     public CollectionResponse getCollectionById(Long id) {
-        Collection collection = collectionRepository.findById(id)
+        ArtCollection collection = collectionRepository.findById(id)
                 .orElseThrow(() -> new CollectionNotFoundException(id));
         return toResponse(collection);
     }
@@ -56,7 +56,7 @@ public class CollectionService {
         String imageUrl = fileStorageService.saveFile(imageFile, COLLECTION_IMAGE_DIR, COLLECTION_IMAGE_PREFIX);
 
         // 2. Create collection entity
-        Collection collection = Collection.builder()
+        ArtCollection collection = ArtCollection.builder()
                 .title(request.getTitle())
                 .year(request.getYear())
                 .size(request.getSize())
@@ -66,7 +66,7 @@ public class CollectionService {
                 .isPinned(request.getIsPinned() != null ? request.getIsPinned() : false)
                 .build();
 
-        Collection savedCollection = collectionRepository.save(collection);
+        ArtCollection savedCollection = collectionRepository.save(collection);
         log.info("Collection created: id={}, title={}", savedCollection.getId(), savedCollection.getTitle());
 
         return toResponse(savedCollection);
@@ -77,7 +77,7 @@ public class CollectionService {
      */
     @Transactional
     public CollectionResponse updateCollection(Long id, UpdateCollectionRequest request, MultipartFile imageFile) {
-        Collection collection = collectionRepository.findById(id)
+        ArtCollection collection = collectionRepository.findById(id)
                 .orElseThrow(() -> new CollectionNotFoundException(id));
 
         // Update image if new file provided
@@ -110,7 +110,7 @@ public class CollectionService {
      */
     @Transactional
     public void deleteCollection(Long id) {
-        Collection collection = collectionRepository.findById(id)
+        ArtCollection collection = collectionRepository.findById(id)
                 .orElseThrow(() -> new CollectionNotFoundException(id));
 
         // Delete image file
@@ -125,7 +125,7 @@ public class CollectionService {
     /**
      * Convert entity to response DTO
      */
-    private CollectionResponse toResponse(Collection collection) {
+    private CollectionResponse toResponse(ArtCollection collection) {
         return CollectionResponse.builder()
                 .id(collection.getId())
                 .title(collection.getTitle())

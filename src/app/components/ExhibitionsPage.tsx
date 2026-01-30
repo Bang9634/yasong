@@ -4,6 +4,7 @@ import { Footer } from './Footer';
 import { ImageWithFallback } from '@/app/components/figma/ImageWithFallback';
 import { Calendar, MapPin, Search, Plus, Edit, Trash2, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { exhibitionAPI } from '@/utils/api';
+import { setPageSEO } from '@/utils/seo';
 import { Input } from '@/app/components/ui/input';
 import { Button } from '@/app/components/ui/button';
 import { Label } from '@/app/components/ui/label';
@@ -62,6 +63,15 @@ export function ExhibitionsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedExhibition, setSelectedExhibition] = useState<Exhibition | null>(null);
+
+  // SEO 설정
+  useEffect(() => {
+    setPageSEO({
+      title: '전시',
+      description: '군립청송야송미술관의 현재 전시 및 지난 전시 정보를 확인하실 수 있습니다.',
+      keywords: '청송야송미술관, 전시, 미술전시, 기획전',
+    });
+  }, []);
 
   useEffect(() => {
     const fetchExhibitions = async () => {

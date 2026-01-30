@@ -7,6 +7,7 @@ import { Button } from '@/app/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { isManagerOrAbove } from '@/utils/auth';
 import { noticeAPI, getFullImageUrl } from '@/utils/api';
+import { setPageSEO } from '@/utils/seo';
 
 interface NoticeAttachment {
   id: number;
@@ -67,6 +68,23 @@ export function NoticeDetailPage() {
 
     fetchNotice();
   }, [id]);
+
+  // SEO 설정 (공지사항이 로드되면 실행)
+  useEffect(() => {
+    if (notice) {
+      // 본문에서 첫 100자 추출 (HTML 태그 제거)
+      const plainText = notice.content.replace(/<[^>]*>/g, '').replace(/\n/g, ' ');
+      const description = plainText.length > 100 
+        ? plainText.substring(0, 100) + '...' 
+        : plainText;
+
+      setPageSEO({
+        title: notice.title,
+        description: description,
+        keywords: `청송야송미술관, 공지사항, ${getCategoryDisplayName(notice.category)}`,
+      });
+    }
+  }, [notice]);
 
   const getCategoryDisplayName = (category: string): string => {
     const categoryMap: { [key: string]: string } = {

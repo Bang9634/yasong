@@ -5,6 +5,7 @@ import { isManagerOrAbove } from '@/utils/auth';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { Search, Plus, X, Edit2, Trash2, Pin, PinOff } from 'lucide-react';
+import { setPageSEO } from '@/utils/seo';
 import {
   Pagination,
   PaginationContent,
@@ -49,6 +50,15 @@ export function CollectionsPage() {
   const [isPinned, setIsPinned] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
+
+  // SEO 설정
+  useEffect(() => {
+    setPageSEO({
+      title: '소장품',
+      description: '군립청송야송미술관의 다양한 소장품을 감상하실 수 있습니다.',
+      keywords: '청송야송미술관, 소장품, 미술작품, 컬렉션',
+    });
+  }, []);
 
   useEffect(() => {
     loadCollections();

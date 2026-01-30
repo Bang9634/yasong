@@ -7,6 +7,7 @@ import { Button } from '@/app/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { isManagerOrAbove } from '@/utils/auth';
 import { noticeAPI } from '@/utils/api';
+import { setPageSEO } from '@/utils/seo';
 
 interface NoticeItem {
   id: number;
@@ -34,6 +35,15 @@ export function NoticePage() {
 
   // 관리자 권한 확인
   const canManage = user && isManagerOrAbove(user.role);
+
+  // SEO 설정
+  useEffect(() => {
+    setPageSEO({
+      title: '공지사항',
+      description: '군립청송야송미술관의 최신 소식, 전시 안내, 공모전 정보를 확인하실 수 있습니다.',
+      keywords: '청송야송미술관 공지사항, 전시 안내, 공모전, 미술관 소식',
+    });
+  }, []);
 
   // 공지사항 목록 로드
   useEffect(() => {

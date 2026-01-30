@@ -6,6 +6,7 @@ import { ImageWithFallback } from '@/app/components/figma/ImageWithFallback';
 import { ShoppingBag, Search, Plus, Edit, Trash2, X } from 'lucide-react';
 import { souvenirAPI, getFullImageUrl } from '@/utils/api';
 import { useAuth } from '@/context/AuthContext';
+import { setPageSEO } from '@/utils/seo';
 import {
   Pagination,
   PaginationContent,
@@ -50,6 +51,15 @@ export function SouvenirsPage() {
   const [selectedSouvenir, setSelectedSouvenir] = useState<Souvenir | null>(null);
 
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'MANAGER';
+
+  // SEO 설정
+  useEffect(() => {
+    setPageSEO({
+      title: '기념품',
+      description: '군립청송야송미술관의 특별한 기념품을 만나보세요.',
+      keywords: '청송야송미술관, 기념품, 굿즈, 미술관샵',
+    });
+  }, []);
 
   useEffect(() => {
     loadSouvenirs();

@@ -82,6 +82,7 @@ export function AnalyticsPage() {
   const { user, loading } = useAuth();
   const [activeTab, setActiveTab] = useState<'summary' | 'full'>('summary');
   const [summaryData, setSummaryData] = useState<OverviewMetrics | null>(null);
+  const [summaryDailyData, setSummaryDailyData] = useState<DailyMetric[]>([]);
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
   const [selectedDays, setSelectedDays] = useState(30);
   const [isLoading, setIsLoading] = useState(false);
@@ -113,8 +114,12 @@ export function AnalyticsPage() {
   const loadSummary = async () => {
     try {
       setIsLoading(true);
-      const data = await analyticsAPI.getSummary();
-      setSummaryData(data);
+      const [summaryResponse, weekDataResponse] = await Promise.all([
+        analyticsAPI.getSummary(),
+        analyticsAPI.getAnalytics(7)
+      ]);
+      setSummaryData(summaryResponse);
+      setSummaryDailyData(weekDataResponse.dailyMetrics || []);
     } catch (error) {
       console.error('요약 정보 로드 실패:', error);
       alert('요약 정보를 불러오는데 실패했습니다.');
@@ -226,7 +231,10 @@ export function AnalyticsPage() {
                     </div>
                     <h3 className="text-gray-500 text-sm font-medium mb-1">활성 사용자</h3>
                     <p className="text-3xl font-bold text-gray-900">{summaryData.totalUsers.toLocaleString()}</p>
-                    <p className="text-sm text-gray-500 mt-2">새 사용자: {summaryData.newUsers.toLocaleString()}</p>
+                    <div className="mt-2 space-y-1">
+                      <p className="text-xs text-gray-500">오늘: {summaryDailyData[summaryDailyData.length - 1]?.users.toLocaleString() || 0}</p>
+                      <p className="text-xs text-gray-500">최근 7일: {summaryData.totalUsers.toLocaleString()}</p>
+                    </div>
                   </div>
 
                   {/* 세션 */}
@@ -238,7 +246,10 @@ export function AnalyticsPage() {
                     </div>
                     <h3 className="text-gray-500 text-sm font-medium mb-1">세션</h3>
                     <p className="text-3xl font-bold text-gray-900">{summaryData.sessions.toLocaleString()}</p>
-                    <p className="text-sm text-gray-500 mt-2">지난 7일</p>
+                    <div className="mt-2 space-y-1">
+                      <p className="text-xs text-gray-500">오늘: {summaryDailyData[summaryDailyData.length - 1]?.sessions.toLocaleString() || 0}</p>
+                      <p className="text-xs text-gray-500">최근 7일: {summaryData.sessions.toLocaleString()}</p>
+                    </div>
                   </div>
 
                   {/* 페이지뷰 */}
@@ -250,7 +261,10 @@ export function AnalyticsPage() {
                     </div>
                     <h3 className="text-gray-500 text-sm font-medium mb-1">페이지뷰</h3>
                     <p className="text-3xl font-bold text-gray-900">{summaryData.pageViews.toLocaleString()}</p>
-                    <p className="text-sm text-gray-500 mt-2">총 조회수</p>
+                    <div className="mt-2 space-y-1">
+                      <p className="text-xs text-gray-500">오늘: {summaryDailyData[summaryDailyData.length - 1]?.pageViews.toLocaleString() || 0}</p>
+                      <p className="text-xs text-gray-500">최근 7일: {summaryData.pageViews.toLocaleString()}</p>
+                    </div>
                   </div>
 
                   {/* 평균 세션 시간 */}
@@ -262,13 +276,19 @@ export function AnalyticsPage() {
                     </div>
                     <h3 className="text-gray-500 text-sm font-medium mb-1">평균 세션 시간</h3>
                     <p className="text-3xl font-bold text-gray-900">{formatDuration(summaryData.averageSessionDuration)}</p>
+                    <div className="mt-2 space-y-1">
+                      <p className="text-xs text-gray-500">최근 7일 평균</p>
+                    </div>
                   </div>
                 </div>
 
                 {/* 참여율 & 이탈률 */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="bg-white rounded-lg shadow p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">참여율</h3>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold text-gray-900">참여율</h3>
+                      <span className="text-sm text-gray-500">지난 7일</span>
+                    </div>
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <div className="w-full bg-gray-200 rounded-full h-4">
@@ -288,7 +308,10 @@ export function AnalyticsPage() {
                   </div>
 
                   <div className="bg-white rounded-lg shadow p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">이탈률</h3>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold text-gray-900">이탈률</h3>
+                      <span className="text-sm text-gray-500">지난 7일</span>
+                    </div>
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <div className="w-full bg-gray-200 rounded-full h-4">
@@ -307,6 +330,75 @@ export function AnalyticsPage() {
                     </div>
                   </div>
                 </div>
+
+                {/* 일별 방문자 추세 (요약 정보) */}
+                {summaryDailyData.length > 0 && (
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">일별 방문자 추세 (최근 7일)</h3>
+                    <div className="h-80 relative">
+                      <svg className="w-full h-full" viewBox="0 0 800 320" preserveAspectRatio="none">
+                        {/* 배경 그리드 */}
+                        <line x1="40" y1="20" x2="760" y2="20" stroke="#e5e7eb" strokeWidth="1" />
+                        <line x1="40" y1="84" x2="760" y2="84" stroke="#e5e7eb" strokeWidth="1" />
+                        <line x1="40" y1="148" x2="760" y2="148" stroke="#e5e7eb" strokeWidth="1" />
+                        <line x1="40" y1="212" x2="760" y2="212" stroke="#e5e7eb" strokeWidth="1" />
+                        <line x1="40" y1="276" x2="760" y2="276" stroke="#e5e7eb" strokeWidth="1" />
+                        
+                        {/* 꺾은선 그래프 */}
+                        <polyline
+                          fill="none"
+                          stroke="#0d9488"
+                          strokeWidth="3"
+                          points={summaryDailyData.map((day, index) => {
+                            const maxUsers = Math.max(...summaryDailyData.map(d => d.users));
+                            const padding = 40;
+                            const x = padding + (index / (summaryDailyData.length - 1)) * (800 - 2 * padding);
+                            const y = 276 - ((day.users / maxUsers) * 240);
+                            return `${x},${y}`;
+                          }).join(' ')}
+                        />
+                        
+                        {/* 데이터 포인트 및 값 */}
+                        {summaryDailyData.map((day, index) => {
+                          const maxUsers = Math.max(...summaryDailyData.map(d => d.users));
+                          const padding = 40;
+                          const x = padding + (index / (summaryDailyData.length - 1)) * (800 - 2 * padding);
+                          const y = 276 - ((day.users / maxUsers) * 240);
+                          return (
+                            <g key={index}>
+                              <circle
+                                cx={x}
+                                cy={y}
+                                r="6"
+                                fill="#0d9488"
+                                className="hover:r-8 transition-all cursor-pointer"
+                              />
+                              <text
+                                x={x}
+                                y={y - 12}
+                                textAnchor="middle"
+                                fontSize="12"
+                                fill="#374151"
+                                fontWeight="500"
+                              >
+                                {day.users.toLocaleString()}
+                              </text>
+                            </g>
+                          );
+                        })}
+                      </svg>
+                      
+                      {/* X축 레이블 */}
+                      <div className="flex justify-between mt-2" style={{ paddingLeft: '40px', paddingRight: '40px' }}>
+                        {summaryDailyData.map((day, index) => (
+                          <span key={index} className="text-xs text-gray-500">
+                            {new Date(day.date).getDate()}일
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </>
             ) : (
               <div className="text-center py-12 text-gray-500">데이터를 불러올 수 없습니다.</div>
@@ -329,7 +421,7 @@ export function AnalyticsPage() {
                 <option value={30}>최근 30일</option>
                 <option value={90}>최근 90일</option>
                 <option value={180}>최근 180일</option>
-                
+
                 <option value={365}>최근 365일</option>
               </select>
             </div>
@@ -376,26 +468,93 @@ export function AnalyticsPage() {
                 {/* 일별 추세 */}
                 <div className="bg-white rounded-lg shadow p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">일별 방문자 추세</h3>
-                  <div className="h-64 flex items-end space-x-1">
-                    {analyticsData.dailyMetrics.map((day, index) => {
-                      const maxUsers = Math.max(...analyticsData.dailyMetrics.map(d => d.users));
-                      const height = (day.users / maxUsers) * 100;
-                      return (
-                        <div key={index} className="flex-1 flex flex-col items-center">
-                          <div
-                            className="w-full bg-teal-600 rounded-t hover:bg-teal-700 transition-colors relative group"
-                            style={{ height: `${height}%` }}
-                          >
-                            <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                              {day.users.toLocaleString()} 사용자
-                            </div>
-                          </div>
-                          <span className="text-xs text-gray-500 mt-2">
-                            {new Date(day.date).getDate()}일
+                  <div className="h-80 relative">
+                    <svg className="w-full h-full" viewBox="0 0 800 320" preserveAspectRatio="none">
+                      {/* 배경 그리드 */}
+                      <line x1="40" y1="20" x2="760" y2="20" stroke="#e5e7eb" strokeWidth="1" />
+                      <line x1="40" y1="84" x2="760" y2="84" stroke="#e5e7eb" strokeWidth="1" />
+                      <line x1="40" y1="148" x2="760" y2="148" stroke="#e5e7eb" strokeWidth="1" />
+                      <line x1="40" y1="212" x2="760" y2="212" stroke="#e5e7eb" strokeWidth="1" />
+                      <line x1="40" y1="276" x2="760" y2="276" stroke="#e5e7eb" strokeWidth="1" />
+                      
+                      {/* 영역 채우기 (그라데이션) */}
+                      <defs>
+                        <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <stop offset="0%" stopColor="#0d9488" stopOpacity="0.3" />
+                          <stop offset="100%" stopColor="#0d9488" stopOpacity="0.05" />
+                        </linearGradient>
+                      </defs>
+                      <polygon
+                        fill="url(#areaGradient)"
+                        points={`40,276 ${analyticsData.dailyMetrics.map((day, index) => {
+                          const maxUsers = Math.max(...analyticsData.dailyMetrics.map(d => d.users));
+                          const padding = 40;
+                          const x = padding + (index / (analyticsData.dailyMetrics.length - 1)) * (800 - 2 * padding);
+                          const y = 276 - ((day.users / maxUsers) * 240);
+                          return `${x},${y}`;
+                        }).join(' ')} 760,276`}
+                      />
+                      
+                      {/* 꺾은선 그래프 */}
+                      <polyline
+                        fill="none"
+                        stroke="#0d9488"
+                        strokeWidth="3"
+                        points={analyticsData.dailyMetrics.map((day, index) => {
+                          const maxUsers = Math.max(...analyticsData.dailyMetrics.map(d => d.users));
+                          const padding = 40;
+                          const x = padding + (index / (analyticsData.dailyMetrics.length - 1)) * (800 - 2 * padding);
+                          const y = 276 - ((day.users / maxUsers) * 240);
+                          return `${x},${y}`;
+                        }).join(' ')}
+                      />
+                      
+                      {/* 데이터 포인트 및 값 */}
+                      {analyticsData.dailyMetrics.map((day, index) => {
+                        const maxUsers = Math.max(...analyticsData.dailyMetrics.map(d => d.users));
+                        const padding = 40;
+                        const x = padding + (index / (analyticsData.dailyMetrics.length - 1)) * (800 - 2 * padding);
+                        const y = 276 - ((day.users / maxUsers) * 240);
+                        // 너무 많은 라벨은 간격을 두고 표시
+                        const showLabel = analyticsData.dailyMetrics.length <= 30 || index % Math.ceil(analyticsData.dailyMetrics.length / 15) === 0;
+                        return (
+                          <g key={index}>
+                            <circle
+                              cx={x}
+                              cy={y}
+                              r="6"
+                              fill="#0d9488"
+                              className="hover:r-8 transition-all cursor-pointer"
+                            />
+                            {showLabel && (
+                              <text
+                                x={x}
+                                y={y - 12}
+                                textAnchor="middle"
+                                fontSize="12"
+                                fill="#374151"
+                                fontWeight="500"
+                              >
+                                {day.users.toLocaleString()}
+                              </text>
+                            )}
+                          </g>
+                        );
+                      })}
+                    </svg>
+                    
+                    {/* X축 레이블 */}
+                    <div className="flex justify-between mt-2" style={{ paddingLeft: '40px', paddingRight: '40px' }}>
+                      {analyticsData.dailyMetrics.map((day, index) => {
+                        // 레이블 간격 조정 (너무 많으면 일부만 표시)
+                        const showLabel = analyticsData.dailyMetrics.length <= 30 || index % Math.ceil(analyticsData.dailyMetrics.length / 10) === 0;
+                        return showLabel ? (
+                          <span key={index} className="text-xs text-gray-500">
+                            {new Date(day.date).getMonth() + 1}/{new Date(day.date).getDate()}
                           </span>
-                        </div>
-                      );
-                    })}
+                        ) : null;
+                      })}
+                    </div>
                   </div>
                 </div>
 

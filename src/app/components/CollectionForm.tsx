@@ -7,6 +7,7 @@ import { Header } from './Header';
 import { Footer } from './Footer';
 import { ArrowLeft, Upload, X } from 'lucide-react';
 import { setPageSEO } from '@/utils/seo';
+import { resizeImage } from '@/utils/imageUtils';
 
 interface Collection {
   id: number;
@@ -76,15 +77,23 @@ export function CollectionForm() {
     }
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      try {
+        // 이미지 리사이징 및 WebP 변환 (최대 1200x1200, 품질 80%)
+        const resizedFile = await resizeImage(file, 1200, 1200, 0.8);
+        setImageFile(resizedFile);
+        
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setImagePreview(reader.result as string);
+        };
+        reader.readAsDataURL(resizedFile);
+      } catch (error) {
+        console.error('이미지 처리 실패:', error);
+        alert('이미지 처리에 실패했습니다.');
+      }
     }
   };
 
@@ -112,8 +121,7 @@ export function CollectionForm() {
           description,
           artist,
           isPinned,
-          imageFile: imageFile || undefined,
-        });
+        }, imageFile || undefined);
         alert('소장품이 수정되었습니다.');
       } else {
         await collectionAPI.createCollection({
@@ -123,8 +131,7 @@ export function CollectionForm() {
           description,
           artist,
           isPinned,
-          imageFile: imageFile!,
-        });
+        }, imageFile!);
         alert('소장품이 추가되었습니다.');
       }
 

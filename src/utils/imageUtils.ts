@@ -48,7 +48,10 @@ export const resizeImage = (
 
       ctx.drawImage(img, 0, 0, width, height);
 
-      // Canvas를 Blob으로 변환
+      // 파일명에서 확장자 제거 후 .webp 추가
+      const fileName = file.name.replace(/\.[^/.]+$/, '') + '.webp';
+
+      // Canvas를 WebP Blob으로 변환
       canvas.toBlob(
         (blob) => {
           if (!blob) {
@@ -56,15 +59,15 @@ export const resizeImage = (
             return;
           }
 
-          // Blob을 File 객체로 변환
-          const resizedFile = new File([blob], file.name, {
-            type: file.type,
+          // Blob을 File 객체로 변환 (WebP 형식)
+          const resizedFile = new File([blob], fileName, {
+            type: 'image/webp',
             lastModified: Date.now(),
           });
 
           resolve(resizedFile);
         },
-        file.type,
+        'image/webp',
         quality
       );
     };

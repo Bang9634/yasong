@@ -612,7 +612,40 @@ export const collectionAPI = {
    * GET /api/collections
    */
   getAllCollections: async () => {
-    return apiCall('/api/collections', {
+    const response = await apiCall('/api/collections', {
+      method: 'GET'
+    });
+    // 서버가 PagedResponse 형식으로 반환하는 경우 data 배열만 반환
+    return response.data || response;
+  },
+
+  /**
+   * 소장품 조회 with 페이지네이션 및 필터링 (공개)
+   * GET /api/collections?page=1&limit=10&search=...&yearFrom=...&yearTo=...
+   */
+  getCollections: async (params: {
+    page: number;
+    limit: number;
+    search?: string;
+    yearFrom?: string;
+    yearTo?: string;
+  }) => {
+    const queryParams = new URLSearchParams({
+      page: params.page.toString(),
+      limit: params.limit.toString(),
+    });
+
+    if (params.search) {
+      queryParams.append('search', params.search);
+    }
+    if (params.yearFrom) {
+      queryParams.append('yearFrom', params.yearFrom);
+    }
+    if (params.yearTo) {
+      queryParams.append('yearTo', params.yearTo);
+    }
+
+    return apiCall(`/api/collections?${queryParams.toString()}`, {
       method: 'GET'
     });
   },

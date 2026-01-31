@@ -114,7 +114,8 @@ export function Notice() {
         const data = await noticeAPI.getVisibleNotices();
         
         // 고정 글 우선, 그 다음 최신순
-        const sortedData = data
+        const noticesArray = Array.isArray(data) ? data : [];
+        const sortedData = noticesArray
           .sort((a, b) => {
             if (a.isPinned && !b.isPinned) return -1;
             if (!a.isPinned && b.isPinned) return 1;

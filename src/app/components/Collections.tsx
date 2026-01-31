@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { ImageWithFallback } from '@/app/components/figma/ImageWithFallback';
 import { collectionAPI } from '@/utils/api';
-import { ChevronRight, ChevronLeft } from 'lucide-react';
+import { ChevronRight, ChevronLeft, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface Artwork {
@@ -26,6 +26,7 @@ export function Collections() {
   const [isScrollable, setIsScrollable] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(false);
   const [isCardsVisible, setIsCardsVisible] = useState(false);
+  const [selectedArtwork, setSelectedArtwork] = useState<Artwork | null>(null);
   const headerRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -108,9 +109,15 @@ export function Collections() {
     const fetchCollections = async () => {
       try {
         setIsLoading(true);
-        const data = await collectionAPI.getAllCollections();
+        const response = await collectionAPI.getAllCollections();
+        
+        // Spring Page 형식 처리 (content) 또는 일반 배열
+        const data = response.content || response.data || response;
+        
         // isPinned가 true인 항목만 필터링
-        const pinnedArtworks = data.filter((artwork: Artwork) => artwork.isPinned);
+        const pinnedArtworks = Array.isArray(data) 
+          ? data.filter((artwork: Artwork) => artwork.isPinned)
+          : [];
         setArtworks(pinnedArtworks);
       } catch (err) {
         console.error('소장품 조회 실패:', err);
@@ -182,7 +189,7 @@ export function Collections() {
           ref={headerRef}
           className={`flex items-center justify-between mb-12 fade-in-header ${isHeaderVisible ? 'visible' : ''}`}
         >
-          <h2 className="text-4xl sm:text-5xl font-bold text-[#F4F4F0] tracking-tight">대표 소장품</h2>
+          <h2 className="text-4xl sm:text-5xl font-bold text-[#F4F4F0] tracking-tight">대표 작품</h2>
           <button 
             onClick={() => navigate('/collections')}
             className="flex items-center gap-2 text-[#F4F4F0] hover:text-[#C84630] transition-colors text-sm font-medium"
@@ -193,7 +200,7 @@ export function Collections() {
 
         {artworks.length === 0 ? (
           <div className="flex items-center justify-center text-[#F4F4F0]/60 py-20">
-            등록된 대표 소장품이 없습니다.
+            등록된 대표 작품이 없습니다.
           </div>
         ) : (
           <div 
@@ -228,7 +235,7 @@ export function Collections() {
                 {artworks.map((artwork) => (
                   <div
                     key={artwork.id}
-                    onClick={() => navigate(`/collections/${artwork.id}`)}
+                    onClick={() => setSelectedArtwork(artwork)}
                     className="flex-shrink-0 w-80 cursor-pointer group"
                   >
                     {/* 작품 이미지 */}
@@ -256,7 +263,7 @@ export function Collections() {
                       </h3>
                       
                       {/* 설명 */}
-                      <p className="text-sm text-[#F4F4F0]/70 leading-relaxed line-clamp-2 mb-4">
+                      <p className="text-sm text-[#F4F4F0]/70 leading-relaxed line-clamp-3 mb-4">
                         {artwork.description}
                       </p>
                       
@@ -296,6 +303,91 @@ export function Collections() {
           </div>
         )}
       </div>
+
+      {/* 작품 상세보기 모달 */}
+      {selectedArtwork && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+          onClick={() => setSelectedArtwork(null)}
+        >
+          <div 
+            className="relative bg-[#2C2C2C] rounded-lg max-w-5xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* 닫기 버튼 */}
+            <button
+              onClick={() => setSelectedArtwork(null)}
+              className="absolute top-4 right-4 z-10 w-10 h-10 bg-[#F4F4F0] hover:bg-[#C84630] text-[#2C2C2C] hover:text-[#F4F4F0] rounded-full flex items-center justify-center transition-colors"
+              aria-label="닫기"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            <div className="grid md:grid-cols-2 gap-8 p-8">
+              {/* 왼쪽: 이미지 */}
+              <div className="flex items-center justify-center p-8">
+                <ImageWithFallback
+                  src={getImageUrl(selectedArtwork.imageUrl)}
+                  alt={selectedArtwork.title}
+                  className="w-full h-auto max-h-[600px] object-contain"
+                />
+              </div>
+
+              {/* 오른쪽: 정보 */}
+              <div className="flex flex-col justify-center space-y-6">
+                {/* 작가 */}
+                <div>
+                  <span className="inline-block px-4 py-2 bg-[#F4F4F0] text-[#2C2C2C] text-sm font-medium rounded-full">
+                    {selectedArtwork.artist}
+                  </span>
+                </div>
+
+                {/* 제목 */}
+                <h2 className="text-4xl font-bold text-[#F4F4F0]">
+                  {selectedArtwork.title}
+                </h2>
+
+                {/* 구분선 */}
+                <div className="w-20 h-1 bg-[#C84630]"></div>
+
+                {/* 제작 정보 */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[#F4F4F0]/60 text-sm font-medium w-20">제작년도</span>
+                    <span className="text-[#F4F4F0] text-lg">{selectedArtwork.year}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-[#F4F4F0]/60 text-sm font-medium w-20">크기</span>
+                    <span className="text-[#F4F4F0] text-lg">{selectedArtwork.size}</span>
+                  </div>
+                </div>
+
+                {/* 설명 */}
+                {selectedArtwork.description && (
+                  <div className="pt-4">
+                    <p className="text-[#F4F4F0]/90 leading-relaxed whitespace-pre-wrap">
+                      {selectedArtwork.description}
+                    </p>
+                  </div>
+                )}
+
+                {/* 더보기 버튼 */}
+                <div className="pt-4">
+                  <button
+                    onClick={() => {
+                      setSelectedArtwork(null);
+                      navigate(`/collections/${selectedArtwork.id}`);
+                    }}
+                    className="px-6 py-3 bg-[#F4F4F0] text-[#2C2C2C] rounded-lg hover:bg-[#C84630] hover:text-[#F4F4F0] transition-colors font-medium"
+                  >
+                    상세 페이지로 이동
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

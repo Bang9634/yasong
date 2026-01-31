@@ -259,7 +259,7 @@ export function NoticePage() {
 
                       {/* 오른쪽: 관리자 버튼 */}
                       {canManage && (
-                        <div className="flex gap-2 flex-shrink-0">
+                        <div className="hidden sm:flex gap-2 flex-shrink-0">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();

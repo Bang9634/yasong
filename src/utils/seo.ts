@@ -2,7 +2,7 @@
  * SEO 유틸리티 함수들
  */
 
-const SITE_NAME = 'YASONG';
+const SITE_NAME = '야송';
 
 /**
  * 페이지 제목 설정

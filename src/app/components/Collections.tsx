@@ -230,6 +230,10 @@ export function Collections() {
             <div 
               ref={setScrollContainerRef}
               className="overflow-x-auto scrollbar-hide scroll-smooth"
+              style={{ 
+                WebkitOverflowScrolling: 'touch',
+                touchAction: 'pan-x'
+              }}
             >
               <div className="flex gap-8 pb-4">
                 {artworks.map((artwork) => (

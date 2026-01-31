@@ -193,10 +193,10 @@ export function NoticeDetailPage() {
         </button>
 
         {/* 컨텐츠 영역 */}
-        <div className="w-[1280px] mx-auto space-y-8 relative">
+        <div className="max-w-7xl mx-auto space-y-8 relative">
           {/* 관리자 버튼 - 우측 상단 고정 */}
           {canManage && (
-            <div className="absolute top-0 right-0 flex gap-2 z-10">
+            <div className="absolute top-0 right-0 flex gap-2 z-10 hidden sm:flex">
               <button
                 onClick={() => navigate(`/notice/write?id=${notice.id}`)}
                 className="px-4 py-2 bg-[#2C2C2C] text-[#F4F4F0] rounded-lg hover:bg-[#2C2C2C]/90 transition-colors flex items-center gap-2 font-medium text-sm"
@@ -215,7 +215,7 @@ export function NoticeDetailPage() {
           )}
 
           {/* 카테고리 & 고정 배지 */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="px-3 py-1 bg-[#2C2C2C]/10 text-[#2C2C2C]/70 text-sm rounded font-medium">
               {getCategoryDisplayName(notice.category)}
             </span>
@@ -223,6 +223,25 @@ export function NoticeDetailPage() {
               <span className="px-3 py-1 bg-[#C84630] text-[#F4F4F0] text-sm rounded font-medium">
                 고정
               </span>
+            )}
+            {/* 모바일용 관리자 버튼 */}
+            {canManage && (
+              <div className="flex gap-2 sm:hidden ml-auto">
+                <button
+                  onClick={() => navigate(`/notice/write?id=${notice.id}`)}
+                  className="px-3 py-1.5 bg-[#2C2C2C] text-[#F4F4F0] rounded-lg hover:bg-[#2C2C2C]/90 transition-colors flex items-center gap-1.5 font-medium text-xs"
+                >
+                  <Edit2 className="w-3.5 h-3.5" />
+                  수정
+                </button>
+                <button
+                  onClick={handleDelete}
+                  className="px-3 py-1.5 bg-[#C84630] text-[#F4F4F0] rounded-lg hover:bg-[#A83820] transition-colors flex items-center gap-1.5 font-medium text-xs"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  삭제
+                </button>
+              </div>
             )}
           </div>
 

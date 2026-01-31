@@ -295,6 +295,10 @@ export function Contest() {
             <div 
               ref={setScrollContainerRef}
               className="overflow-x-auto scrollbar-hide scroll-smooth"
+              style={{ 
+                WebkitOverflowScrolling: 'touch',
+                touchAction: 'pan-x'
+              }}
             >
               <div className="flex gap-8 pb-4">
                 {filteredContests.map((contest) => (

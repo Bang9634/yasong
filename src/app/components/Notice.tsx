@@ -234,6 +234,10 @@ export function Notice() {
             <div 
               ref={setScrollContainerRef}
               className="overflow-x-auto scrollbar-hide scroll-smooth"
+              style={{ 
+                WebkitOverflowScrolling: 'touch',
+                touchAction: 'pan-x'
+              }}
             >
               <div className="flex gap-6 pb-4">
                 {notices.map((notice) => (

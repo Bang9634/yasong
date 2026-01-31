@@ -3,11 +3,7 @@ import { websiteAPI } from '@/utils/api';
 
 interface FooterData {
   phone: string;
-  phoneHours: string;
   email: string;
-  operatingHours: string;
-  closedDay: string;
-  bottomInfo: string;
   facebookUrl: string;
   facebookEnabled: boolean;
   instagramUrl: string;
@@ -20,10 +16,6 @@ interface FooterData {
   privacyPolicyEnabled: boolean;
   termsUrl: string;
   termsEnabled: boolean;
-  locationLinkUrl: string;
-  locationLinkEnabled: boolean;
-  recruitUrl: string;
-  recruitEnabled: boolean;
 }
 
 interface FooterManagementProps {
@@ -32,11 +24,7 @@ interface FooterManagementProps {
 
 export function FooterManagement({ initialData }: FooterManagementProps) {
   const [phone, setPhone] = useState(initialData.phone);
-  const [phoneHours, setPhoneHours] = useState(initialData.phoneHours);
   const [email, setEmail] = useState(initialData.email);
-  const [operatingHours, setOperatingHours] = useState(initialData.operatingHours);
-  const [closedDay, setClosedDay] = useState(initialData.closedDay);
-  const [bottomInfo, setBottomInfo] = useState(initialData.bottomInfo);
   const [facebookUrl, setFacebookUrl] = useState(initialData.facebookUrl);
   const [facebookEnabled, setFacebookEnabled] = useState(initialData.facebookEnabled);
   const [instagramUrl, setInstagramUrl] = useState(initialData.instagramUrl);
@@ -49,18 +37,10 @@ export function FooterManagement({ initialData }: FooterManagementProps) {
   const [privacyPolicyEnabled, setPrivacyPolicyEnabled] = useState(initialData.privacyPolicyEnabled);
   const [termsUrl, setTermsUrl] = useState(initialData.termsUrl);
   const [termsEnabled, setTermsEnabled] = useState(initialData.termsEnabled);
-  const [locationLinkUrl, setLocationLinkUrl] = useState(initialData.locationLinkUrl);
-  const [locationLinkEnabled, setLocationLinkEnabled] = useState(initialData.locationLinkEnabled);
-  const [recruitUrl, setRecruitUrl] = useState(initialData.recruitUrl);
-  const [recruitEnabled, setRecruitEnabled] = useState(initialData.recruitEnabled);
 
   useEffect(() => {
     setPhone(initialData.phone);
-    setPhoneHours(initialData.phoneHours);
     setEmail(initialData.email);
-    setOperatingHours(initialData.operatingHours);
-    setClosedDay(initialData.closedDay);
-    setBottomInfo(initialData.bottomInfo);
     setFacebookUrl(initialData.facebookUrl);
     setFacebookEnabled(initialData.facebookEnabled);
     setInstagramUrl(initialData.instagramUrl);
@@ -73,21 +53,14 @@ export function FooterManagement({ initialData }: FooterManagementProps) {
     setPrivacyPolicyEnabled(initialData.privacyPolicyEnabled);
     setTermsUrl(initialData.termsUrl);
     setTermsEnabled(initialData.termsEnabled);
-    setLocationLinkUrl(initialData.locationLinkUrl);
-    setLocationLinkEnabled(initialData.locationLinkEnabled);
-    setRecruitUrl(initialData.recruitUrl);
-    setRecruitEnabled(initialData.recruitEnabled);
   }, [initialData]);
 
   const handleSave = async () => {
     try {
       const promises = [
         websiteAPI.updateTextSetting('footer_phone', phone),
-        websiteAPI.updateTextSetting('footer_phone_hours', phoneHours),
         websiteAPI.updateTextSetting('footer_email', email),
-        websiteAPI.updateTextSetting('footer_operating_hours', operatingHours),
-        websiteAPI.updateTextSetting('footer_closed_day', closedDay),
-        websiteAPI.updateTextSetting('footer_bottom_info', bottomInfo),
+
       ];
 
       // 소셜미디어 링크는 값이 있을 때만 저장
@@ -115,15 +88,6 @@ export function FooterManagement({ initialData }: FooterManagementProps) {
         promises.push(websiteAPI.updateTextSetting('footer_terms_url', termsUrl || '-'));
         promises.push(websiteAPI.updateTextSetting('footer_terms_enabled', termsEnabled ? 'true' : 'false'));
       }
-      if (locationLinkUrl || locationLinkEnabled) {
-        promises.push(websiteAPI.updateTextSetting('footer_location_link_url', locationLinkUrl || '-'));
-        promises.push(websiteAPI.updateTextSetting('footer_location_link_enabled', locationLinkEnabled ? 'true' : 'false'));
-      }
-      if (recruitUrl || recruitEnabled) {
-        promises.push(websiteAPI.updateTextSetting('footer_recruit_url', recruitUrl || '-'));
-        promises.push(websiteAPI.updateTextSetting('footer_recruit_enabled', recruitEnabled ? 'true' : 'false'));
-      }
-
       await Promise.all(promises);
       
       alert('푸터 정보가 성공적으로 업데이트되었습니다.');
@@ -149,18 +113,6 @@ export function FooterManagement({ initialData }: FooterManagementProps) {
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            전화 이용 시간
-          </label>
-          <input
-            type="text"
-            value={phoneHours}
-            onChange={(e) => setPhoneHours(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg"
-            placeholder="평일 10:00-17:00"
-          />
-        </div>
       </div>
 
       <div>
@@ -173,19 +125,6 @@ export function FooterManagement({ initialData }: FooterManagementProps) {
           onChange={(e) => setEmail(e.target.value)}
           className="w-full p-3 border border-gray-300 rounded-lg"
           placeholder="info@yasong-museum.kr"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          하단 정보
-        </label>
-        <input
-          type="text"
-          value={bottomInfo}
-          onChange={(e) => setBottomInfo(e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-lg"
-          placeholder="군립청송야송미술관 | 관장: 김문희 | 사업자등록번호: 123-45-67890"
         />
       </div>
 
@@ -336,51 +275,6 @@ export function FooterManagement({ initialData }: FooterManagementProps) {
           />
         </div>
 
-        {/* 찾아오시는 길 */}
-        <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-          <div className="flex items-center mb-3">
-            <input
-              type="checkbox"
-              checked={locationLinkEnabled}
-              onChange={(e) => setLocationLinkEnabled(e.target.checked)}
-              className="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500"
-            />
-            <label className="ml-2 text-sm font-medium text-gray-700">
-              찾아오시는 길 링크 표시
-            </label>
-          </div>
-          <input
-            type="url"
-            value={locationLinkUrl}
-            onChange={(e) => setLocationLinkUrl(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg"
-            placeholder="https://yasong-museum.kr/location (선택사항)"
-            disabled={!locationLinkEnabled}
-          />
-        </div>
-
-        {/* 채용정보 */}
-        <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-          <div className="flex items-center mb-3">
-            <input
-              type="checkbox"
-              checked={recruitEnabled}
-              onChange={(e) => setRecruitEnabled(e.target.checked)}
-              className="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500"
-            />
-            <label className="ml-2 text-sm font-medium text-gray-700">
-              채용정보 링크 표시
-            </label>
-          </div>
-          <input
-            type="url"
-            value={recruitUrl}
-            onChange={(e) => setRecruitUrl(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg"
-            placeholder="https://yasong-museum.kr/recruit (선택사항)"
-            disabled={!recruitEnabled}
-          />
-        </div>
       </div>
 
       <button

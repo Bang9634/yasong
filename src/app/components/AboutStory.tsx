@@ -13,7 +13,7 @@ export function AboutStory() {
         "청량산의 맑은 기운과 자연의 아름다움을 담아내며",
         "독자적인 화풍을 완성하였습니다."
       ],
-      imageUrl: "/story-1.jpeg", // public 폴더에 이미지 추가 필요
+      imageUrl: "/story-1.webp", // public 폴더에 이미지 추가 필요
       imagePosition: "left"
     },
     {
@@ -27,7 +27,7 @@ export function AboutStory() {
         "전통 수묵화의 정수를 계승하면서도",
         "현대적 감각을 더한 그만의 독특한 예술 세계를 구축하였습니다."
       ],
-      imageUrl: "/story-2.jpeg", // public 폴더에 이미지 추가 필요
+      imageUrl: "/story-2.webp", // public 폴더에 이미지 추가 필요
       imagePosition: "right"
     }
   ];

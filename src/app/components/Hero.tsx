@@ -4,7 +4,7 @@ export function Hero() {
       {/* 배경 이미지 */}
       <div className="absolute inset-0">
         <img
-          src="/hero-img.jpeg"
+          src="/hero-img.webp"
           alt="군립청송야송미술관"
           className="w-full h-full object-cover"
           loading="eager"

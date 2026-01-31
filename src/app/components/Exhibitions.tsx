@@ -57,7 +57,7 @@ export function Exhibitions() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'ONGOING':
-        return <span className="px-3 py-1 bg-teal-600 text-white text-sm rounded-full">전시 중</span>;
+        return <span className="px-3 py-1 bg-[#C84630] text-white text-sm rounded-full">전시 중</span>;
       case 'UPCOMING':
         return <span className="px-3 py-1 bg-amber-500 text-white text-sm rounded-full">전시 예정</span>;
       case 'PAST':
@@ -85,9 +85,9 @@ export function Exhibitions() {
     <section id="exhibitions" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl sm:text-5xl mb-4 text-teal-900">전시 일정</h2>
-          <div className="w-20 h-1 bg-amber-600 mx-auto mb-6"></div>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+          <h2 className="text-4xl sm:text-5xl mb-4 text-[#2C2C2C]">전시 일정</h2>
+          <div className="w-20 h-1 bg-[#C84630] mx-auto mb-6"></div>
+          <p className="text-lg text-[#2C2C2C]/70 max-w-3xl mx-auto">
             청송야송미술관에서 만나볼 수 있는 특별한 전시들
           </p>
         </div>
@@ -102,7 +102,7 @@ export function Exhibitions() {
               {allExhibitions.slice(0, 6).map((exhibition) => (
                 <div
                   key={exhibition.id}
-                  className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow border border-teal-100 flex flex-col h-[550px]"
+                  className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow border border-[#E0E0E0] flex flex-col h-[550px]"
                 >
                   <div className="relative flex-shrink-0">
                     <ImageWithFallback
@@ -115,22 +115,22 @@ export function Exhibitions() {
                     </div>
                   </div>
 
-                  <div className="p-6 bg-gradient-to-b from-white to-teal-50 flex-1 flex flex-col">
-                    <h3 className="text-2xl mb-2 text-teal-900">{exhibition.title}</h3>
-                    <p className="text-gray-600 mb-4">{exhibition.artist}</p>
+                  <div className="p-6 bg-gradient-to-b from-white to-[#F4F4F0] flex-1 flex flex-col">
+                    <h3 className="text-2xl mb-2 text-[#2C2C2C]">{exhibition.title}</h3>
+                    <p className="text-[#2C2C2C]/70 mb-4">{exhibition.artist}</p>
 
-                    <div className="space-y-2 text-sm text-gray-600 mb-4">
+                    <div className="space-y-2 text-sm text-[#2C2C2C]/70 mb-4">
                       <div className="flex items-start">
-                        <Calendar className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0 text-teal-600" />
+                        <Calendar className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0 text-[#C84630]" />
                         <span>{formatDate(exhibition.startDate)} - {formatDate(exhibition.endDate)}</span>
                       </div>
                       <div className="flex items-start">
-                        <MapPin className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0 text-teal-600" />
+                        <MapPin className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0 text-[#C84630]" />
                         <span>{exhibition.location}</span>
                       </div>
                     </div>
 
-                    <p className="text-gray-700 leading-relaxed border-t border-teal-200 pt-4 line-clamp-3">
+                    <p className="text-[#2C2C2C]/70 leading-relaxed border-t border-[#E0E0E0] pt-4 line-clamp-3">
                       {exhibition.description}
                     </p>
                   </div>
@@ -142,7 +142,7 @@ export function Exhibitions() {
             <div className="text-center">
               <button
                 onClick={() => navigate('/exhibitions')}
-                className="bg-teal-700 hover:bg-teal-800 text-white px-8 py-3 rounded-lg transition-colors"
+                className="bg-[#C84630] hover:bg-[#A83820] text-white px-8 py-3 rounded-lg transition-colors"
               >
                 전체 전시 일정 보기
               </button>

@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
-import { Bell, ChevronRight } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { noticeAPI } from '@/utils/api';
 
 interface NoticeItem {
   id: number;
   title: string;
+  content: string;
   category: string;
   isPinned: boolean;
   viewCount: number;
@@ -20,16 +21,98 @@ export function Notice() {
   const navigate = useNavigate();
   const [notices, setNotices] = useState<NoticeItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [scrollContainerRef, setScrollContainerRef] = useState<HTMLDivElement | null>(null);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [scrollBarWidth, setScrollBarWidth] = useState(20);
+  const [isHeaderVisible, setIsHeaderVisible] = useState(false);
+  const [isCardsVisible, setIsCardsVisible] = useState(false);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const cardsRef = useRef<HTMLDivElement>(null);
+
+  // 스크롤 위치 확인
+  const checkScroll = () => {
+    if (scrollContainerRef) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef;
+      setShowLeftArrow(scrollLeft > 0);
+      setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 10);
+      
+      // 스크롤 바 인디케이터 너비 계산 (보이는 영역 비율)
+      const visibleRatio = clientWidth / scrollWidth;
+      const indicatorWidth = Math.max(5, Math.min(visibleRatio * 100, 30)); // 최소 5%, 최대 30%
+      setScrollBarWidth(indicatorWidth);
+      
+      // 스크롤 진행률 계산 (인디케이터가 범위를 벗어나지 않도록)
+      const maxScroll = scrollWidth - clientWidth;
+      const progress = maxScroll > 0 ? (scrollLeft / maxScroll) * (100 - indicatorWidth) : 0;
+      setScrollProgress(progress);
+    }
+  };
+
+  useEffect(() => {
+    if (scrollContainerRef) {
+      checkScroll();
+      scrollContainerRef.addEventListener('scroll', checkScroll);
+      return () => scrollContainerRef.removeEventListener('scroll', checkScroll);
+    }
+  }, [scrollContainerRef, notices]);
+
+  // Intersection Observer로 애니메이션 트리거
+  useEffect(() => {
+    const headerObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsHeaderVisible(true);
+          }
+        });
+      },
+      { threshold: 0.3 }
+    );
+
+    const cardsObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsCardsVisible(true);
+          }
+        });
+      },
+      { threshold: 0.3 }
+    );
+
+    const headerElement = headerRef.current;
+    const cardsElement = cardsRef.current;
+
+    if (headerElement) headerObserver.observe(headerElement);
+    if (cardsElement) cardsObserver.observe(cardsElement);
+
+    return () => {
+      if (headerElement) headerObserver.unobserve(headerElement);
+      if (cardsElement) cardsObserver.unobserve(cardsElement);
+    };
+  }, [notices, isLoading]);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollContainerRef) {
+      const scrollAmount = 400;
+      scrollContainerRef.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   // 공지사항 데이터 가져오기
   useEffect(() => {
     const fetchNotices = async () => {
       try {
         setIsLoading(true);
-        const data = await noticeAPI.getVisibleNotices(); // 공개된 공지사항만
+        const data = await noticeAPI.getVisibleNotices();
         
-        // isPinned 우선, 날짜 내림차순으로 정렬 후 상위 5개만
-        const sortedData = [...data]
+        // 고정 글 우선, 그 다음 최신순
+        const sortedData = data
           .sort((a, b) => {
             if (a.isPinned && !b.isPinned) return -1;
             if (!a.isPinned && b.isPinned) return 1;
@@ -48,57 +131,166 @@ export function Notice() {
     fetchNotices();
   }, []);
 
+  // 카테고리 한글 변환
+  const getCategoryKorean = (category: string): string => {
+    const categoryMap: { [key: string]: string } = {
+      'notice': '공지',
+      'event': '이벤트',
+      'news': '소식',
+      'announcement': '안내',
+    };
+    return categoryMap[category] || category;
+  };
+
   return (
-    <section id="notice" className="py-20 bg-gradient-to-b from-teal-50 to-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-center mb-12">
-          <Bell className="w-8 h-8 text-teal-800 mr-3" />
-          <h2 className="text-4xl sm:text-5xl text-teal-900">공지사항</h2>
-        </div>
+    <section id="notice" className="min-h-screen bg-[#F4F4F0] py-16 flex flex-col justify-center relative">
+      <style>{`
+        .fade-in-header {
+          opacity: 0;
+          transform: translateY(20px);
+          transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        
+        .fade-in-header.visible {
+          opacity: 1;
+          transform: translateY(0);
+        }
 
-        <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden border border-teal-100">
-          {isLoading ? (
-            <div className="p-8 text-center text-gray-500">
-              로딩 중...
-            </div>
-          ) : notices.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
-              등록된 공지사항이 없습니다.
-            </div>
-          ) : (
-            notices.map((notice, index) => (
-              <div
-                key={notice.id}
-                onClick={() => navigate('/notice')}
-                className={`flex items-center justify-between p-5 hover:bg-teal-50 transition-colors cursor-pointer ${
-                  index !== notices.length - 1 ? 'border-b border-gray-200' : ''
-                }`}
-              >
-                <div className="flex items-center flex-1">
-                  {notice.isPinned && (
-                    <span className="bg-red-500 text-white text-xs px-2 py-1 rounded mr-3">
-                      고정
-                    </span>
-                  )}
-                  <h3 className="text-gray-800 flex-1">{notice.title}</h3>
-                </div>
-                <div className="flex items-center text-gray-500">
-                  <span className="text-sm mr-4">{new Date(notice.createdAt).toLocaleDateString('ko-KR')}</span>
-                  <ChevronRight className="w-5 h-5" />
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+        .slide-in-cards {
+          opacity: 0;
+          transform: translateX(100px);
+          transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
 
-        <div className="text-center mt-8">
+        .slide-in-cards.visible {
+          opacity: 1;
+          transform: translateX(0);
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        {/* 헤더 */}
+        <div 
+          ref={headerRef}
+          className={`flex items-center justify-between mb-12 fade-in-header ${isHeaderVisible ? 'visible' : ''}`}
+        >
+          <h2 className="text-4xl sm:text-5xl font-bold text-[#2C2C2C] tracking-tight">공지사항</h2>
           <button 
             onClick={() => navigate('/notice')}
-            className="px-8 py-3 bg-teal-700 text-white rounded-lg hover:bg-teal-800 transition-colors"
+            className="flex items-center gap-2 text-[#2C2C2C] hover:text-[#C84630] transition-colors text-sm font-medium"
           >
-            공지사항 더보기
+            View More <ChevronRight className="w-5 h-5" />
           </button>
         </div>
+
+        {/* 카드 스크롤 영역 */}
+        {isLoading ? (
+          <div className="flex items-center justify-center text-[#2C2C2C]/60 py-20">
+            로딩 중...
+          </div>
+        ) : notices.length === 0 ? (
+          <div className="flex items-center justify-center text-[#2C2C2C]/60 py-20">
+            등록된 공지사항이 없습니다.
+          </div>
+        ) : (
+          <div 
+            ref={cardsRef}
+            className={`relative slide-in-cards ${isCardsVisible ? 'visible' : ''}`}
+          >
+            {/* 스크롤 가이드 - 왼쪽 화살표 */}
+            {showLeftArrow && (
+              <button
+                onClick={() => scroll('left')}
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-[#2C2C2C] hover:bg-[#C84630] text-[#F4F4F0] rounded-full flex items-center justify-center shadow-lg transition-colors"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+            )}
+
+            {/* 스크롤 가이드 - 오른쪽 화살표 */}
+            {showRightArrow && (
+              <button
+                onClick={() => scroll('right')}
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-[#2C2C2C] hover:bg-[#C84630] text-[#F4F4F0] rounded-full flex items-center justify-center shadow-lg transition-colors"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
+            )}
+
+            <div 
+              ref={setScrollContainerRef}
+              className="overflow-x-auto scrollbar-hide scroll-smooth"
+            >
+              <div className="flex gap-6 pb-4">
+                {notices.map((notice) => (
+                  <div
+                    key={notice.id}
+                    onClick={() => navigate(`/notice/${notice.id}`)}
+                    className="flex-shrink-0 w-80 h-96 cursor-pointer group relative"
+                  >
+                    {/* 화이트 배경 카드 */}
+                    <div className="h-full flex flex-col p-6 bg-white rounded-lg hover:shadow-lg transition-shadow border border-[#2C2C2C]/10">
+                      {/* 카테고리 태그 + 고정 태그 */}
+                      <div className="flex gap-2 mb-4">
+                        <span className="inline-block px-3 py-1 bg-[#2C2C2C] text-[#F4F4F0] text-xs font-bold rounded">
+                          {getCategoryKorean(notice.category) || '공지'}
+                        </span>
+                        {notice.isPinned && (
+                          <span className="inline-block px-3 py-1 bg-[#C84630] text-white text-xs font-bold rounded">
+                            고정
+                          </span>
+                        )}
+                      </div>
+                      
+                      {/* 제목 */}
+                      <h3 className="text-xl font-bold text-[#2C2C2C] mb-3 line-clamp-2 group-hover:text-[#C84630] transition-colors">
+                        {notice.title}
+                      </h3>
+                      
+                      {/* 내용 미리보기 - flex-1로 남은 공간 차지 */}
+                      <p className="text-[#2C2C2C]/70 text-sm leading-relaxed line-clamp-6 mb-4 flex-1">
+                        {notice.content ? 
+                          notice.content.substring(0, 100) + (notice.content.length > 100 ? '...' : '')
+                          : '내용이 없습니다.'}
+                      </p>
+                      
+                      {/* 날짜 */}
+                      <p className="text-[#2C2C2C]/50 text-xs">
+                        {new Date(notice.createdAt).toLocaleDateString('ko-KR', {
+                          year: 'numeric',
+                          month: '2-digit',
+                          day: '2-digit'
+                        }).replace(/\. /g, '-').replace('.', '')}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 스크롤 가이드 바 */}
+            <div className="mt-8 w-full max-w-md mx-auto">
+              <div className="relative h-1 bg-[#2C2C2C]/20 rounded-full">
+                <div 
+                  className="absolute top-0 h-full bg-[#C84630] rounded-full"
+                  style={{ 
+                    left: `${scrollProgress}%`,
+                    width: `${scrollBarWidth}%`,
+                    transition: 'none'
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

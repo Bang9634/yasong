@@ -139,7 +139,7 @@ export function NoticePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#F4F4F0]">
       <Header />
       
       {/* 메인 컨텐츠 - 헤더 높이만큼 상단 여백 추가 */}
@@ -150,13 +150,13 @@ export function NoticePage() {
             <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center">
-                  <Bell className="w-8 h-8 text-teal-800 mr-3" />
-                  <h1 className="text-4xl font-bold text-teal-900">공지사항</h1>
+                  <Bell className="w-8 h-8 text-[#C84630] mr-3" />
+                  <h1 className="text-4xl font-bold text-[#2C2C2C]">공지사항</h1>
                 </div>
                 {canManage && (
                   <Button
                     onClick={() => navigate('/notice/write')}
-                    className="bg-teal-700 hover:bg-teal-800 text-white"
+                    className="bg-[#C84630] hover:bg-[#A83820] text-white"
                   >
                     글 작성
                   </Button>
@@ -164,45 +164,44 @@ export function NoticePage() {
               </div>
               <Link 
                 to="/" 
-                className="inline-flex items-center text-gray-600 hover:text-teal-700 transition-colors"
+                className="inline-flex items-center text-[#2C2C2C]/70 hover:text-[#C84630] transition-colors"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
                 홈으로 돌아가기
               </Link>
             </div>
 
-            {/* 검색 및 필터 */}
-            <div className="mb-8 bg-white rounded-lg shadow-md p-6">
-              <div className="flex flex-col md:flex-row gap-4">
-                {/* 검색바 */}
-                <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input
-                    type="text"
-                    placeholder="공지사항 검색..."
-                    value={searchTerm}
-                    onChange={(e) => handleSearchChange(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
-                  />
-                </div>
-
-                {/* 카테고리 필터 */}
-                <div className="flex gap-2 flex-wrap">
-                  {(['전체', '일반', '전시', '공모전', '시스템'] as const).map((category) => (
-                    <button
-                      key={category}
-                      onClick={() => handleCategoryChange(category)}
-                      className={`px-4 py-2 rounded-md transition-colors ${
-                        selectedCategory === category
-                          ? 'bg-teal-700 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                    >
-                      {category}
-                    </button>
-                  ))}
-                </div>
+            {/* 검색창 */}
+            <div className="mb-4">
+              <div className="max-w-md relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <input
+                  type="text"
+                  placeholder="공지사항 검색..."
+                  value={searchTerm}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#C84630]"
+                />
               </div>
+            </div>
+
+            {/* 카테고리 탭 */}
+            <div className="mb-6 border-b border-gray-200">
+              <nav className="flex space-x-8">
+                {(['전체', '일반', '전시', '공모전', '시스템'] as const).map((category) => (
+                  <button
+                    key={category}
+                    onClick={() => handleCategoryChange(category)}
+                    className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                      selectedCategory === category
+                        ? 'border-[#C84630] text-[#C84630]'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </nav>
             </div>
 
             {/* 공지사항 목록 */}

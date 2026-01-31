@@ -2,7 +2,7 @@
  * SEO 유틸리티 함수들
  */
 
-const SITE_NAME = '군립청송야송미술관 아카이브';
+const SITE_NAME = 'YASONG';
 
 /**
  * 페이지 제목 설정

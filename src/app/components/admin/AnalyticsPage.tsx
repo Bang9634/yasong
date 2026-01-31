@@ -177,14 +177,14 @@ export function AnalyticsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#F4F4F0]">
       <Header />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* 헤더 */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-teal-900 mb-2">웹사이트 통계</h1>
-          <p className="text-gray-600">Google Analytics 데이터를 기반으로 한 웹사이트 방문 통계입니다.</p>
+          <h1 className="text-3xl font-bold text-[#2C2C2C] mb-2">웹사이트 통계</h1>
+          <p className="text-[#2C2C2C]/70">Google Analytics 데이터를 기반으로 한 웹사이트 방문 통계입니다.</p>
         </div>
 
         {/* 탭 */}
@@ -194,7 +194,7 @@ export function AnalyticsPage() {
               onClick={() => setActiveTab('summary')}
               className={`py-4 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'summary'
-                  ? 'border-teal-600 text-teal-600'
+                  ? 'border-[#C84630] text-[#C84630]'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >

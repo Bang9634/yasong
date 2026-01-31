@@ -372,15 +372,15 @@ export function WebsiteManagement() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#F4F4F0]">
       <Header />
       
       <div className="pt-24 pb-12">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* 페이지 헤더 */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-teal-900 mb-2">홈페이지 관리</h1>
-            <p className="text-gray-600">웹사이트의 각 섹션을 탭별로 관리할 수 있습니다.</p>
+            <h1 className="text-3xl font-bold text-[#2C2C2C] mb-2">홈페이지 관리</h1>
+            <p className="text-[#2C2C2C]/70">웹사이트의 각 섹션을 탭별로 관리할 수 있습니다.</p>
           </div>
 
           {/* 탭 네비게이션 */}
@@ -390,7 +390,7 @@ export function WebsiteManagement() {
                 onClick={() => setActiveTab('hero')}
                 className={`py-4 px-1 border-b-2 font-medium text-sm ${
                   activeTab === 'hero'
-                    ? 'border-teal-600 text-teal-600'
+                    ? 'border-[#C84630] text-[#C84630]'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >

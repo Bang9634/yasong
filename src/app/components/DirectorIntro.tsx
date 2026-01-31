@@ -48,13 +48,13 @@ export function DirectorIntro() {
   }, []);
 
   return (
-    <section id="director" className="y-20 bg-gradient-to-b from-teal-50 to-white">
+    <section id="director" className="y-20 bg-gradient-to-b from-[#F4F4F0] to-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl sm:text-5xl mb-4 text-teal-900">초대 관장</h2>
-          <div className="w-20 h-1 bg-amber-600 mx-auto mb-6"></div>
+          <h2 className="text-4xl sm:text-5xl mb-4 text-[#2C2C2C]">초대 관장</h2>
+          <div className="w-20 h-1 bg-[#C84630] mx-auto mb-6"></div>
           
-          <h3 className="text-3xl text-teal-800">
+          <h3 className="text-3xl text-[#2C2C2C]/80">
             {directorData.name}
           </h3>
 
@@ -82,9 +82,9 @@ export function DirectorIntro() {
 
         <div className="grid lg:grid-cols-2 gap-12 items-stretch mb-16">
           <div className="flex flex-col space-y-6">
-            <div className="bg-teal-50 p-8 rounded-lg border-l-4 border-teal-700 flex-1">
-              <h4 className="text-2xl mb-4 text-teal-900">화백 약력</h4>
-              <div className="space-y-1 text-gray-700">
+            <div className="bg-[#F4F4F0] p-8 rounded-lg border-l-4 border-[#C84630] flex-1">
+              <h4 className="text-2xl mb-4 text-[#2C2C2C]">화백 약력</h4>
+              <div className="space-y-1 text-[#2C2C2C]/70">
                 {directorData.bio.split('\n').filter(line => line.trim()).map((line, index) => (
                   <p key={index} className="leading-relaxed">
                     {line.trim().startsWith('•') ? line : `• ${line}`}
@@ -97,7 +97,7 @@ export function DirectorIntro() {
           </div>
 
           <div className="flex flex-col space-y-6">
-            <div className="bg-gradient-to-br from-teal-900 to-teal-700 p-8 rounded-lg text-white flex-1">
+            <div className="bg-gradient-to-br from-[#2C2C2C] to-[#2C2C2C]/80 p-8 rounded-lg text-white flex-1">
               <h4 className="text-2xl mb-6 border-b-2 border-amber-400 pb-3">예술 세계</h4>
               <div className="space-y-4 leading-relaxed whitespace-pre-line">
                 {directorData.philosophy}

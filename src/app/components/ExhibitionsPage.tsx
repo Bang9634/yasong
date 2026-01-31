@@ -345,7 +345,7 @@ export function ExhibitionsPage() {
   }, [currentPage]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#F4F4F0]">
       <Header />
 
       <div className="pt-32 pb-12">
@@ -353,49 +353,48 @@ export function ExhibitionsPage() {
           {/* 페이지 헤더 */}
           <div className="mb-8 flex justify-between items-start">
             <div>
-              <h1 className="text-4xl font-bold text-teal-900 mb-2">전시 일정</h1>
-              <p className="text-gray-600">청송야송미술관의 모든 전시 일정을 확인하세요</p>
+              <h1 className="text-4xl font-bold text-[#2C2C2C] mb-2">전시 일정</h1>
+              <p className="text-[#2C2C2C]/70">청송야송미술관의 모든 전시 일정을 확인하세요</p>
             </div>
             {canManage && (
-              <Button onClick={handleOpenAddForm} className="bg-teal-700 hover:bg-teal-800">
+              <Button onClick={handleOpenAddForm} className="bg-[#C84630] hover:bg-[#A83820]">
                 <Plus className="w-4 h-4 mr-2" />
                 전시 추가
               </Button>
             )}
           </div>
 
-          {/* 필터 및 검색 */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <div className="flex flex-col md:flex-row gap-4">
-              {/* 상태 필터 */}
-              <div className="flex gap-2 flex-wrap">
-                {(['ALL', 'ONGOING', 'UPCOMING', 'PAST'] as StatusFilter[]).map((status) => (
-                  <button
-                    key={status}
-                    onClick={() => setStatusFilter(status)}
-                    className={`px-4 py-2 rounded-lg transition-colors ${
-                      statusFilter === status
-                        ? 'bg-teal-700 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    {getStatusDisplayName(status)}
-                  </button>
-                ))}
-              </div>
-
-              {/* 검색 */}
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <Input
-                  type="text"
-                  placeholder="전시명, 작가, 장소로 검색..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 w-full"
-                />
-              </div>
+          {/* 검색창 */}
+          <div className="mb-4">
+            <div className="max-w-md relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Input
+                type="text"
+                placeholder="전시명, 작가, 장소로 검색..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 w-full text-sm py-2"
+              />
             </div>
+          </div>
+
+          {/* 상태 필터 탭 */}
+          <div className="mb-6 border-b border-gray-200">
+            <nav className="flex space-x-8">
+              {(['ALL', 'ONGOING', 'UPCOMING', 'PAST'] as StatusFilter[]).map((status) => (
+                <button
+                  key={status}
+                  onClick={() => setStatusFilter(status)}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                    statusFilter === status
+                      ? 'border-[#C84630] text-[#C84630]'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  {getStatusDisplayName(status)}
+                </button>
+              ))}
+            </nav>
           </div>
 
           {/* 전시 목록 */}

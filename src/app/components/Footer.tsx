@@ -157,41 +157,79 @@ export function Footer() {
     return text.split('\n').filter(line => line.trim());
   };
   return (
-    <footer className="bg-gradient-to-b from-teal-900 to-teal-950 text-white py-16">
+    <footer className="bg-[#F4F4F0] text-[#2C2C2C] py-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid md:grid-cols-4 gap-12 mb-12">
-          {/* 미술관 정보 */}
-          <div className="md:col-span-2">
-            <div className="border-2 border-amber-400 inline-block px-4 py-2 mb-4">
-              <h3 className="text-2xl">군립청송야송미술관</h3>
+        {/* 중간 영역: 회사 정보 + Follow us */}
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-4">
+          {/* 로고 + 네비게이션 + 회사 정보 그룹 */}
+          <div className="flex flex-col items-start gap-2">
+            {/* 로고 + 네비게이션 */}
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-8">
+              <Link to="/" className="text-3xl md:text-4xl font-bold text-[#2C2C2C] tracking-tight">
+                YASONG
+              </Link>
+              {/* 네비게이션 링크 */}
+              <nav className="flex flex-wrap gap-4 text-sm font-bold">
+                {footerData.termsEnabled && footerData.termsUrl && (
+                  <a
+                    href={footerData.termsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#2C2C2C]/70 hover:text-[#C84630] transition-colors"
+                  >
+                    이용약관
+                  </a>
+                )}
+                {footerData.privacyPolicyEnabled && footerData.privacyPolicyUrl && (
+                  <a
+                    href={footerData.privacyPolicyUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#2C2C2C]/70 hover:text-[#C84630] transition-colors"
+                  >
+                    개인정보처리방침
+                  </a>
+                )}
+                {footerData.locationLinkEnabled && footerData.locationLinkUrl && (
+                  <a
+                    href={footerData.locationLinkUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#2C2C2C]/70 hover:text-[#C84630] transition-colors"
+                  >
+                    FAQ
+                  </a>
+                )}
+                {footerData.recruitEnabled && footerData.recruitUrl && (
+                  <a
+                    href={footerData.recruitUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#2C2C2C]/70 hover:text-[#C84630] transition-colors"
+                  >
+                    문의하기
+                  </a>
+                )}
+              </nav>
             </div>
-            <p className="text-teal-100 leading-relaxed mb-4">
-              {parseLines(footerData.description).map((line, idx) => (
-                <span key={idx}>
-                  {line}
-                  {idx < parseLines(footerData.description).length - 1 && <br />}
-                </span>
-              ))}
-            </p>
-            <div className="flex space-x-4 mt-6">
-              {footerData.facebookEnabled && footerData.facebookUrl && (
-                <a
-                  href={footerData.facebookUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 bg-teal-800 hover:bg-teal-700 rounded-full flex items-center justify-center transition-colors"
-                >
-                  <Facebook className="w-5 h-5" />
-                </a>
-              )}
+            {/* 회사 정보 */}
+            <div className="text-xs text-[#2C2C2C]/60 leading-relaxed">
+              {footerData.phone && <p>운영자 : 이은도 | 전화번호 : {footerData.phone} | 이메일 문의 : {footerData.email}</p>}
+            </div>
+          </div>
+
+          {/* Follow us */}
+          <div className="flex items-center gap-4">
+            <p className="text-sm font-medium text-[#2C2C2C]">Follow us</p>
+            <div className="flex gap-3">
               {footerData.instagramEnabled && footerData.instagramUrl && (
                 <a
                   href={footerData.instagramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-10 h-10 bg-teal-800 hover:bg-teal-700 rounded-full flex items-center justify-center transition-colors"
+                  className="w-10 h-10 rounded-full bg-[#C84630] hover:bg-[#2C2C2C] flex items-center justify-center transition-colors"
                 >
-                  <Instagram className="w-5 h-5" />
+                  <Instagram className="w-5 h-5 text-white" />
                 </a>
               )}
               {footerData.youtubeEnabled && footerData.youtubeUrl && (
@@ -199,9 +237,19 @@ export function Footer() {
                   href={footerData.youtubeUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-10 h-10 bg-teal-800 hover:bg-teal-700 rounded-full flex items-center justify-center transition-colors"
+                  className="w-10 h-10 rounded-full bg-[#C84630] hover:bg-[#2C2C2C] flex items-center justify-center transition-colors"
                 >
-                  <Youtube className="w-5 h-5" />
+                  <Youtube className="w-5 h-5 text-white" />
+                </a>
+              )}
+              {footerData.facebookEnabled && footerData.facebookUrl && (
+                <a
+                  href={footerData.facebookUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 rounded-full bg-[#C84630] hover:bg-[#2C2C2C] flex items-center justify-center transition-colors"
+                >
+                  <Facebook className="w-5 h-5 text-white" />
                 </a>
               )}
               {footerData.kakaoEnabled && footerData.kakaoUrl && (
@@ -209,141 +257,30 @@ export function Footer() {
                   href={footerData.kakaoUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-10 h-10 bg-teal-800 hover:bg-teal-700 rounded-full flex items-center justify-center transition-colors"
+                  className="w-10 h-10 rounded-full bg-[#C84630] hover:bg-[#2C2C2C] flex items-center justify-center transition-colors"
                 >
-                  <MessageCircle className="w-5 h-5" />
+                  <MessageCircle className="w-5 h-5 text-white" />
                 </a>
               )}
             </div>
           </div>
-
-          {/* 연락처 */}
-          <div>
-            <h4 className="text-xl mb-6 text-amber-200 border-b border-teal-700 pb-2">연락처</h4>
-            <div className="space-y-3 text-teal-100">
-              <div className="flex items-start">
-                <Phone className="w-4 h-4 mr-2 mt-1 flex-shrink-0" />
-                <div>
-                  <p className="text-white">{footerData.phone}</p>
-                  <p className="text-xs text-teal-300">{footerData.phoneHours}</p>
-                </div>
-              </div>
-              <div className="flex items-start">
-                <Mail className="w-4 h-4 mr-2 mt-1 flex-shrink-0" />
-                <div>
-                  <p className="text-white">{footerData.email}</p>
-                </div>
-              </div>
-              <div className="flex items-start">
-                <MapPin className="w-4 h-4 mr-2 mt-1 flex-shrink-0" />
-                <div>
-                  <p className="text-white break-keep">
-                    경상북도 청송군 진보면 경동로 5162 청송야송미술관
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 운영 시간 */}
-          <div>
-            <h4 className="text-xl mb-6 text-amber-200 border-b border-teal-700 pb-2">운영 시간</h4>
-            <div className="space-y-3 text-teal-100">
-              <div className="flex items-start">
-                <Clock className="w-4 h-4 mr-2 mt-1 flex-shrink-0" />
-                <div>
-                  {parseLines(footerData.operatingHours).map((line, idx) => (
-                    <p key={idx} className="text-white mb-1">{line}</p>
-                  ))}
-                  <p className="text-amber-300 text-sm mt-2">{footerData.closedDay}</p>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
-
-        {/* 하단 링크 */}
-        <div className="border-t border-teal-800 pt-8 mb-8">
-          <div className="flex flex-wrap justify-center gap-6 text-sm text-teal-200">
-            {footerData.privacyPolicyEnabled && footerData.privacyPolicyUrl && (
-              <>
-                <a
-                  href={footerData.privacyPolicyUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-amber-300 transition-colors"
-                >
-                  개인정보처리방침
-                </a>
-                {(footerData.termsEnabled || footerData.locationLinkEnabled || footerData.recruitEnabled) && (
-                  <span className="text-teal-700">|</span>
-                )}
-              </>
-            )}
-            {footerData.termsEnabled && footerData.termsUrl && (
-              <>
-                <a
-                  href={footerData.termsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-amber-300 transition-colors"
-                >
-                  이용약관
-                </a>
-                {(footerData.locationLinkEnabled || footerData.recruitEnabled) && (
-                  <span className="text-teal-700">|</span>
-                )}
-              </>
-            )}
-            {footerData.locationLinkEnabled && footerData.locationLinkUrl && (
-              <>
-                <a
-                  href={footerData.locationLinkUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-amber-300 transition-colors"
-                >
-                  찾아오시는 길
-                </a>
-                {footerData.recruitEnabled && (
-                  <span className="text-teal-700">|</span>
-                )}
-              </>
-            )}
-            {footerData.recruitEnabled && footerData.recruitUrl && (
-              <a
-                href={footerData.recruitUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-amber-300 transition-colors"
-              >
-                채용정보
-              </a>
-            )}
-          </div>
-        </div>
-
-        <div className="border-t border-teal-800 pt-8">
-          <div className="text-center text-teal-300 text-sm space-y-2">
-            <p>{footerData.bottomInfo}</p>
-            <p>본 웹사이트는 군립청송야송미술관의 공식 홈페이지가 아니며, 미술관 정보를 제공하기 위해 개인이 제작한 비공식 팬 페이지입니다.<br />
-            Copyright © 2026 Yasong Art Gallery Archive. All rights reserved.</p>
-            <p className="text-teal-400 text-xs mt-2">
+        {/* 하단 영역: 저작권 + 관리자 링크 */}
+        <div className="pt-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <p className="text-xs text-[#2C2C2C]/50">
+              Copyright © 2026 Yasong. All rights reserved.
+            </p>
+            <div className="flex items-center gap-4">
               <a 
                 href="https://github.com/Bang9634" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="hover:text-teal-200 transition-colors"
+                className="text-xs text-[#2C2C2C]/40 hover:text-[#C84630] transition-colors"
               >
                 Designed & Developed by Deok-jae Bang
               </a>
-            </p>
-            <Link 
-              to="/login" 
-              className="inline-block mt-4 text-xs text-teal-700 hover:text-teal-600 opacity-30 hover:opacity-50 transition-opacity"
-            >
-              관리자 로그인
-            </Link>
+            </div>
           </div>
         </div>
       </div>

@@ -76,10 +76,10 @@ export function About() {
   }, []);
 
   return (
-    <section id="about" className="py-20 y-20 bg-gradient-to-b from-white to-teal-50">
+    <section id="about" className="py-20 y-20 bg-gradient-to-b from-white to-[#F4F4F0]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl sm:text-5xl mb-4 text-teal-900">전시관</h2>
+          <h2 className="text-4xl sm:text-5xl mb-4 text-[#2C2C2C]">전시관</h2>
           <div className="w-20 h-1 bg-amber-600 mx-auto"></div>
         </div>
 
@@ -156,8 +156,8 @@ export function About() {
 
 
         {/* 연혁 타임라인 */}
-        <div className="bg-white rounded-lg shadow-lg p-8 border border-teal-100">
-          <h3 className="text-3xl mb-8 text-center text-teal-900">주요 연혁</h3>
+        <div className="bg-white rounded-lg shadow-lg p-8 border border-[#E0E0E0]">
+          <h3 className="text-3xl mb-8 text-center text-[#2C2C2C]">주요 연혁</h3>
           <div className="space-y-6">
             {historyItems.map((item, index) => (
               <div 

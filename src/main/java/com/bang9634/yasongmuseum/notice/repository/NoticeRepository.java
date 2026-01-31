@@ -51,7 +51,7 @@ public interface NoticeRepository extends JpaRepository<Notice, Long>{
         AND (:search IS NULL OR 
              LOWER(n.title) LIKE LOWER(CONCAT('%', :search, '%')) OR
              LOWER(n.content) LIKE LOWER(CONCAT('%', :search, '%')))
-        AND (:category IS NULL OR n.category = :category)
+        AND (:category IS NULL OR CAST(n.category AS string) = :category)
         ORDER BY n.isPinned DESC, n.createdAt DESC
         """)
     Page<Notice> findFiltered(

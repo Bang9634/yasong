@@ -3,8 +3,11 @@ package com.bang9634.yasongmuseum.notice.repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.bang9634.yasongmuseum.notice.entity.Notice;
@@ -12,18 +15,6 @@ import com.bang9634.yasongmuseum.notice.entity.Notice;
 @Repository
 public interface NoticeRepository extends JpaRepository<Notice, Long>{
     
-    /**
-     * Fetch all visible notices that are not deleted and have status 'PUBLISHED',
-     * ordered by pinned status and creation date.
-     */
-    @Query("""
-        SELECT n FROM Notice n
-        WHERE n.deletedAt IS NULL
-        AND n.status = 'PUBLISHED'
-        ORDER BY n.isPinned DESC, n.createdAt DESC
-        """)
-    List<Notice> findVisibleNotices();
-
     @Query("""
         SELECT n FROM Notice n
         WHERE n.id = :id
@@ -49,4 +40,23 @@ public interface NoticeRepository extends JpaRepository<Notice, Long>{
         ORDER BY n.isPinned DESC, n.createdAt DESC    
         """)
     List<Notice> findAllNotDeleted();
+
+    /**
+     * Find visible notices with pagination and filtering
+     */
+    @Query("""
+        SELECT n FROM Notice n
+        WHERE n.deletedAt IS NULL
+        AND n.status = 'PUBLISHED'
+        AND (:search IS NULL OR 
+             LOWER(n.title) LIKE LOWER(CONCAT('%', :search, '%')) OR
+             LOWER(n.content) LIKE LOWER(CONCAT('%', :search, '%')))
+        AND (:category IS NULL OR n.category = :category)
+        ORDER BY n.isPinned DESC, n.createdAt DESC
+        """)
+    Page<Notice> findFiltered(
+        @Param("search") String search,
+        @Param("category") String category,
+        Pageable pageable
+    );
 }

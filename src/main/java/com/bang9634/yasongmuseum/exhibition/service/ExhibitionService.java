@@ -1,5 +1,6 @@
 package com.bang9634.yasongmuseum.exhibition.service;
 
+import com.bang9634.yasongmuseum.common.dto.PagedResponse;
 import com.bang9634.yasongmuseum.common.service.FileStorageService;
 import com.bang9634.yasongmuseum.exhibition.dto.CreateExhibitionRequest;
 import com.bang9634.yasongmuseum.exhibition.dto.ExhibitionResponse;
@@ -9,6 +10,9 @@ import com.bang9634.yasongmuseum.exhibition.exception.ExhibitionNotFoundExceptio
 import com.bang9634.yasongmuseum.exhibition.repository.ExhibitionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,46 +34,15 @@ public class ExhibitionService {
     private static final String EXHIBITION_IMAGE_PREFIX = "exhibition-";
 
     /**
-     * Get all exhibitions ordered by start date descending
+     * Get exhibitions with pagination and filtering
      */
-    public List<ExhibitionResponse> getAllExhibitions() {
-        return exhibitionRepository.findAllByOrderByStartDateDesc()
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Get ongoing exhibitions
-     */
-    public List<ExhibitionResponse> getOngoingExhibitions() {
+    public PagedResponse<ExhibitionResponse> getExhibitions(int page, int limit, String search, String status) {
+        Pageable pageable = PageRequest.of(page - 1, limit);
         LocalDateTime now = LocalDateTime.now();
-        return exhibitionRepository.findByStartDateBeforeAndEndDateAfter(now, now)
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Get upcoming exhibitions
-     */
-    public List<ExhibitionResponse> getUpcomingExhibitions() {
-        LocalDateTime now = LocalDateTime.now();
-        return exhibitionRepository.findByStartDateAfterOrderByStartDateAsc(now)
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Get past exhibitions
-     */
-    public List<ExhibitionResponse> getPastExhibitions() {
-        LocalDateTime now = LocalDateTime.now();
-        return exhibitionRepository.findByEndDateBeforeOrderByEndDateDesc(now)
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+        Page<Exhibition> result = exhibitionRepository.findFiltered(search, status, now, pageable);
+        
+        Page<ExhibitionResponse> responsePage = result.map(this::toResponse);
+        return new PagedResponse<>(responsePage);
     }
 
     /**

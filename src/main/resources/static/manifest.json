@@ -1,7 +1,7 @@
 {
-  "name": "군립청송야송미술관 아카이브",
-  "short_name": "야송미술관",
-  "description": "청송 야송 미술관의 관람 정보, 작품 소개, 공모전 소식",
+  "name": "YASONG",
+  "short_name": "야송",
+  "description": "야송 - 한국 근현대 미술의 거장, 이원좌 선생의 작품과 정신을 기리는 문화 공간",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

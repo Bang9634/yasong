@@ -3,10 +3,14 @@ package com.bang9634.yasongmuseum.notice.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.bang9634.yasongmuseum.common.dto.PagedResponse;
 import com.bang9634.yasongmuseum.common.service.FileStorageService;
 import com.bang9634.yasongmuseum.notice.dto.CreateNoticeRequest;
 import com.bang9634.yasongmuseum.notice.dto.NoticeAttachmentResponse;
@@ -36,11 +40,15 @@ public class NoticeService {
     private final NoticeAttachmentRepository noticeAttachmentRepository;
     private final FileStorageService fileStorageService;
 
-    public List<NoticeResponse> getVisibleNotices() {
-        log.info("Fetching all visible notices");
-        return noticeRepository.findVisibleNotices().stream()
-                .map(NoticeResponse::from)
-                .toList();
+    /**
+     * Get notices with pagination and filtering
+     */
+    public PagedResponse<NoticeResponse> getNotices(int page, int limit, String search, String category) {
+        Pageable pageable = PageRequest.of(page - 1, limit);
+        Page<Notice> result = noticeRepository.findFiltered(search, category, pageable);
+        
+        Page<NoticeResponse> responsePage = result.map(NoticeResponse::from);
+        return new PagedResponse<>(responsePage);
     }
 
     @Transactional

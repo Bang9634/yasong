@@ -6,9 +6,13 @@ import com.bang9634.yasongmuseum.collection.dto.UpdateCollectionRequest;
 import com.bang9634.yasongmuseum.collection.entity.ArtCollection;
 import com.bang9634.yasongmuseum.collection.exception.CollectionNotFoundException;
 import com.bang9634.yasongmuseum.collection.repository.CollectionRepository;
+import com.bang9634.yasongmuseum.common.dto.PagedResponse;
 import com.bang9634.yasongmuseum.common.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,13 +33,14 @@ public class CollectionService {
     private static final String COLLECTION_IMAGE_PREFIX = "collection-";
 
     /**
-     * Get all collections ordered by pinned status and creation date
+     * Get collections with pagination and filtering
      */
-    public List<CollectionResponse> getAllCollections() {
-        return collectionRepository.findAllByOrderByIsPinnedDescCreatedAtDesc()
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+    public PagedResponse<CollectionResponse> getCollections(int page, int limit, String search, String yearFrom, String yearTo) {
+        Pageable pageable = PageRequest.of(page - 1, limit);
+        Page<ArtCollection> result = collectionRepository.findFiltered(search, yearFrom, yearTo, pageable);
+        
+        Page<CollectionResponse> responsePage = result.map(this::toResponse);
+        return new PagedResponse<>(responsePage);
     }
 
     /**

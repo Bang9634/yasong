@@ -10,6 +10,7 @@ import { Checkbox } from '@/app/components/ui/checkbox';
 import { useAuth } from '@/context/AuthContext';
 import { noticeAPI, websiteAPI, getFullImageUrl } from '@/utils/api';
 import { isManagerOrAbove } from '@/utils/auth';
+import { resizeImage } from '@/utils/imageUtils';
 import { FileText, Upload, X, Download, Image as ImageIcon, Paperclip } from 'lucide-react';
 
 interface Attachment {
@@ -110,8 +111,10 @@ export function NoticeForm() {
 
     try {
       setUploadingImage(true);
+      // 이미지를 WebP로 변환 (최대 1200x1200, 품질 85%)
+      const resizedFile = await resizeImage(file, 1200, 1200, 0.85);
       // 공지사항 본문용 이미지 업로드
-      const result = await noticeAPI.uploadContentImage(file);
+      const result = await noticeAPI.uploadContentImage(resizedFile);
       const imageUrl = getFullImageUrl(result.imageUrl);
       
       // 현재 커서 위치에 이미지 마크다운 삽입
@@ -262,11 +265,11 @@ export function NoticeForm() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-[#F4F4F0] flex flex-col">
         <Header />
-        <div className="pt-24 pb-12">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <p className="text-gray-500">로딩 중...</p>
+        <div className="pt-24 pb-12 flex-1">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p className="text-[#2C2C2C]/60">로딩 중...</p>
           </div>
         </div>
         <Footer />
@@ -275,31 +278,31 @@ export function NoticeForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#F4F4F0] flex flex-col">
       <Header />
       
-      <div className="pt-24 pb-12">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="pt-24 pb-12 flex-1">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* 페이지 헤더 */}
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-teal-900 mb-2">
+            <h1 className="text-4xl sm:text-5xl font-bold text-[#2C2C2C] tracking-tight mb-2">
               {isEdit ? '공지사항 수정' : '공지사항 작성'}
             </h1>
-            <p className="text-gray-600">
+            <p className="text-[#2C2C2C]/70">
               {isEdit ? '공지사항을 수정합니다.' : '새로운 공지사항을 작성합니다.'}
             </p>
           </div>
 
           {/* 작성 폼 */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="bg-white border border-[#2C2C2C]/10 rounded-lg p-8">
+            <form onSubmit={handleSubmit} className="space-y-8">
               <div>
-                <Label htmlFor="category">카테고리 *</Label>
+                <Label htmlFor="category" className="text-[#2C2C2C] font-semibold text-base mb-2 block">카테고리 *</Label>
                 <select
                   id="category"
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  className="w-full px-4 py-3 border border-[#2C2C2C]/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C84630] focus:border-[#C84630] bg-white text-[#2C2C2C]"
                   required
                 >
                   <option value="GENERAL">일반</option>
@@ -310,23 +313,24 @@ export function NoticeForm() {
               </div>
 
               <div>
-                <Label htmlFor="title">제목 *</Label>
+                <Label htmlFor="title" className="text-[#2C2C2C] font-semibold text-base mb-2 block">제목 *</Label>
                 <Input
                   id="title"
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   placeholder="제목을 입력해주세요"
+                  className="w-full px-4 py-3 border border-[#2C2C2C]/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C84630] focus:border-[#C84630] bg-white text-[#2C2C2C]"
                   required
                 />
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <Label htmlFor="content">내용 *</Label>
+                  <Label htmlFor="content" className="text-[#2C2C2C] font-semibold text-base">내용 *</Label>
                   <div className="flex gap-2">
-                    <label className="cursor-pointer px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors flex items-center">
-                      <ImageIcon className="w-4 h-4 mr-1" />
+                    <label className="cursor-pointer px-4 py-2 text-sm bg-[#2C2C2C] text-[#F4F4F0] rounded-lg hover:bg-[#2C2C2C]/90 transition-colors flex items-center">
+                      <ImageIcon className="w-4 h-4 mr-2" />
                       {uploadingImage ? '업로드 중...' : '이미지 삽입'}
                       <input
                         type="file"
@@ -344,34 +348,36 @@ export function NoticeForm() {
                   value={formData.content}
                   onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                   placeholder="내용을 입력해주세요. 이미지는 '이미지 삽입' 버튼을 사용하세요."
+                  className="w-full px-4 py-3 border border-[#2C2C2C]/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C84630] focus:border-[#C84630] bg-white text-[#2C2C2C] resize-none"
                   rows={15}
                   required
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-[#2C2C2C]/50 mt-2">
                   💡 이미지는 Markdown 형식으로 삽입됩니다. 예: ![이미지설명](URL)
                 </p>
               </div>
 
-              <div className="flex items-center space-x-2 mb-4">
+              <div className="flex items-center space-x-3 p-4 bg-[#2C2C2C]/5 rounded-lg border border-[#2C2C2C]/10">
                 <Checkbox
                   id="isPinned"
                   checked={formData.isPinned}
                   onCheckedChange={(checked) => 
                     setFormData({ ...formData, isPinned: checked as boolean })
                   }
+                  className="border-[#2C2C2C]/30"
                 />
-                <Label htmlFor="isPinned" className="text-sm font-normal cursor-pointer">
+                <Label htmlFor="isPinned" className="text-sm font-medium text-[#2C2C2C] cursor-pointer">
                   상단 고정
                 </Label>
               </div>
 
               <div>
-                <Label htmlFor="status">게시 상태 *</Label>
+                <Label htmlFor="status" className="text-[#2C2C2C] font-semibold text-base mb-2 block">게시 상태 *</Label>
                 <select
                   id="status"
                   value={formData.status}
                   onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  className="w-full px-4 py-3 border border-[#2C2C2C]/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C84630] focus:border-[#C84630] bg-white text-[#2C2C2C]"
                   required
                 >
                   <option value="PUBLISHED">게시됨</option>
@@ -381,17 +387,17 @@ export function NoticeForm() {
               </div>
 
               {/* 첨부파일 섹션 */}
-              <div className="border-t pt-6">
-                <Label className="mb-3 block">
-                  <Paperclip className="inline w-4 h-4 mr-2" />
+              <div className="border-t border-[#2C2C2C]/20 pt-8">
+                <Label className="text-[#2C2C2C] font-semibold text-base mb-4 block flex items-center">
+                  <Paperclip className="w-5 h-5 mr-2" />
                   첨부파일 {!isEdit && '(공지사항 저장 시 함께 업로드됩니다)'}
                 </Label>
                 
                 {/* 첨부파일 추가 */}
                 <div className="mb-4">
-                  <label className="flex items-center justify-center w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-teal-500 hover:bg-teal-50 transition-colors">
-                    <Upload className="w-5 h-5 mr-2 text-gray-500" />
-                    <span className="text-sm text-gray-600">
+                  <label className="flex items-center justify-center w-full px-4 py-4 border-2 border-dashed border-[#2C2C2C]/20 rounded-lg cursor-pointer hover:border-[#C84630] hover:bg-[#C84630]/5 transition-colors">
+                    <Upload className="w-5 h-5 mr-2 text-[#2C2C2C]/60" />
+                    <span className="text-sm text-[#2C2C2C]/80 font-medium">
                       {isEdit && noticeId ? (uploadingFile ? '업로드 중...' : '파일 추가 (최대 10MB)') : '파일 선택 (최대 10MB)'}
                     </span>
                     <input
@@ -402,7 +408,7 @@ export function NoticeForm() {
                       accept=".pdf,.hwp,.hwpx,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.jpg,.jpeg,.png,.gif,.webp"
                     />
                   </label>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-[#2C2C2C]/50 mt-2">
                     지원 형식: PDF, HWP, HWPX, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, ZIP, 이미지
                   </p>
                 </div>
@@ -410,19 +416,19 @@ export function NoticeForm() {
                 {/* 임시 첨부파일 목록 (신규 작성 시) */}
                 {!isEdit && pendingFiles.length > 0 && (
                   <div className="space-y-2 mb-4">
-                    <p className="text-sm text-gray-600 mb-2">대기 중인 파일 ({pendingFiles.length})</p>
+                    <p className="text-sm text-[#2C2C2C]/60 font-medium mb-3">대기 중인 파일 ({pendingFiles.length})</p>
                     {pendingFiles.map((file, index) => (
                       <div
                         key={index}
-                        className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200"
+                        className="flex items-center justify-between p-3 bg-[#C84630]/5 rounded-lg border border-[#C84630]/20"
                       >
                         <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <FileText className="w-5 h-5 text-yellow-600 flex-shrink-0" />
+                          <FileText className="w-5 h-5 text-[#C84630] flex-shrink-0" />
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">
+                            <p className="text-sm font-medium text-[#2C2C2C] truncate">
                               {file.name}
                             </p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-[#2C2C2C]/50">
                               {formatFileSize(file.size)}
                             </p>
                           </div>
@@ -430,7 +436,7 @@ export function NoticeForm() {
                         <button
                           type="button"
                           onClick={() => handleRemovePendingFile(index)}
-                          className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
+                          className="p-2 text-[#C84630] hover:bg-[#C84630]/10 rounded transition-colors"
                           title="제거"
                         >
                           <X className="w-4 h-4" />
@@ -443,19 +449,19 @@ export function NoticeForm() {
                 {/* 업로드된 첨부파일 목록 (수정 시) */}
                 {isEdit && attachments.length > 0 && (
                   <div className="space-y-2">
-                    <p className="text-sm text-gray-600 mb-2">업로드된 파일 ({attachments.length})</p>
+                    <p className="text-sm text-[#2C2C2C]/60 font-medium mb-3">업로드된 파일 ({attachments.length})</p>
                     {attachments.map((attachment) => (
                       <div
                         key={attachment.id}
-                        className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200"
+                        className="flex items-center justify-between p-3 bg-[#2C2C2C]/5 rounded-lg border border-[#2C2C2C]/10"
                       >
                         <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <FileText className="w-5 h-5 text-green-600 flex-shrink-0" />
+                          <FileText className="w-5 h-5 text-[#2C2C2C]/60 flex-shrink-0" />
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">
+                            <p className="text-sm font-medium text-[#2C2C2C] truncate">
                               {attachment.fileName}
                             </p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-[#2C2C2C]/50">
                               {formatFileSize(attachment.fileSize)}
                             </p>
                           </div>
@@ -464,7 +470,7 @@ export function NoticeForm() {
                           <a
                             href={getFullImageUrl(attachment.fileUrl)}
                             download={attachment.fileName}
-                            className="p-2 text-teal-600 hover:bg-teal-100 rounded transition-colors"
+                            className="p-2 text-[#2C2C2C]/60 hover:bg-[#2C2C2C]/10 hover:text-[#C84630] rounded transition-colors"
                             title="다운로드"
                           >
                             <Download className="w-4 h-4" />
@@ -472,7 +478,7 @@ export function NoticeForm() {
                           <button
                             type="button"
                             onClick={() => handleDeleteAttachment(attachment.id)}
-                            className="p-2 text-red-600 hover:bg-red-100 rounded transition-colors"
+                            className="p-2 text-[#C84630] hover:bg-[#C84630]/10 rounded transition-colors"
                             title="삭제"
                           >
                             <X className="w-4 h-4" />
@@ -484,18 +490,18 @@ export function NoticeForm() {
                 )}
               </div>
 
-              <div className="flex gap-3 pt-4">
+              <div className="flex gap-3 pt-6">
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 bg-teal-600 hover:bg-teal-700 text-white"
+                  className="flex-1 bg-[#C84630] hover:bg-[#A83820] text-[#F4F4F0] font-semibold py-3 rounded-lg transition-colors"
                 >
                   {isSubmitting ? '처리 중...' : isEdit ? '수정하기' : '작성하기'}
                 </Button>
                 <Button
                   type="button"
                   onClick={() => navigate('/notice')}
-                  className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800"
+                  className="flex-1 bg-[#2C2C2C] hover:bg-[#2C2C2C]/90 text-[#F4F4F0] font-semibold py-3 rounded-lg transition-colors"
                 >
                   취소
                 </Button>

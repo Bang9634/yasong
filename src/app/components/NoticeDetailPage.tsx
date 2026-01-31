@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ChevronLeft, Calendar, Eye, User, Download, FileText } from 'lucide-react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { ChevronLeft, ChevronUp, ChevronDown, Calendar, Eye, User, Download, FileText, Edit2, Trash2 } from 'lucide-react';
 import { Header } from './Header';
 import { Footer } from './Footer';
-import { Button } from '@/app/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { isManagerOrAbove } from '@/utils/auth';
-import { noticeAPI, getFullImageUrl } from '@/utils/api';
+import { noticeAPI } from '@/utils/api';
 import { setPageSEO } from '@/utils/seo';
 
 interface NoticeAttachment {
@@ -41,6 +40,8 @@ export function NoticeDetailPage() {
   const [notice, setNotice] = useState<NoticeDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [prevNotice, setPrevNotice] = useState<{ id: number; title: string } | null>(null);
+  const [nextNotice, setNextNotice] = useState<{ id: number; title: string } | null>(null);
 
   const canManage = user && isManagerOrAbove(user.role);
 
@@ -58,6 +59,18 @@ export function NoticeDetailPage() {
                     ? await noticeAPI.getNoticeById(id) 
                     : await noticeAPI.getVisibleNoticeById(id);
         setNotice(data);
+
+        // 전체 공지사항 목록 가져와서 이전/다음 글 찾기
+        const allNotices = await noticeAPI.getNotices({ page: 1, limit: 1000 });
+        const noticesList = allNotices.content || [];
+        const currentIndex = noticesList.findIndex((n: any) => n.id === parseInt(id));
+        
+        if (currentIndex > 0) {
+          setNextNotice({ id: noticesList[currentIndex - 1].id, title: noticesList[currentIndex - 1].title });
+        }
+        if (currentIndex < noticesList.length - 1) {
+          setPrevNotice({ id: noticesList[currentIndex + 1].id, title: noticesList[currentIndex + 1].title });
+        }
       } catch (err) {
         console.error('공지사항 조회 실패:', err);
         setError('공지사항을 불러오는데 실패했습니다.');
@@ -67,7 +80,7 @@ export function NoticeDetailPage() {
     };
 
     fetchNotice();
-  }, [id]);
+  }, [id, canManage]);
 
   // SEO 설정 (공지사항이 로드되면 실행)
   useEffect(() => {
@@ -106,11 +119,11 @@ export function NoticeDetailPage() {
   const convertMarkdownToHtml = (text: string): string => {
     let html = text;
     
-    // 이미지: ![alt](url) -> <img>
-    html = html.replace(/!\[([^\]]*)\]\(([^\)]+)\)/g, '<img src="$2" alt="$1" class="max-w-full h-auto rounded-lg my-4" />');
+    // 이미지: ![alt](url) -> <img> (최대 높이 800px 제한)
+    html = html.replace(/!\[([^\]]*)\]\(([^\)]+)\)/g, '<img src="$2" alt="$1" class="max-w-full h-auto rounded-lg my-4" style="max-height: 800px; object-fit: contain;" />');
     
     // 링크: [text](url) -> <a>
-    html = html.replace(/\[([^\]]+)\]\(([^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-teal-600 hover:underline">$1</a>');
+    html = html.replace(/\[([^\]]+)\]\(([^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-[#C84630] hover:underline">$1</a>');
     
     // 줄바꿈을 <br>로 변환
     html = html.replace(/\n/g, '<br />');
@@ -136,14 +149,10 @@ export function NoticeDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-[#F4F4F0] flex flex-col">
         <Header />
-        <div className="pt-32 pb-12">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="bg-white rounded-lg shadow-md p-12 text-center">
-              <p className="text-gray-500">로딩 중...</p>
-            </div>
-          </div>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-[#2C2C2C] text-xl">로딩 중...</div>
         </div>
         <Footer />
       </div>
@@ -152,17 +161,17 @@ export function NoticeDetailPage() {
 
   if (error || !notice) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-[#F4F4F0] flex flex-col">
         <Header />
-        <div className="pt-32 pb-12">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="bg-white rounded-lg shadow-md p-12 text-center">
-              <p className="text-red-600 mb-4">{error || '공지사항을 찾을 수 없습니다.'}</p>
-              <Button onClick={() => navigate('/notice')} className="bg-teal-700 hover:bg-teal-800">
-                목록으로 돌아가기
-              </Button>
-            </div>
-          </div>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-[#2C2C2C]">
+          <h2 className="text-2xl font-bold mb-4">{error || '공지사항을 찾을 수 없습니다.'}</h2>
+          <button
+            onClick={() => navigate('/notice')}
+            className="px-6 py-3 bg-[#C84630] hover:bg-[#A33520] transition-colors rounded-lg flex items-center gap-2 text-[#F4F4F0]"
+          >
+            <ChevronLeft className="w-5 h-5" />
+            목록으로 돌아가기
+          </button>
         </div>
         <Footer />
       </div>
@@ -170,156 +179,186 @@ export function NoticeDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#F4F4F0] flex flex-col">
       <Header />
       
-      <div className="pt-32 pb-12">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* 상단 네비게이션 */}
-          <div className="mb-6">
-            <Link 
-              to="/notice" 
-              className="inline-flex items-center text-gray-600 hover:text-teal-700 transition-colors"
-            >
-              <ChevronLeft className="w-4 h-4 mr-1" />
-              목록으로
-            </Link>
-          </div>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-24 flex-1">
+        {/* 뒤로가기 버튼 */}
+        <button
+          onClick={() => navigate('/notice')}
+          className="mb-8 flex items-center gap-2 text-[#2C2C2C] hover:text-[#C84630] transition-colors text-lg font-medium"
+        >
+          <ChevronLeft className="w-5 h-5" />
+          <span>목록으로 돌아가기</span>
+        </button>
 
-          {/* 공지사항 상세 */}
-          <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            {/* 헤더 */}
-            <div className="border-b border-gray-200 bg-gradient-to-r from-teal-50 to-white p-6">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="bg-teal-100 text-teal-800 text-sm px-3 py-1 rounded">
-                  {getCategoryDisplayName(notice.category)}
-                </span>
-                {notice.isPinned && (
-                  <span className="bg-red-500 text-white text-sm px-3 py-1 rounded">
-                    고정
-                  </span>
-                )}
-              </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">
-                {notice.title}
-              </h1>
-              
-              {/* 메타 정보 */}
-              <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-                <div className="flex items-center gap-1">
-                  <User className="w-4 h-4" />
-                  <span>{notice.authorName}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Calendar className="w-4 h-4" />
-                  <span>{new Date(notice.createdAt).toLocaleDateString('ko-KR', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Eye className="w-4 h-4" />
-                  <span>조회 {notice.viewCount}</span>
-                </div>
-              </div>
+        {/* 컨텐츠 영역 */}
+        <div className="w-[1280px] mx-auto space-y-8 relative">
+          {/* 관리자 버튼 - 우측 상단 고정 */}
+          {canManage && (
+            <div className="absolute top-0 right-0 flex gap-2 z-10">
+              <button
+                onClick={() => navigate(`/notice/write?id=${notice.id}`)}
+                className="px-4 py-2 bg-[#2C2C2C] text-[#F4F4F0] rounded-lg hover:bg-[#2C2C2C]/90 transition-colors flex items-center gap-2 font-medium text-sm"
+              >
+                <Edit2 className="w-4 h-4" />
+                수정
+              </button>
+              <button
+                onClick={handleDelete}
+                className="px-4 py-2 bg-[#C84630] text-[#F4F4F0] rounded-lg hover:bg-[#A83820] transition-colors flex items-center gap-2 font-medium text-sm"
+              >
+                <Trash2 className="w-4 h-4" />
+                삭제
+              </button>
             </div>
+          )}
 
-            {/* 본문 */}
-            <div className="p-8">
-              <div 
-                className="prose prose-lg max-w-none"
-                dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(notice.content) }}
-              />
-            </div>
-
-            {/* 첨부파일 섹션 */}
-            {notice.attachments && notice.attachments.length > 0 && (
-              <div className="px-8 pb-8">
-                <div className="border-t border-gray-200 pt-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <FileText className="w-5 h-5 mr-2" />
-                    첨부파일 ({notice.attachments.length})
-                  </h3>
-                  <div className="space-y-2">
-                    {notice.attachments.map((attachment) => (
-                      <button
-                        key={attachment.id}
-                        onClick={async () => {
-                          try {
-                            const response = await fetch(attachment.downloadUrl);
-                            if (!response.ok) throw new Error('다운로드 실패');
-                            
-                            const blob = await response.blob();
-                            const url = window.URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.href = url;
-                            a.download = attachment.fileName;
-                            document.body.appendChild(a);
-                            a.click();
-                            window.URL.revokeObjectURL(url);
-                            document.body.removeChild(a);
-                          } catch (error) {
-                            console.error('파일 다운로드 실패:', error);
-                            alert('파일 다운로드에 실패했습니다.');
-                          }
-                        }}
-                        className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors group cursor-pointer"
-                      >
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <FileText className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">
-                              {attachment.fileName}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {formatFileSize(attachment.fileSize)}
-                            </p>
-                          </div>
-                        </div>
-                        <Download className="w-5 h-5 text-gray-400 group-hover:text-teal-600 flex-shrink-0" />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
+          {/* 카테고리 & 고정 배지 */}
+          <div className="flex items-center gap-2">
+            <span className="px-3 py-1 bg-[#2C2C2C]/10 text-[#2C2C2C]/70 text-sm rounded font-medium">
+              {getCategoryDisplayName(notice.category)}
+            </span>
+            {notice.isPinned && (
+              <span className="px-3 py-1 bg-[#C84630] text-[#F4F4F0] text-sm rounded font-medium">
+                고정
+              </span>
             )}
+          </div>
 
-            {/* 하단 버튼 */}
-            <div className="border-t border-gray-200 p-6 bg-gray-50">
-              <div className="flex justify-between items-center">
-                <Button
-                  onClick={() => navigate('/notice')}
-                  variant="outline"
-                  className="border-gray-300"
-                >
-                  <ChevronLeft className="w-4 h-4 mr-2" />
-                  목록으로
-                </Button>
-                
-                {canManage && (
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={() => navigate(`/notice/write?id=${notice.id}`)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                      수정
-                    </Button>
-                    <Button
-                      onClick={handleDelete}
-                      className="bg-red-600 hover:bg-red-700 text-white"
-                    >
-                      삭제
-                    </Button>
-                  </div>
-                )}
-              </div>
+          {/* 제목 */}
+          <h1 className="text-4xl md:text-5xl font-bold text-[#2C2C2C] leading-tight">
+            {notice.title}
+          </h1>
+
+          {/* 메타 정보 */}
+          <div className="space-y-4 border-t border-[#2C2C2C]/20 pt-6">
+            <div className="flex items-start gap-4">
+              <span className="text-[#2C2C2C]/60 font-semibold min-w-[100px]">작성자</span>
+              <span className="text-[#2C2C2C]">{notice.authorName}</span>
+            </div>
+            <div className="flex items-start gap-4">
+              <span className="text-[#2C2C2C]/60 font-semibold min-w-[100px]">작성일</span>
+              <span className="text-[#2C2C2C]">{new Date(notice.createdAt).toLocaleDateString('ko-KR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}</span>
+            </div>
+            <div className="flex items-start gap-4">
+              <span className="text-[#2C2C2C]/60 font-semibold min-w-[100px]">조회수</span>
+              <span className="text-[#2C2C2C]">{notice.viewCount}</span>
             </div>
           </div>
+
+          {/* 본문 */}
+          <div className="border-t border-[#2C2C2C]/20 pt-6">
+            <div 
+              className="prose prose-lg max-w-none text-[#2C2C2C]/80 leading-relaxed"
+              style={{
+                lineHeight: '1.8'
+              }}
+              dangerouslySetInnerHTML={{ __html: convertMarkdownToHtml(notice.content) }}
+            />
+          </div>
+
+          {/* 첨부파일 섹션 */}
+          {notice.attachments && notice.attachments.length > 0 && (
+            <div className="border-t border-[#2C2C2C]/20 pt-6">
+              <h3 className="text-xl font-bold text-[#2C2C2C] mb-4 flex items-center">
+                <FileText className="w-5 h-5 mr-2" />
+                첨부파일 ({notice.attachments.length})
+              </h3>
+              <div className="space-y-2">
+                {notice.attachments.map((attachment) => (
+                  <button
+                    key={attachment.id}
+                    onClick={async () => {
+                      try {
+                        const response = await fetch(attachment.downloadUrl);
+                        if (!response.ok) throw new Error('다운로드 실패');
+                        
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = attachment.fileName;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                      } catch (error) {
+                        console.error('파일 다운로드 실패:', error);
+                        alert('파일 다운로드에 실패했습니다.');
+                      }
+                    }}
+                    className="w-full flex items-center justify-between p-3 bg-[#2C2C2C]/5 hover:bg-[#2C2C2C]/10 border border-[#2C2C2C]/10 rounded-lg transition-colors group cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <FileText className="w-5 h-5 text-[#2C2C2C]/60 flex-shrink-0" />
+                      <div className="flex-1 min-w-0 text-left">
+                        <p className="text-sm font-medium text-[#2C2C2C] truncate">
+                          {attachment.fileName}
+                        </p>
+                        <p className="text-xs text-[#2C2C2C]/50">
+                          {formatFileSize(attachment.fileSize)}
+                        </p>
+                      </div>
+                    </div>
+                    <Download className="w-5 h-5 text-[#2C2C2C]/60 group-hover:text-[#C84630] flex-shrink-0 transition-colors" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 이전글/다음글 */}
+          {(prevNotice || nextNotice) && (
+            <div className="border-t border-[#2C2C2C]/20 pt-6 space-y-2">
+              {nextNotice && (
+                <button
+                  onClick={() => {
+                    navigate(`/notice/${nextNotice.id}`);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="w-full flex items-center justify-between p-4 bg-white hover:bg-[#2C2C2C]/5 border border-[#2C2C2C]/10 rounded-lg transition-colors group"
+                >
+                  <div className="flex items-center gap-3 flex-1 min-w-0 text-left">
+                    <ChevronUp className="w-5 h-5 text-[#2C2C2C]/40 group-hover:text-[#C84630] transition-colors flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs text-[#2C2C2C]/50 mb-1">다음 글</div>
+                      <div className="text-sm font-medium text-[#2C2C2C] group-hover:text-[#C84630] transition-colors truncate">
+                        {nextNotice.title}
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              )}
+              {prevNotice && (
+                <button
+                  onClick={() => {
+                    navigate(`/notice/${prevNotice.id}`);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="w-full flex items-center justify-between p-4 bg-white hover:bg-[#2C2C2C]/5 border border-[#2C2C2C]/10 rounded-lg transition-colors group"
+                >
+                  <div className="flex items-center gap-3 flex-1 min-w-0 text-left">
+                    <ChevronDown className="w-5 h-5 text-[#2C2C2C]/40 group-hover:text-[#C84630] transition-colors flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs text-[#2C2C2C]/50 mb-1">이전 글</div>
+                      <div className="text-sm font-medium text-[#2C2C2C] group-hover:text-[#C84630] transition-colors truncate">
+                        {prevNotice.title}
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              )}
+            </div>
+          )}
         </div>
-      </div>
+      </main>
 
       <Footer />
     </div>

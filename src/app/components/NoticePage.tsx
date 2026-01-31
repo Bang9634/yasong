@@ -51,8 +51,8 @@ export function NoticePage() {
   useEffect(() => {
     setPageSEO({
       title: '공지사항',
-      description: '군립청송야송미술관의 최신 소식, 전시 안내, 공모전 정보를 확인하실 수 있습니다.',
-      keywords: '청송야송미술관 공지사항, 전시 안내, 공모전, 미술관 소식',
+      description: '야송 이원좌 화백 작품 관련 최신 소식, 전시 안내, 공모전 정보를 확인하실 수 있습니다.',
+      keywords: '야송 공지사항, 전시 안내, 공모전, 야송 소식',
     });
   }, []);
 
@@ -154,7 +154,7 @@ export function NoticePage() {
           <div className="mb-8 flex justify-between items-start">
             <div>
               <h1 className="text-4xl sm:text-5xl font-bold text-[#2C2C2C] tracking-tight mb-2">공지사항</h1>
-              <p className="text-[#2C2C2C]/70">군립청송야송미술관의 최신 소식을 확인할 수 있습니다.</p>
+              <p className="text-[#2C2C2C]/70">야송 홈페이지의 최신 소식을 확인할 수 있습니다.</p>
             </div>
             {canManage && (
               <button

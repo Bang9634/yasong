@@ -132,7 +132,7 @@ public class FileStorageService {
         }
 
         String contentType = file.getContentType();
-        if (contentType == null || !contentType.startsWith("image/")) {
+        if (contentType != null && !contentType.startsWith("image/")) {
             throw new FileUploadException("이미지 파일만 업로드 가능합니다.");
         }
     }

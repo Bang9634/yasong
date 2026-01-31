@@ -26,6 +26,7 @@ export function Notice() {
   const [showRightArrow, setShowRightArrow] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [scrollBarWidth, setScrollBarWidth] = useState(20);
+  const [isScrollable, setIsScrollable] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(false);
   const [isCardsVisible, setIsCardsVisible] = useState(false);
   const headerRef = useRef<HTMLDivElement>(null);
@@ -35,6 +36,7 @@ export function Notice() {
   const checkScroll = () => {
     if (scrollContainerRef) {
       const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef;
+      setIsScrollable(scrollWidth > clientWidth);
       setShowLeftArrow(scrollLeft > 0);
       setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 10);
       

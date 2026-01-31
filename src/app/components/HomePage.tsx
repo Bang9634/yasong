@@ -24,10 +24,10 @@ export function HomePage() {
       <main>
         <Hero />
         <AboutStory />
-        <Notice />
-        <Contest />
         <Collections />
         <Exhibitions />
+        <Contest />
+        <Notice />      
       </main>
       <Footer />
     </div>

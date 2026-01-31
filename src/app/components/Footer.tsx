@@ -157,8 +157,12 @@ export function Footer() {
     return text.split('\n').filter(line => line.trim());
   };
   return (
-    <footer className="bg-[#F4F4F0] text-[#2C2C2C] py-6">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <footer className="bg-[#F4F4F0] text-[#2C2C2C]">
+      {/* 최상단 구분선 */}
+      <div className="w-full h-px bg-[#2C2C2C]/20"></div>
+      
+      <div className="py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* 중간 영역: 회사 정보 + Follow us */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-4">
           {/* 로고 + 네비게이션 + 회사 정보 그룹 */}
@@ -282,6 +286,7 @@ export function Footer() {
               </a>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </footer>

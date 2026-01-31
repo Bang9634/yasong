@@ -64,25 +64,6 @@ export function Header() {
 
           {/* 데스크톱 네비게이션 - 중앙 정렬 */}
           <nav className="hidden lg:flex space-x-10 absolute left-1/2 -translate-x-1/2">
-            {/* 공지사항 - 드롭다운 제거 */}
-            <button
-              onClick={() => {
-                navigate('/notice');
-                setIsMenuOpen(false);
-              }}
-              className="text-[#2C2C2C] hover:text-[#C84630] transition-colors py-2 relative after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[2px] after:bg-[#C84630] after:transition-all after:duration-300 hover:after:w-full"
-            >
-              공지사항
-            </button>
-
-            {/* 공모전 */}
-            <button
-              onClick={() => scrollToSection('contest')}
-              className="text-[#2C2C2C] hover:text-[#C84630] transition-colors py-2 relative after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[2px] after:bg-[#C84630] after:transition-all after:duration-300 hover:after:w-full"
-            >
-              공모전
-            </button>
-
             {/* 야송 이야기 드롭다운 */}
             <div className="relative group">
               <button
@@ -177,6 +158,25 @@ export function Header() {
                 </button>
               </div>
             </div>
+
+            {/* 공모전 */}
+            <button
+              onClick={() => scrollToSection('contest')}
+              className="text-[#2C2C2C] hover:text-[#C84630] transition-colors py-2 relative after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[2px] after:bg-[#C84630] after:transition-all after:duration-300 hover:after:w-full"
+            >
+              공모전
+            </button>
+
+            {/* 공지사항 */}
+            <button
+              onClick={() => {
+                navigate('/notice');
+                setIsMenuOpen(false);
+              }}
+              className="text-[#2C2C2C] hover:text-[#C84630] transition-colors py-2 relative after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[2px] after:bg-[#C84630] after:transition-all after:duration-300 hover:after:w-full"
+            >
+              공지사항
+            </button>
           </nav>
 
           {/* 오른쪽 영역 - 관리자 메뉴 및 모바일 버튼 */}
@@ -258,25 +258,6 @@ export function Header() {
         {/* 모바일 메뉴 */}
         {isMenuOpen && (
           <nav className="lg:hidden pb-6 space-y-2">
-            {/* 공지사항 - 드롭다운 제거 */}
-            <button
-              onClick={() => {
-                navigate('/notice');
-                setIsMenuOpen(false);
-              }}
-              className="block w-full text-left px-4 py-3 text-[#2C2C2C] hover:bg-white hover:text-[#C84630] transition-colors"
-            >
-              공지사항
-            </button>
-            
-            {/* 공모전 */}
-            <button
-              onClick={() => scrollToSection('contest')}
-              className="block w-full text-left px-4 py-3 text-[#2C2C2C] hover:bg-white hover:text-[#C84630] transition-colors"
-            >
-              공모전
-            </button>
-            
             {/* 야송 이야기 드롭다운 */}
             <div className="border-b border-[#E0E0E0] pb-3 mb-3">
               <div className="px-4 py-2 text-sm text-[#C84630] font-bold">야송 이야기</div>
@@ -360,6 +341,28 @@ export function Header() {
                 언론 보도, SNS 소개글
               </button>
             </div>
+            
+            {/* 공모전 */}
+            <button
+              onClick={() => {
+                scrollToSection('contest');
+                setIsMenuOpen(false);
+              }}
+              className="block w-full text-left px-4 py-3 text-[#2C2C2C] hover:bg-white hover:text-[#C84630] transition-colors"
+            >
+              공모전
+            </button>
+            
+            {/* 공지사항 */}
+            <button
+              onClick={() => {
+                navigate('/notice');
+                setIsMenuOpen(false);
+              }}
+              className="block w-full text-left px-4 py-3 text-[#2C2C2C] hover:bg-white hover:text-[#C84630] transition-colors"
+            >
+              공지사항
+            </button>
             
             {/* 로그인 상태에 따른 버튼 */}
             <div className="border-t border-[#E0E0E0] pt-4 mt-4 space-y-2">

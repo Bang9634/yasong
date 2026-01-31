@@ -52,7 +52,6 @@ export default function App() {
           <Route path="/collections/:id" element={<CollectionDetail />} />
           <Route path="/admin/collections/new" element={<CollectionForm />} />
           <Route path="/admin/collections/edit/:id" element={<CollectionForm />} />
-          <Route path="/souvenirs" element={<SouvenirsPage />} />
           <Route path="/profile" element={<Profile />} />
           
           {/* 관리자 페이지 */}

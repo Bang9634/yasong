@@ -40,6 +40,8 @@ export function CollectionsPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [pageInput, setPageInput] = useState('');
+  const [visibleCards, setVisibleCards] = useState<Set<number>>(new Set());
   const itemsPerPage = 10;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -63,6 +65,26 @@ export function CollectionsPage() {
       keywords: '야송, 이원좌, 미술작품, 컬렉션',
     });
   }, []);
+
+  // 카드 애니메이션을 위한 Intersection Observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const cardId = parseInt(entry.target.getAttribute('data-card-id') || '0');
+            setVisibleCards((prev) => new Set(prev).add(cardId));
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '50px' }
+    );
+
+    const cards = document.querySelectorAll('[data-card-id]');
+    cards.forEach((card) => observer.observe(card));
+
+    return () => observer.disconnect();
+  }, [collections]);
 
   // 서버로부터 소장품 로드
   const loadCollections = async () => {
@@ -132,6 +154,7 @@ export function CollectionsPage() {
 
   // 페이지, 검색, 필터 변경 시 데이터 재로드
   useEffect(() => {
+    setVisibleCards(new Set()); // 애니메이션 초기화
     loadCollections();
   }, [currentPage, searchQuery, yearFilter]);
 
@@ -250,10 +273,10 @@ export function CollectionsPage() {
   const isAdmin = user && isManagerOrAbove(user.role);
 
   return (
-    <div className="min-h-screen bg-[#2C2C2C]">
+    <div className="min-h-screen bg-[#2C2C2C] flex flex-col">
       <Header />
       
-      <div className="pt-24 pb-12">
+      <div className="pt-24 pb-12 flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* 페이지 헤더 */}
           <div className="mb-8 flex justify-between items-start">
@@ -320,10 +343,16 @@ export function CollectionsPage() {
                 <div className="text-[#F4F4F0]/60 text-lg">작품이 없습니다.</div>
               </div>
             ) : (
-              collections.map((collection) => (
+              collections.map((collection, index) => (
               <div
                 key={collection.id}
-                className="group"
+                data-card-id={collection.id}
+                className={`group transition-all duration-700 ${
+                  visibleCards.has(collection.id)
+                    ? 'opacity-100 translate-y-0'
+                    : 'opacity-0 translate-y-8'
+                }`}
+                style={{ transitionDelay: `${index * 50}ms` }}
               >
                 {/* 작품 이미지 */}
                 <div 
@@ -440,6 +469,41 @@ export function CollectionsPage() {
                   </PaginationItem>
                 </PaginationContent>
               </Pagination>
+              
+              {/* 페이지 직접 입력 */}
+              <div className="mt-6 flex items-center justify-center gap-3">
+                <span className="text-[#F4F4F0]/70 text-sm">페이지 이동:</span>
+                <input
+                  type="number"
+                  min="1"
+                  max={totalPages}
+                  value={pageInput}
+                  onChange={(e) => setPageInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      const page = parseInt(pageInput);
+                      if (page >= 1 && page <= totalPages) {
+                        setCurrentPage(page);
+                        setPageInput('');
+                      }
+                    }
+                  }}
+                  placeholder={`1-${totalPages}`}
+                  className="w-20 px-3 py-2 bg-[#F4F4F0]/10 border border-[#F4F4F0]/20 rounded-lg text-[#F4F4F0] text-center focus:ring-2 focus:ring-[#C84630] focus:border-[#C84630]"
+                />
+                <button
+                  onClick={() => {
+                    const page = parseInt(pageInput);
+                    if (page >= 1 && page <= totalPages) {
+                      setCurrentPage(page);
+                      setPageInput('');
+                    }
+                  }}
+                  className="px-4 py-2 bg-[#C84630] text-[#F4F4F0] rounded-lg hover:bg-[#A83820] transition-colors text-sm font-medium"
+                >
+                  이동
+                </button>
+              </div>
             </div>
           )}
         </div>

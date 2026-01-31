@@ -111,17 +111,20 @@ export function Notice() {
     const fetchNotices = async () => {
       try {
         setIsLoading(true);
-        const data = await noticeAPI.getVisibleNotices();
+        // 페이지네이션 파라미터와 함께 API 호출
+        const response = await noticeAPI.getNotices({
+          page: 1,
+          limit: 5, // 최대 5개만 표시
+        });
         
         // 고정 글 우선, 그 다음 최신순
-        const noticesArray = Array.isArray(data) ? data : [];
+        const noticesArray = Array.isArray(response.content) ? response.content : [];
         const sortedData = noticesArray
           .sort((a, b) => {
             if (a.isPinned && !b.isPinned) return -1;
             if (!a.isPinned && b.isPinned) return 1;
             return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-          })
-          .slice(0, 5);
+          });
         
         setNotices(sortedData);
       } catch (err) {
@@ -137,10 +140,10 @@ export function Notice() {
   // 카테고리 한글 변환
   const getCategoryKorean = (category: string): string => {
     const categoryMap: { [key: string]: string } = {
-      'notice': '공지',
-      'event': '이벤트',
-      'news': '소식',
-      'announcement': '안내',
+      'GENERAL': '일반',
+      'EXHIBITION': '전시',
+      'CONTEST': '공모전',
+      'MAINTENANCE': '시스템'
     };
     return categoryMap[category] || category;
   };

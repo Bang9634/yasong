@@ -234,6 +234,33 @@ export const adminUsersAPI = {
  */
 export const noticeAPI = {
   /**
+   * 공지사항 목록 조회 (페이지네이션)
+   * GET /api/notices
+   */
+  getNotices: async (params: {
+    page: number;
+    limit: number;
+    search?: string;
+    category?: string;
+  }) => {
+    const queryParams = new URLSearchParams({
+      page: params.page.toString(),
+      limit: params.limit.toString(),
+    });
+
+    if (params.search) {
+      queryParams.append('search', params.search);
+    }
+    if (params.category) {
+      queryParams.append('category', params.category);
+    }
+
+    return apiCall(`/api/notices?${queryParams.toString()}`, {
+      method: 'GET'
+    });
+  },
+
+  /**
    * 공지사항 목록 조회 (공개된 것만)
    * GET /api/notices
    */

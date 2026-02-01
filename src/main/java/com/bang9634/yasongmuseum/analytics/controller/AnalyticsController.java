@@ -1,5 +1,6 @@
 package com.bang9634.yasongmuseum.analytics.controller;
 
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class AnalyticsController {
     
+    @Lazy
     private final AnalyticsService analyticsService;
     
     /**

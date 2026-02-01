@@ -69,6 +69,7 @@ public class ExhibitionService {
                 .location(request.getLocation())
                 .imageUrl(imageUrl)
                 .description(request.getDescription())
+                .type(request.getType())
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
                 .build();
@@ -102,6 +103,7 @@ public class ExhibitionService {
         exhibition.setArtist(request.getArtist());
         exhibition.setLocation(request.getLocation());
         exhibition.setDescription(request.getDescription());
+        exhibition.setType(request.getType());
         exhibition.setStartDate(request.getStartDate());
         exhibition.setEndDate(request.getEndDate());
 
@@ -138,6 +140,7 @@ public class ExhibitionService {
                 .location(exhibition.getLocation())
                 .imageUrl(exhibition.getImageUrl())
                 .description(exhibition.getDescription())
+                .type(exhibition.getType())
                 .startDate(exhibition.getStartDate())
                 .endDate(exhibition.getEndDate())
                 .status(exhibition.getStatus())  // Automatically calculated

@@ -32,6 +32,26 @@ public class CollectionController {
     }
 
     /**
+     * Get random collections (Public API)
+     * For "Other Works" recommendation section
+     * 
+     * @param count Number of random collections (default: 5, max: 20)
+     * @param exclude Optional collection ID to exclude (e.g., currently viewing)
+     */
+    @GetMapping("/random")
+    public ResponseEntity<List<CollectionResponse>> getRandomCollections(
+            @RequestParam(defaultValue = "5") int count,
+            @RequestParam(required = false) Long exclude
+    ) {
+        // Limit max count to prevent abuse
+        if (count > 20) {
+            count = 20;
+        }
+        List<CollectionResponse> collections = collectionService.getRandomCollections(count, exclude);
+        return ResponseEntity.ok(collections);
+    }
+
+    /**
      * Get collection by ID (Public API)
      */
     @GetMapping("/{id}")

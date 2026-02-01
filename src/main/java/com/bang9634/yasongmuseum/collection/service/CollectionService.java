@@ -44,6 +44,20 @@ public class CollectionService {
     }
 
     /**
+     * Get random collections for recommendations
+     * 
+     * @param count Number of collections to retrieve
+     * @param excludeId Optional ID of collection to exclude (e.g., currently viewing)
+     * @return List of random collections
+     */
+    public List<CollectionResponse> getRandomCollections(int count, Long excludeId) {
+        return collectionRepository.findRandomCollections(count, excludeId)
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Get collection by ID
      */
     public CollectionResponse getCollectionById(Long id) {

@@ -38,4 +38,11 @@ public interface CollectionRepository extends JpaRepository<ArtCollection, Long>
         @Param("yearTo") String yearTo,
         Pageable pageable
     );
+
+    /**
+     * Get random collections (for recommendations)
+     * Excludes specified collection ID (e.g., currently viewing collection)
+     */
+    @Query(value = "SELECT * FROM collections WHERE (:excludeId IS NULL OR id != :excludeId) ORDER BY RAND() LIMIT :limit", nativeQuery = true)
+    List<ArtCollection> findRandomCollections(@Param("limit") int limit, @Param("excludeId") Long excludeId);
 }

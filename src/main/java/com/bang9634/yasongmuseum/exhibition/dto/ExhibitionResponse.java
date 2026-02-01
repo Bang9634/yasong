@@ -1,6 +1,7 @@
 package com.bang9634.yasongmuseum.exhibition.dto;
 
 import com.bang9634.yasongmuseum.exhibition.entity.ExhibitionStatus;
+import com.bang9634.yasongmuseum.exhibition.entity.ExhibitionType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,6 +21,7 @@ public class ExhibitionResponse {
     private String location;
     private String imageUrl;
     private String description;
+    private ExhibitionType type;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private ExhibitionStatus status;

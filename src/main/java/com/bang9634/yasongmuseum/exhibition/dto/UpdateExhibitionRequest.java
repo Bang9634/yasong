@@ -1,5 +1,6 @@
 package com.bang9634.yasongmuseum.exhibition.dto;
 
+import com.bang9634.yasongmuseum.exhibition.entity.ExhibitionType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -24,6 +25,9 @@ public class UpdateExhibitionRequest {
 
     @NotBlank(message = "설명은 필수입니다.")
     private String description;
+
+    @NotNull(message = "전시 종류는 필수입니다.")
+    private ExhibitionType type;
 
     @NotNull(message = "시작일은 필수입니다.")
     private LocalDateTime startDate;

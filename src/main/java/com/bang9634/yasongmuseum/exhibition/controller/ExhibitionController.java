@@ -16,13 +16,20 @@ public class ExhibitionController {
 
     /**
      * Get exhibitions with pagination (Public API)
+     * 
+     * @param page Page number (1-based)
+     * @param limit Items per page
+     * @param search Search keyword (title, artist, description)
+     * @param status Exhibition status filter (ongoing, upcoming, past)
+     * @param type Exhibition type filter (MEMORIAL, RETROSPECTIVE)
      */
     @GetMapping
     public ResponseEntity<PagedResponse<ExhibitionResponse>> getExhibitions(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int limit,
             @RequestParam(required = false) String search,
-            @RequestParam(required = false) String status  // ongoing, upcoming, past
+            @RequestParam(required = false) String status,  // ongoing, upcoming, past
+            @RequestParam(required = false) String type     // MEMORIAL, RETROSPECTIVE
     ) {
         PagedResponse<ExhibitionResponse> response = exhibitionService.getExhibitions(page, limit, search, status);
         return ResponseEntity.ok(response);

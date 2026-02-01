@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.bang9634.yasongmuseum.analytics.dto.AnalyticsResponse;
@@ -30,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Service
+@Lazy
 public class AnalyticsService {
     
     @Value("${google.analytics.property-id}")
@@ -94,6 +96,11 @@ public class AnalyticsService {
             
             BetaAnalyticsDataSettings settings = BetaAnalyticsDataSettings.newBuilder()
                 .setCredentialsProvider(() -> credentials)
+                .setTransportChannelProvider(
+                    BetaAnalyticsDataSettings.defaultGrpcTransportProviderBuilder()
+                        .setKeepAliveTime(org.threeten.bp.Duration.ofSeconds(30))
+                        .setKeepAliveTimeout(org.threeten.bp.Duration.ofSeconds(10))
+                        .build())
                 .build();
                 
             return BetaAnalyticsDataClient.create(settings);

@@ -11,10 +11,10 @@ interface Exhibition {
   location: string;
   imageUrl: string;
   description: string;
+  type: 'MEMORIAL' | 'RETROSPECTIVE';
   startDate: string;
   endDate: string;
   status: 'ONGOING' | 'UPCOMING' | 'PAST';
-  category?: 'memorial' | 'retrospective';
 }
 
 export function Exhibitions() {
@@ -116,8 +116,8 @@ export function Exhibitions() {
           exhibitionAPI.getOngoingExhibitions(),
           exhibitionAPI.getUpcomingExhibitions()
         ]);
-        setCurrentExhibitions(ongoing);
-        setUpcomingExhibitions(upcoming);
+        setCurrentExhibitions(ongoing.content || []);
+        setUpcomingExhibitions(upcoming.content || []);
       } catch (err) {
         console.error('전시 조회 실패:', err);
       } finally {
@@ -167,10 +167,14 @@ export function Exhibitions() {
 
   const allExhibitions = [...currentExhibitions, ...upcomingExhibitions];
   
-  // 카테고리별 필터링
+  // 타입별 필터링
   const filteredExhibitions = selectedCategory === 'all' 
     ? allExhibitions 
-    : allExhibitions.filter(ex => ex.category === selectedCategory);
+    : allExhibitions.filter(ex => {
+        if (selectedCategory === 'memorial') return ex.type === 'MEMORIAL';
+        if (selectedCategory === 'retrospective') return ex.type === 'RETROSPECTIVE';
+        return true;
+      });
 
   return (
     <section id="exhibitions" className="min-h-screen bg-[#F4F4F0] py-16 flex flex-col justify-center relative">
@@ -312,12 +316,12 @@ export function Exhibitions() {
                 touchAction: 'pan-x'
               }}
             >
-              <div className="flex gap-8 pb-4">
+              <div className="flex gap-6 pb-4">
                 {filteredExhibitions.map((exhibition) => (
                   <div
                     key={exhibition.id}
                     onClick={() => navigate(`/exhibitions/${exhibition.id}`)}
-                    className="flex-shrink-0 w-80 cursor-pointer group"
+                    className="flex-shrink-0 w-64 cursor-pointer group"
                   >
                     {/* 포스터 이미지 */}
                     <div className="relative overflow-hidden flex justify-center">
@@ -329,38 +333,38 @@ export function Exhibitions() {
                     </div>
                     
                     {/* 구분선 */}
-                    <div className="w-full h-px bg-[#2C2C2C]/20 mb-4"></div>
+                    <div className="w-full h-px bg-[#2C2C2C]/20 mb-3"></div>
                     
                     {/* 텍스트 정보 */}
-                    <div className="flex flex-col min-h-[180px]">
+                    <div className="flex flex-col h-[180px]">
                       {/* 지역 */}
                       <div className="text-xs text-[#2C2C2C]/60 font-medium mb-2">
                         {exhibition.location}
                       </div>
                       
-                      {/* 제목 */}
-                      <h3 className="text-xl font-bold text-[#2C2C2C] group-hover:text-[#C84630] transition-colors line-clamp-2 mb-3">
+                      {/* 제목 - 2줄 고정 */}
+                      <h3 className="text-lg font-bold text-[#2C2C2C] group-hover:text-[#C84630] transition-colors line-clamp-2 mb-2 h-[3.5rem]">
                         {exhibition.title}
                       </h3>
                       
-                      {/* 설명 */}
-                      <p className="text-sm text-[#2C2C2C]/70 leading-relaxed line-clamp-2 mb-4">
+                      {/* 설명 - 2줄 고정 */}
+                      <p className="text-sm text-[#2C2C2C]/70 leading-relaxed line-clamp-2 mb-3 h-[2.75rem]">
                         {exhibition.description}
                       </p>
                       
                       {/* 하단 고정 영역 */}
-                      <div className="mt-auto space-y-3">
+                      <div className="mt-auto space-y-2">
                         {/* 태그 */}
                         <div className="flex flex-wrap gap-2">
-                          <span className="inline-block px-3 py-1 bg-[#2C2C2C] text-[#F4F4F0] text-xs rounded-full">
+                          <span className="inline-block px-2.5 py-0.5 bg-[#2C2C2C] text-[#F4F4F0] text-xs rounded-full">
                             {exhibition.artist}
                           </span>
                           {getStatusBadge(exhibition.status)}
                         </div>
                         
                         {/* 날짜 */}
-                        <div className="flex items-center text-sm text-[#2C2C2C]/60">
-                          <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                        <div className="flex items-center text-xs text-[#2C2C2C]/60">
+                          <Calendar className="w-3.5 h-3.5 mr-1.5 flex-shrink-0" />
                           <span>{formatDate(exhibition.startDate)} - {formatDate(exhibition.endDate)}</span>
                         </div>
                       </div>

@@ -11,21 +11,43 @@ export function Header() {
   const [isExhibitionDropdownOpen, setIsExhibitionDropdownOpen] = useState(false);
   const [isCollectionDropdownOpen, setIsCollectionDropdownOpen] = useState(false);
   const [isSouvenirDropdownOpen, setIsSouvenirDropdownOpen] = useState(false);
-  // 모바일 드롭다운 상태
-  const [isMobileAboutOpen, setIsMobileAboutOpen] = useState(false);
-  const [isMobileExhibitionOpen, setIsMobileExhibitionOpen] = useState(false);
-  const [isDarkBackground, setIsDarkBackground] = useState(false); // 배경색 감지
   const navigate = useNavigate();
   const location = useLocation();
   const isHomePage = location.pathname === '/';
   const { user, logout } = useAuth();
 
+  // 페이지별 예상 배경색 설정 (깜빡임 방지)
+  const getInitialBackground = (pathname: string) => {
+    // 어두운 배경 페이지들
+    if (pathname.startsWith('/collections')) return true;
+    // 밝은 배경 페이지들
+    if (pathname.startsWith('/notice') || pathname.startsWith('/exhibitions')) return false;
+    // 홈페이지는 스크롤 위치에 따라 달라지므로 false (기본값)
+    return false;
+  };
+
+  const [isDarkBackground, setIsDarkBackground] = useState(() => getInitialBackground(location.pathname));
+  const [prevPathname, setPrevPathname] = useState(location.pathname);
+
+  // 페이지 변경 감지 및 예상 배경색으로 전환
+  useEffect(() => {
+    if (location.pathname !== prevPathname) {
+      setPrevPathname(location.pathname);
+      const newBackground = getInitialBackground(location.pathname);
+      
+      // 상태가 실제로 변경될 때만 업데이트 (transition 발생)
+      if (newBackground !== isDarkBackground) {
+        setIsDarkBackground(newBackground);
+      }
+    }
+  }, [location.pathname, prevPathname, isDarkBackground]);
+
   // 스크롤 위치에 따른 배경색 감지
   useEffect(() => {
     const handleScroll = () => {
-      // 헤더 하단의 중앙 지점
+      // 헤더 하단의 중앙 지점 - 좀 더 아래쪽으로 조정
       const headerBottom = 80; // 헤더 높이
-      const centerY = headerBottom + 50; // 헤더 바로 아래 50px 지점
+      const centerY = headerBottom + 100; // 180px 지점 (더 아래로)
       
       // 해당 위치의 요소 가져오기
       const element = document.elementFromPoint(window.innerWidth / 2, centerY);
@@ -35,14 +57,28 @@ export function Header() {
         let currentElement: HTMLElement | null = element as HTMLElement;
         let foundDarkBg = false;
         
+        // 헤더 자신은 건너뛰기
+        if (currentElement.tagName === 'HEADER' || currentElement.closest('header')) {
+          return;
+        }
+        
         while (currentElement && currentElement !== document.body) {
           const bgColor = window.getComputedStyle(currentElement).backgroundColor;
           
-          // rgb(44, 44, 44) = #2C2C2C (먹색)
+          // rgb(44, 44, 44) = #2C2C2C (먹색/어두운 배경)
           if (bgColor === 'rgb(44, 44, 44)' || 
               bgColor.includes('rgba(44, 44, 44') ||
               currentElement.classList.contains('bg-[#2C2C2C]')) {
             foundDarkBg = true;
+            break;
+          }
+          
+          // rgb(244, 244, 240) = #F4F4F0 (한지 화이트/밝은 배경)
+          // 밝은 배경이면 헤더를 어둡게 해야 하므로 foundDarkBg = false
+          if (bgColor === 'rgb(244, 244, 240)' || 
+              bgColor.includes('rgba(244, 244, 240') ||
+              currentElement.classList.contains('bg-[#F4F4F0]')) {
+            foundDarkBg = false;
             break;
           }
           
@@ -53,20 +89,59 @@ export function Header() {
       }
     };
 
-    // 초기 실행
-    handleScroll();
-    
     // 스크롤 이벤트 리스너
     window.addEventListener('scroll', handleScroll);
     
-    // 페이지 변경 시에도 실행
-    const timer = setTimeout(handleScroll, 100);
+    // 초기 감지
+    handleScroll();
     
     return () => {
       window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  // 페이지 변경 시 배경색 재감지
+  useEffect(() => {
+    // pathname이 변경될 때만 실행
+    if (location.pathname === prevPathname) return;
+    
+    // DOM 렌더링 후 재감지 (홈페이지의 경우 스크롤 위치 고려)
+    const timer = setTimeout(() => {
+      const headerBottom = 80;
+      const centerY = headerBottom + 100;
+      const element = document.elementFromPoint(window.innerWidth / 2, centerY);
+      
+      if (element && element.tagName !== 'HEADER' && !element.closest('header')) {
+        let currentElement: HTMLElement | null = element as HTMLElement;
+        let foundDarkBg = false;
+        
+        while (currentElement && currentElement !== document.body) {
+          const bgColor = window.getComputedStyle(currentElement).backgroundColor;
+          
+          if (bgColor === 'rgb(44, 44, 44)' || bgColor.includes('rgba(44, 44, 44') || currentElement.classList.contains('bg-[#2C2C2C]')) {
+            foundDarkBg = true;
+            break;
+          }
+          
+          if (bgColor === 'rgb(244, 244, 240)' || bgColor.includes('rgba(244, 244, 240') || currentElement.classList.contains('bg-[#F4F4F0]')) {
+            foundDarkBg = false;
+            break;
+          }
+          
+          currentElement = currentElement.parentElement;
+        }
+        
+        // 홈페이지에서만 감지 값으로 업데이트 (다른 페이지는 예상값 유지)
+        if (location.pathname === '/') {
+          setIsDarkBackground(foundDarkBg);
+        }
+      }
+    }, 200);
+    
+    return () => {
       clearTimeout(timer);
     };
-  }, [location.pathname]);
+  }, [location.pathname, prevPathname]);
 
   const handleLogout = () => {
     logout();
@@ -97,7 +172,7 @@ export function Header() {
   };
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 overflow-x-hidden ${
+    <header className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-500 ${
       isDarkBackground 
         ? 'bg-[#F4F4F0]/98' 
         : 'bg-[#2C2C2C]/98'
@@ -134,7 +209,7 @@ export function Header() {
                 야송 이야기
               </button>
               <div
-                className={`absolute top-full left-1/2 -translate-x-1/2 mt-3 w-44 shadow-lg border rounded-sm overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all ${
+                className={`absolute top-full left-1/2 -translate-x-1/2 mt-3 w-44 shadow-lg border rounded-sm overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 ${
                   isDarkBackground 
                     ? 'bg-[#F4F4F0] border-[#E0E0E0]' 
                     : 'bg-[#2C2C2C] border-[#404040]'
@@ -217,7 +292,7 @@ export function Header() {
                 전시
               </button>
               <div
-                className={`absolute top-full left-1/2 -translate-x-1/2 mt-3 w-44 shadow-lg border rounded-sm overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all ${
+                className={`absolute top-full left-1/2 -translate-x-1/2 mt-3 w-44 shadow-lg border rounded-sm overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 ${
                   isDarkBackground 
                     ? 'bg-[#F4F4F0] border-[#E0E0E0]' 
                     : 'bg-[#2C2C2C] border-[#404040]'
@@ -226,7 +301,7 @@ export function Header() {
                 <button
                   onClick={() => {
                     setIsMenuOpen(false);
-                    // TODO: 추모 전시 페이지 구현 후 navigate 추가
+                    navigate('/exhibitions');
                   }}
                   className={`block w-full text-left px-4 py-2.5 transition-all ${
                     isDarkBackground
@@ -234,20 +309,7 @@ export function Header() {
                       : 'text-[#F4F4F0] hover:bg-[#C84630]/20 hover:text-[#C84630]'
                   }`}
                 >
-                  추모 전시
-                </button>
-                <button
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    // TODO: 회고전 페이지 구현 후 navigate 추가
-                  }}
-                  className={`block w-full text-left px-4 py-2.5 transition-all ${
-                    isDarkBackground
-                      ? 'text-[#2C2C2C] hover:bg-[#C84630]/5 hover:text-[#C84630]'
-                      : 'text-[#F4F4F0] hover:bg-[#C84630]/20 hover:text-[#C84630]'
-                  }`}
-                >
-                  회고전
+                  추모 전시, 회고전
                 </button>
                 <button
                   onClick={() => {
@@ -260,7 +322,7 @@ export function Header() {
                       : 'text-[#F4F4F0] hover:bg-[#C84630]/20 hover:text-[#C84630]'
                   }`}
                 >
-                  언론 보도, SNS 소개글
+                  언론 보도, SNS 소개
                 </button>
               </div>
             </div>
@@ -308,11 +370,11 @@ export function Header() {
                     }`}>
                       관리
                     </button>
-                    <div className={`absolute top-full right-0 mt-3 w-44 shadow-lg border rounded-sm overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all ${
-                      isDarkBackground 
-                        ? 'bg-[#F4F4F0] border-[#E0E0E0]' 
-                        : 'bg-[#2C2C2C] border-[#404040]'
-                    }`}>
+                    <div className={`absolute top-full right-0 mt-3 w-44 shadow-lg border rounded-sm overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 ${
+                        isDarkBackground 
+                          ? 'bg-[#F4F4F0] border-[#E0E0E0]' 
+                          : 'bg-[#2C2C2C] border-[#404040]'
+                      }`}>
                       {isAdmin(user.role) && (
                         <button
                           onClick={() => {
@@ -395,82 +457,77 @@ export function Header() {
 
         {/* 모바일 메뉴 */}
         {isMenuOpen && (
-          <nav className="lg:hidden pb-6 space-y-1 max-h-[calc(100vh-80px)] overflow-y-auto">
-            {/* 야송 이야기 드롭다운 */}
-            <div>
+          <nav className="lg:hidden pb-6 space-y-0.5 max-h-[calc(100vh-80px)] overflow-y-auto">
+            {/* 야송 이야기 */}
+            <button
+              onClick={() => {
+                scrollToSection('director');
+                setIsMenuOpen(false);
+              }}
+              className={`block w-full text-left px-4 py-3 font-medium transition-colors ${
+                isDarkBackground 
+                  ? 'text-[#2C2C2C] hover:bg-[#2C2C2C]/5 hover:text-[#C84630]'
+                  : 'text-[#F4F4F0] hover:bg-[#F4F4F0]/5 hover:text-[#C84630]'
+              }`}
+            >
+              야송 이야기
+            </button>
+            {/* 야송 이야기 하위 메뉴 */}
+            <div className={`py-1 ${
+              isDarkBackground ? 'bg-[#2C2C2C]/3' : 'bg-[#F4F4F0]/3'
+            }`}>
               <button
-                onClick={() => setIsMobileAboutOpen(!isMobileAboutOpen)}
-                className={`flex items-center justify-between w-full px-4 py-3 font-medium transition-colors ${
+                onClick={() => {
+                  scrollToSection('director');
+                  setIsMenuOpen(false);
+                }}
+                className={`block w-full text-left px-10 py-2 text-sm transition-colors ${
                   isDarkBackground 
-                    ? 'text-[#2C2C2C] hover:bg-[#2C2C2C]/5 hover:text-[#C84630]'
-                    : 'text-[#F4F4F0] hover:bg-[#F4F4F0]/5 hover:text-[#C84630]'
+                    ? 'text-[#2C2C2C]/80 hover:bg-[#2C2C2C]/5 hover:text-[#C84630]'
+                    : 'text-[#F4F4F0]/80 hover:bg-[#F4F4F0]/5 hover:text-[#C84630]'
                 }`}
               >
-                야송 이야기
-                <ChevronDown className={`w-4 h-4 transition-transform ${isMobileAboutOpen ? 'rotate-180' : ''}`} />
+                • 약력
               </button>
-              {isMobileAboutOpen && (
-                <div className={`py-1 ${
-                  isDarkBackground ? 'bg-[#2C2C2C]/5' : 'bg-[#F4F4F0]/5'
-                }`}>
-                  <button
-                    onClick={() => {
-                      scrollToSection('director');
-                      setIsMenuOpen(false);
-                      setIsMobileAboutOpen(false);
-                    }}
-                    className={`block w-full text-left px-8 py-2.5 text-sm transition-colors ${
-                      isDarkBackground 
-                        ? 'text-[#2C2C2C] hover:bg-[#2C2C2C]/10 hover:text-[#C84630]'
-                        : 'text-[#F4F4F0] hover:bg-[#F4F4F0]/10 hover:text-[#C84630]'
-                    }`}
-                  >
-                    약력
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      setIsMobileAboutOpen(false);
-                      // TODO: 일대기 페이지 구현 후 navigate 추가
-                    }}
-                    className={`block w-full text-left px-8 py-2.5 text-sm transition-colors ${
-                      isDarkBackground 
-                        ? 'text-[#2C2C2C] hover:bg-[#2C2C2C]/10 hover:text-[#C84630]'
-                        : 'text-[#F4F4F0] hover:bg-[#F4F4F0]/10 hover:text-[#C84630]'
-                    }`}
-                  >
-                    일대기
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      setIsMobileAboutOpen(false);
-                      // TODO: 화업의 평가 페이지 구현 후 navigate 추가
-                    }}
-                    className={`block w-full text-left px-8 py-2.5 text-sm transition-colors ${
-                      isDarkBackground 
-                        ? 'text-[#2C2C2C] hover:bg-[#2C2C2C]/10 hover:text-[#C84630]'
-                        : 'text-[#F4F4F0] hover:bg-[#F4F4F0]/10 hover:text-[#C84630]'
-                    }`}
-                  >
-                    화업의 평가, 평론
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      setIsMobileAboutOpen(false);
-                      // TODO: 사진 자료 페이지 구현 후 navigate 추가
-                    }}
-                    className={`block w-full text-left px-8 py-2.5 text-sm transition-colors ${
-                      isDarkBackground 
-                        ? 'text-[#2C2C2C] hover:bg-[#2C2C2C]/10 hover:text-[#C84630]'
-                        : 'text-[#F4F4F0] hover:bg-[#F4F4F0]/10 hover:text-[#C84630]'
-                    }`}
-                  >
-                    사진 자료
-                  </button>
-                </div>
-              )}
+              <button
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  // TODO: 일대기 페이지 구현 후 navigate 추가
+                }}
+                className={`block w-full text-left px-10 py-2 text-sm transition-colors ${
+                  isDarkBackground 
+                    ? 'text-[#2C2C2C]/80 hover:bg-[#2C2C2C]/5 hover:text-[#C84630]'
+                    : 'text-[#F4F4F0]/80 hover:bg-[#F4F4F0]/5 hover:text-[#C84630]'
+                }`}
+              >
+                • 일대기
+              </button>
+              <button
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  // TODO: 화업의 평가 페이지 구현 후 navigate 추가
+                }}
+                className={`block w-full text-left px-10 py-2 text-sm transition-colors ${
+                  isDarkBackground 
+                    ? 'text-[#2C2C2C]/80 hover:bg-[#2C2C2C]/5 hover:text-[#C84630]'
+                    : 'text-[#F4F4F0]/80 hover:bg-[#F4F4F0]/5 hover:text-[#C84630]'
+                }`}
+              >
+                • 화업의 평가, 평론
+              </button>
+              <button
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  // TODO: 사진 자료 페이지 구현 후 navigate 추가
+                }}
+                className={`block w-full text-left px-10 py-2 text-sm transition-colors ${
+                  isDarkBackground 
+                    ? 'text-[#2C2C2C]/80 hover:bg-[#2C2C2C]/5 hover:text-[#C84630]'
+                    : 'text-[#F4F4F0]/80 hover:bg-[#F4F4F0]/5 hover:text-[#C84630]'
+                }`}
+              >
+                • 사진 자료
+              </button>
             </div>
             
             {/* 작품 소개 */}
@@ -488,67 +545,50 @@ export function Header() {
               작품 소개
             </button>
             
-            {/* 전시 드롭다운 */}
-            <div>
+            {/* 전시 */}
+            <button
+              onClick={() => {
+                navigate('/exhibitions');
+                setIsMenuOpen(false);
+              }}
+              className={`block w-full text-left px-4 py-3 font-medium transition-colors ${
+                isDarkBackground 
+                  ? 'text-[#2C2C2C] hover:bg-[#2C2C2C]/5 hover:text-[#C84630]'
+                  : 'text-[#F4F4F0] hover:bg-[#F4F4F0]/5 hover:text-[#C84630]'
+              }`}
+            >
+              전시
+            </button>
+            {/* 전시 하위 메뉴 */}
+            <div className={`py-1 ${
+              isDarkBackground ? 'bg-[#2C2C2C]/3' : 'bg-[#F4F4F0]/3'
+            }`}>
               <button
-                onClick={() => setIsMobileExhibitionOpen(!isMobileExhibitionOpen)}
-                className={`flex items-center justify-between w-full px-4 py-3 font-medium transition-colors ${
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  navigate('/exhibitions');
+                }}
+                className={`block w-full text-left px-10 py-2 text-sm transition-colors ${
                   isDarkBackground 
-                    ? 'text-[#2C2C2C] hover:bg-[#2C2C2C]/5 hover:text-[#C84630]'
-                    : 'text-[#F4F4F0] hover:bg-[#F4F4F0]/5 hover:text-[#C84630]'
+                    ? 'text-[#2C2C2C]/80 hover:bg-[#2C2C2C]/5 hover:text-[#C84630]'
+                    : 'text-[#F4F4F0]/80 hover:bg-[#F4F4F0]/5 hover:text-[#C84630]'
                 }`}
               >
-                전시
-                <ChevronDown className={`w-4 h-4 transition-transform ${isMobileExhibitionOpen ? 'rotate-180' : ''}`} />
+                • 추모 전시, 회고전
               </button>
-              {isMobileExhibitionOpen && (
-                <div className={`py-1 ${
-                  isDarkBackground ? 'bg-[#2C2C2C]/5' : 'bg-[#F4F4F0]/5'
-                }`}>
-                  <button
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      setIsMobileExhibitionOpen(false);
-                      // TODO: 추모 전시 페이지 구현 후 navigate 추가
-                    }}
-                    className={`block w-full text-left px-8 py-2.5 text-sm transition-colors ${
-                      isDarkBackground 
-                        ? 'text-[#2C2C2C] hover:bg-[#2C2C2C]/10 hover:text-[#C84630]'
-                        : 'text-[#F4F4F0] hover:bg-[#F4F4F0]/10 hover:text-[#C84630]'
-                    }`}
-                  >
-                    추모 전시
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      setIsMobileExhibitionOpen(false);
-                      // TODO: 회고전 페이지 구현 후 navigate 추가
-                    }}
-                    className={`block w-full text-left px-8 py-2.5 text-sm transition-colors ${
-                      isDarkBackground 
-                        ? 'text-[#2C2C2C] hover:bg-[#2C2C2C]/10 hover:text-[#C84630]'
-                        : 'text-[#F4F4F0] hover:bg-[#F4F4F0]/10 hover:text-[#C84630]'
-                    }`}
-                  >
-                    회고전
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      setIsMobileExhibitionOpen(false);
-                      // TODO: 언론 보도 페이지 구현 후 navigate 추가
-                    }}
-                    className={`block w-full text-left px-8 py-2.5 text-sm transition-colors ${
-                      isDarkBackground 
-                        ? 'text-[#2C2C2C] hover:bg-[#2C2C2C]/10 hover:text-[#C84630]'
-                        : 'text-[#F4F4F0] hover:bg-[#F4F4F0]/10 hover:text-[#C84630]'
-                    }`}
-                  >
-                    언론 보도, SNS 소개글
-                  </button>
-                </div>
-              )}
+              <button
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  // TODO: 언론 보도 페이지 구현 후 navigate 추가
+                }}
+                className={`block w-full text-left px-10 py-2 text-sm transition-colors ${
+                  isDarkBackground 
+                    ? 'text-[#2C2C2C]/80 hover:bg-[#2C2C2C]/5 hover:text-[#C84630]'
+                    : 'text-[#F4F4F0]/80 hover:bg-[#F4F4F0]/5 hover:text-[#C84630]'
+                }`}
+              >
+                • 언론 보도, SNS 소개
+              </button>
             </div>
             
             {/* 공모전 */}

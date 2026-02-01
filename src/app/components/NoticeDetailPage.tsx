@@ -182,7 +182,7 @@ export function NoticeDetailPage() {
     <div className="min-h-screen bg-[#F4F4F0] flex flex-col">
       <Header />
       
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-24 flex-1">
+      <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-24 flex-1">
         {/* 뒤로가기 버튼 */}
         <button
           onClick={() => navigate('/notice')}
@@ -193,7 +193,7 @@ export function NoticeDetailPage() {
         </button>
 
         {/* 컨텐츠 영역 */}
-        <div className="max-w-7xl mx-auto space-y-8 relative">
+        <div className="w-full space-y-8 relative">
           {/* 관리자 버튼 - 우측 상단 고정 */}
           {canManage && (
             <div className="absolute top-0 right-0 flex gap-2 z-10 hidden sm:flex">
@@ -215,7 +215,7 @@ export function NoticeDetailPage() {
           )}
 
           {/* 카테고리 & 고정 배지 */}
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="w-full flex items-center gap-2 flex-wrap">
             <span className="px-3 py-1 bg-[#2C2C2C]/10 text-[#2C2C2C]/70 text-sm rounded font-medium">
               {getCategoryDisplayName(notice.category)}
             </span>
@@ -246,12 +246,12 @@ export function NoticeDetailPage() {
           </div>
 
           {/* 제목 */}
-          <h1 className="text-4xl md:text-5xl font-bold text-[#2C2C2C] leading-tight">
+          <h1 className="w-full text-4xl md:text-5xl font-bold text-[#2C2C2C] leading-tight">
             {notice.title}
           </h1>
 
           {/* 메타 정보 */}
-          <div className="space-y-4 border-t border-[#2C2C2C]/20 pt-6">
+          <div className="w-full space-y-4 border-t border-[#2C2C2C]/20 pt-6">
             <div className="flex items-start gap-4">
               <span className="text-[#2C2C2C]/60 font-semibold min-w-[100px]">작성자</span>
               <span className="text-[#2C2C2C]">{notice.authorName}</span>
@@ -273,9 +273,9 @@ export function NoticeDetailPage() {
           </div>
 
           {/* 본문 */}
-          <div className="border-t border-[#2C2C2C]/20 pt-6">
+          <div className="border-t border-[#2C2C2C]/20 pt-6 w-full">
             <div 
-              className="prose prose-lg max-w-none text-[#2C2C2C]/80 leading-relaxed"
+              className="prose prose-lg w-full max-w-none text-[#2C2C2C]/80 leading-relaxed"
               style={{
                 lineHeight: '1.8'
               }}

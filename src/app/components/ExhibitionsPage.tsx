@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Header } from './Header';
 import { Footer } from './Footer';
-import { ImageWithFallback } from '@/app/components/figma/ImageWithFallback';
-import { Calendar, MapPin, Search, Plus, Edit, Trash2, ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { exhibitionAPI } from '@/utils/api';
+import { ImageWithFallback } from './figma/ImageWithFallback';
+import { exhibitionAPI, getFullImageUrl } from '@/utils/api';
+import { Calendar, MapPin, Plus, Search, Edit2, Trash2 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { isManagerOrAbove } from '@/utils/auth';
 import { setPageSEO } from '@/utils/seo';
-import { Input } from '@/app/components/ui/input';
-import { Button } from '@/app/components/ui/button';
-import { Label } from '@/app/components/ui/label';
-import { Textarea } from '@/app/components/ui/textarea';
 import {
   Pagination,
   PaginationContent,
@@ -17,9 +16,6 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/app/components/ui/pagination';
-import { useAuth } from '@/context/AuthContext';
-import { isManagerOrAbove } from '@/utils/auth';
-import { resizeImage } from '@/utils/imageUtils';
 
 interface Exhibition {
   id: number;
@@ -28,82 +24,155 @@ interface Exhibition {
   location: string;
   imageUrl: string;
   description: string;
+  type: 'MEMORIAL' | 'RETROSPECTIVE';
   startDate: string;
   endDate: string;
   status: 'ONGOING' | 'UPCOMING' | 'PAST';
+  createdAt: string;
+  updatedAt: string;
 }
-
-type StatusFilter = 'ALL' | 'ONGOING' | 'UPCOMING' | 'PAST';
 
 export function ExhibitionsPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [exhibitions, setExhibitions] = useState<Exhibition[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+  const [typeFilter, setTypeFilter] = useState<string>('전체');
+  const [statusFilter, setStatusFilter] = useState<string>('전체');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [pageInput, setPageInput] = useState('');
+  const [visibleCards, setVisibleCards] = useState<Set<number>>(new Set());
+  const itemsPerPage = 10;
+  const isAdmin = user && isManagerOrAbove(user.role);
 
-  // 관리자 권한 확인
-  const canManage = user && isManagerOrAbove(user.role);
-
-  // 전시 폼 관리
-  const [showForm, setShowForm] = useState(false);
-  const [editingExhibition, setEditingExhibition] = useState<Exhibition | null>(null);
-  const [exhibitionForm, setExhibitionForm] = useState({
-    title: '',
-    artist: '',
-    location: '',
-    description: '',
-    startDate: '',
-    endDate: '',
-  });
-  const [exhibitionImage, setExhibitionImage] = useState<File | null>(null);
-  const [exhibitionImagePreview, setExhibitionImagePreview] = useState<string>('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [selectedExhibition, setSelectedExhibition] = useState<Exhibition | null>(null);
-
-  // SEO 설정
   useEffect(() => {
     setPageSEO({
       title: '전시',
-      description: '군립청송야송미술관의 현재 전시 및 지난 전시 정보를 확인하실 수 있습니다.',
-      keywords: '청송야송미술관, 전시, 미술전시, 기획전',
+      description: '야송미술관의 과거, 현재, 그리고 미래의 전시를 만나보세요',
+      keywords: '야송미술관, 전시, 추모전시, 회고전, 미술 전시',
     });
   }, []);
 
+  // 카드 애니메이션을 위한 Intersection Observer
   useEffect(() => {
-    const fetchExhibitions = async () => {
-      try {
-        setIsLoading(true);
-        const data = await exhibitionAPI.getAllExhibitions();
-        setExhibitions(data);
-      } catch (err) {
-        console.error('전시 조회 실패:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const cardId = parseInt(entry.target.getAttribute('data-card-id') || '0');
+            setVisibleCards((prev) => new Set(prev).add(cardId));
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '50px' }
+    );
 
-    fetchExhibitions();
-  }, []);
+    const cards = document.querySelectorAll('[data-card-id]');
+    cards.forEach((card) => observer.observe(card));
+
+    return () => observer.disconnect();
+  }, [exhibitions]);
+
+  // 서버로부터 전시 로드
+  const loadExhibitions = async () => {
+    try {
+      setLoading(true);
+      
+      const params: any = {
+        page: currentPage,
+        limit: itemsPerPage,
+      };
+
+      if (searchQuery) {
+        params.search = searchQuery;
+      }
+
+      if (typeFilter !== '전체') {
+        params.type = typeFilter === '추모 전시' ? 'MEMORIAL' : 'RETROSPECTIVE';
+      }
+
+      if (statusFilter !== '전체') {
+        const statusMap: { [key: string]: string } = {
+          '전시 중': 'ongoing',
+          '전시 예정': 'upcoming',
+          '지난 전시': 'past',
+        };
+        params.status = statusMap[statusFilter];
+      }
+
+      const response = await exhibitionAPI.getExhibitions(params);
+      
+      setExhibitions(response.content || []);
+      setTotalPages(response.totalPages || 1);
+      setTotalCount(response.totalElements || 0);
+    } catch (error) {
+      console.error('Failed to load exhibitions:', error);
+      setExhibitions([]);
+      setTotalPages(1);
+      setTotalCount(0);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 페이지, 검색, 필터 변경 시 데이터 재로드
+  useEffect(() => {
+    setVisibleCards(new Set());
+    loadExhibitions();
+  }, [currentPage, searchQuery, typeFilter, statusFilter]);
+
+  // 검색어나 필터 변경 시 1페이지로 리셋
+  useEffect(() => {
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    }
+  }, [searchQuery, typeFilter, statusFilter]);
+
+  // 페이지 변경 시 맨 위로 스크롤
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentPage]);
+
+  const handleDelete = async (id: number) => {
+    if (!confirm('정말 삭제하시겠습니까?')) return;
+
+    try {
+      await exhibitionAPI.deleteExhibition(id);
+      alert('전시가 삭제되었습니다.');
+      loadExhibitions();
+    } catch (error) {
+      console.error('Failed to delete exhibition:', error);
+      alert('전시 삭제에 실패했습니다.');
+    }
+  };
 
   const getImageUrl = (imageUrl: string) => {
-    if (imageUrl.startsWith('http')) {
-      return imageUrl;
-    }
-    return `${import.meta.env.VITE_API_BASE_URL || ''}${imageUrl}`;
+    return getFullImageUrl(imageUrl);
   };
 
-  const openDetailModal = (exhibition: Exhibition) => {
-    setSelectedExhibition(exhibition);
-    setIsDetailModalOpen(true);
+  const getTypeDisplayName = (type: string) => {
+    return type === 'MEMORIAL' ? '추모 전시' : '회고전';
   };
 
-  const closeDetailModal = () => {
-    setIsDetailModalOpen(false);
-    setSelectedExhibition(null);
+  const getStatusDisplayName = (status: string) => {
+    const statusMap: { [key: string]: string } = {
+      'ONGOING': '전시 중',
+      'UPCOMING': '전시 예정',
+      'PAST': '지난 전시',
+    };
+    return statusMap[status] || status;
+  };
+
+  const getStatusColor = (status: string) => {
+    const colorMap: { [key: string]: string } = {
+      'ONGOING': 'bg-green-600',
+      'UPCOMING': 'bg-blue-600',
+      'PAST': 'bg-gray-600',
+    };
+    return colorMap[status] || 'bg-gray-600';
   };
 
   const formatDate = (dateStr: string) => {
@@ -111,649 +180,278 @@ export function ExhibitionsPage() {
     return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'ONGOING':
-        return <span className="px-3 py-1 bg-teal-600 text-white text-sm rounded-full">전시 중</span>;
-      case 'UPCOMING':
-        return <span className="px-3 py-1 bg-amber-500 text-white text-sm rounded-full">전시 예정</span>;
-      case 'PAST':
-        return <span className="px-3 py-1 bg-gray-400 text-white text-sm rounded-full">지난 전시</span>;
-      default:
-        return null;
-    }
-  };
-
-  const getStatusDisplayName = (status: StatusFilter) => {
-    switch (status) {
-      case 'ALL':
-        return '전체';
-      case 'ONGOING':
-        return '전시 중';
-      case 'UPCOMING':
-        return '전시 예정';
-      case 'PAST':
-        return '지난 전시';
-      default:
-        return '전체';
-    }
-  };
-
-  // 이미지 선택 및 리사이징
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      const resizedImage = await resizeImage(file, 1200, 800);
-      setExhibitionImage(resizedImage);
-
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setExhibitionImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(resizedImage);
-    } catch (err) {
-      console.error('이미지 리사이징 실패:', err);
-      alert('이미지 처리에 실패했습니다.');
-    }
-  };
-
-  // 추가 폼 열기
-  const handleOpenAddForm = () => {
-    setEditingExhibition(null);
-    setExhibitionForm({
-      title: '',
-      artist: '',
-      location: '',
-      description: '',
-      startDate: '',
-      endDate: '',
-    });
-    setExhibitionImage(null);
-    setExhibitionImagePreview('');
-    setShowForm(true);
-  };
-
-  // 수정 폼 열기
-  const handleOpenEditForm = (exhibition: Exhibition) => {
-    setEditingExhibition(exhibition);
-    
-    const startDate = new Date(exhibition.startDate).toISOString().slice(0, 10);
-    const endDate = new Date(exhibition.endDate).toISOString().slice(0, 10);
-    
-    setExhibitionForm({
-      title: exhibition.title,
-      artist: exhibition.artist,
-      location: exhibition.location,
-      description: exhibition.description,
-      startDate: startDate,
-      endDate: endDate,
-    });
-    setExhibitionImage(null);
-    setExhibitionImagePreview(getImageUrl(exhibition.imageUrl));
-    setShowForm(true);
-  };
-
-  // 폼 취소
-  const handleCancelForm = () => {
-    setShowForm(false);
-    setEditingExhibition(null);
-    setExhibitionForm({
-      title: '',
-      artist: '',
-      location: '',
-      description: '',
-      startDate: '',
-      endDate: '',
-    });
-    setExhibitionImage(null);
-    setExhibitionImagePreview('');
-  };
-
-  // 전시 생성
-  const handleCreate = async () => {
-    if (!exhibitionForm.title || !exhibitionForm.artist || !exhibitionForm.location || 
-        !exhibitionForm.description || !exhibitionForm.startDate || !exhibitionForm.endDate) {
-      alert('모든 필드를 입력해주세요.');
-      return;
-    }
-    if (!exhibitionImage) {
-      alert('이미지를 선택해주세요.');
-      return;
-    }
-
-    if (new Date(exhibitionForm.startDate) > new Date(exhibitionForm.endDate)) {
-      alert('종료일은 시작일보다 늦어야 합니다.');
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-      
-      // LocalDateTime 형식 (YYYY-MM-DDTHH:mm:ss)
-      const startDateTime = exhibitionForm.startDate + 'T00:00:01';
-      const endDateTime = exhibitionForm.endDate + 'T23:59:59';
-      
-      const formData = {
-        ...exhibitionForm,
-        startDate: startDateTime,
-        endDate: endDateTime,
-      };
-      
-      await exhibitionAPI.createExhibition(formData, exhibitionImage);
-      
-      const updated = await exhibitionAPI.getAllExhibitions();
-      setExhibitions(updated);
-      
-      alert('전시가 추가되었습니다.');
-      handleCancelForm();
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '추가에 실패했습니다.';
-      alert(`실패\n\n${errorMessage}`);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // 전시 수정
-  const handleUpdate = async () => {
-    if (!editingExhibition) return;
-    
-    if (!exhibitionForm.title || !exhibitionForm.artist || !exhibitionForm.location || 
-        !exhibitionForm.description || !exhibitionForm.startDate || !exhibitionForm.endDate) {
-      alert('모든 필드를 입력해주세요.');
-      return;
-    }
-
-    if (new Date(exhibitionForm.startDate) >= new Date(exhibitionForm.endDate)) {
-      alert('종료일은 시작일보다 늦어야 합니다.');
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-      
-      // LocalDateTime 형식 (YYYY-MM-DDTHH:mm:ss)
-      const startDateTime = exhibitionForm.startDate + 'T00:00:00';
-      const endDateTime = exhibitionForm.endDate + 'T23:59:59';
-      
-      const formData = {
-        ...exhibitionForm,
-        startDate: startDateTime,
-        endDate: endDateTime,
-      };
-      
-      await exhibitionAPI.updateExhibition(editingExhibition.id, formData, exhibitionImage || undefined);
-      
-      const updated = await exhibitionAPI.getAllExhibitions();
-      setExhibitions(updated);
-      
-      alert('전시가 수정되었습니다.');
-      handleCancelForm();
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '수정에 실패했습니다.';
-      alert(`실패\n\n${errorMessage}`);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // 전시 삭제
-  const handleDelete = async (id: number) => {
-    if (!confirm('이 전시를 삭제하시겠습니까?')) return;
-
-    try {
-      await exhibitionAPI.deleteExhibition(id);
-      
-      const updated = await exhibitionAPI.getAllExhibitions();
-      setExhibitions(updated);
-      
-      alert('전시가 삭제되었습니다.');
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '삭제에 실패했습니다.';
-      alert(`실패\n\n${errorMessage}`);
-    }
-  };
-
-  // 필터링된 전시 목록
-  const filteredExhibitions = exhibitions.filter((exhibition) => {
-    const matchesStatus = statusFilter === 'ALL' || exhibition.status === statusFilter;
-    const matchesSearch =
-      searchQuery === '' ||
-      exhibition.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      exhibition.artist.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      exhibition.location.toLowerCase().includes(searchQuery.toLowerCase());
-
-    return matchesStatus && matchesSearch;
-  });
-
-  // 페이지네이션 계산
-  const totalPages = Math.ceil(filteredExhibitions.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentExhibitions = filteredExhibitions.slice(startIndex, endIndex);
-
-  // 필터나 검색이 변경되면 1페이지로 리셋
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [statusFilter, searchQuery]);
-
-  // 페이지 변경 시 맨 위로 스크롤
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [currentPage]);
-
   return (
-    <div className="min-h-screen bg-[#F4F4F0]">
+    <div className="min-h-screen bg-[#F4F4F0] flex flex-col">
       <Header />
-
-      <div className="pt-32 pb-12">
+      
+      <div className="pt-24 pb-12 flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* 페이지 헤더 */}
           <div className="mb-8 flex justify-between items-start">
             <div>
-              <h1 className="text-4xl font-bold text-[#2C2C2C] mb-2">전시 일정</h1>
-              <p className="text-[#2C2C2C]/70">청송야송미술관의 모든 전시 일정을 확인하세요</p>
+              <h1 className="text-4xl sm:text-5xl font-bold text-[#2C2C2C] tracking-tight mb-2">전시</h1>
+              <p className="text-[#2C2C2C]/70">과거, 현재, 그리고 미래의 전시를 만나보세요</p>
             </div>
-            {canManage && (
-              <Button onClick={handleOpenAddForm} className="bg-[#C84630] hover:bg-[#A83820]">
-                <Plus className="w-4 h-4 mr-2" />
+            {isAdmin && (
+              <button
+                onClick={() => navigate('/exhibitions/write')}
+                className="px-6 py-2 bg-[#C84630] text-[#F4F4F0] rounded-lg hover:bg-[#A83820] transition-colors flex items-center justify-center"
+              >
+                <Plus className="w-5 h-5 mr-2" />
                 전시 추가
-              </Button>
+              </button>
             )}
           </div>
 
           {/* 검색창 */}
-          <div className="mb-4">
+          <div className="mb-8">
             <div className="max-w-md relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#2C2C2C]/40 w-4 h-4" />
+              <input
                 type="text"
-                placeholder="전시명, 작가, 장소로 검색..."
+                placeholder="전시명, 작가명으로 검색..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 w-full text-sm py-2"
+                className="w-full pl-9 pr-4 py-2 text-sm bg-[#2C2C2C]/10 border border-[#2C2C2C]/20 rounded-lg focus:ring-2 focus:ring-[#C84630] focus:border-[#C84630] text-[#2C2C2C] placeholder:text-[#2C2C2C]/40"
               />
             </div>
           </div>
 
-          {/* 상태 필터 탭 */}
-          <div className="mb-6 border-b border-gray-200">
-            <nav className="flex space-x-8">
-              {(['ALL', 'ONGOING', 'UPCOMING', 'PAST'] as StatusFilter[]).map((status) => (
+          {/* 전시 종류 탭 */}
+          <div className="mb-6 border-b border-[#2C2C2C]/20">
+            <div className="flex gap-6 overflow-x-auto scrollbar-hide">
+              {['전체', '추모 전시', '회고전'].map((tab) => (
                 <button
-                  key={status}
-                  onClick={() => setStatusFilter(status)}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                    statusFilter === status
-                      ? 'border-[#C84630] text-[#C84630]'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
+                  key={tab}
+                  onClick={() => setTypeFilter(tab)}
+                  className={`
+                    pb-3 px-2 font-medium transition-all whitespace-nowrap relative
+                    ${typeFilter === tab 
+                      ? 'text-[#C84630]' 
+                      : 'text-[#2C2C2C]/60 hover:text-[#2C2C2C]'}
+                  `}
                 >
-                  {getStatusDisplayName(status)}
+                  {tab}
+                  {typeFilter === tab && (
+                    <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#C84630]"></div>
+                  )}
                 </button>
               ))}
-            </nav>
+            </div>
           </div>
 
-          {/* 전시 목록 */}
-          {isLoading ? (
-            <div className="text-center py-12">
-              <p className="text-gray-500">로딩 중...</p>
+          {/* 전시 진행 여부 탭 */}
+          <div className="mb-8 border-b border-[#2C2C2C]/20">
+            <div className="flex gap-6 overflow-x-auto scrollbar-hide">
+              {['전체', '전시 중', '전시 예정', '지난 전시'].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setStatusFilter(tab)}
+                  className={`
+                    pb-3 px-2 font-medium transition-all whitespace-nowrap relative
+                    ${statusFilter === tab 
+                      ? 'text-[#C84630]' 
+                      : 'text-[#2C2C2C]/60 hover:text-[#2C2C2C]'}
+                  `}
+                >
+                  {tab}
+                  {statusFilter === tab && (
+                    <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#C84630]"></div>
+                  )}
+                </button>
+              ))}
             </div>
-          ) : filteredExhibitions.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-lg shadow-md">
-              <p className="text-gray-500">조건에 맞는 전시가 없습니다.</p>
-            </div>
-          ) : (
-            <>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {currentExhibitions.map((exhibition) => (
+          </div>
+
+          {/* 전시 그리드 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+            {loading ? (
+              <div className="col-span-full flex justify-center items-center py-20">
+                <div className="text-[#2C2C2C] text-lg">로딩 중...</div>
+              </div>
+            ) : !exhibitions || exhibitions.length === 0 ? (
+              <div className="col-span-full flex justify-center items-center py-20">
+                <div className="text-[#2C2C2C]/60 text-lg">전시가 없습니다.</div>
+              </div>
+            ) : (
+              exhibitions.map((exhibition, index) => (
                 <div
                   key={exhibition.id}
-                  className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-shadow border border-teal-100 flex flex-col h-[550px]"
+                  data-card-id={exhibition.id}
+                  className={`group transition-all duration-700 ${
+                    visibleCards.has(exhibition.id)
+                      ? 'opacity-100 translate-y-0'
+                      : 'opacity-0 translate-y-8'
+                  }`}
+                  style={{ transitionDelay: `${index * 50}ms` }}
                 >
-                  <div className="relative flex-shrink-0 cursor-pointer" onClick={() => openDetailModal(exhibition)}>
+                  {/* 전시 이미지 */}
+                  <div 
+                    className="relative overflow-hidden flex justify-center mb-0 cursor-pointer"
+                    onClick={() => navigate(`/exhibitions/${exhibition.id}`)}
+                  >
                     <ImageWithFallback
                       src={getImageUrl(exhibition.imageUrl)}
                       alt={exhibition.title}
-                      className="w-full h-64 object-cover"
+                      className="w-[90%] aspect-[3/4] object-cover group-hover:opacity-90 transition-opacity duration-300"
                     />
-                    <div className="absolute top-4 right-4">
-                      {getStatusBadge(exhibition.status)}
+                    
+                    {/* 상태 배지 */}
+                    <div className={`absolute top-2 right-2 ${getStatusColor(exhibition.status)} text-white px-3 py-1 rounded-full text-xs`}>
+                      {getStatusDisplayName(exhibition.status)}
                     </div>
-                  </div>
-
-                  <div className="p-6 bg-gradient-to-b from-white to-teal-50 flex-1 flex flex-col">
-                    <div className="cursor-pointer flex-1" onClick={() => openDetailModal(exhibition)}>
-                      <h3 className="text-2xl mb-2 text-teal-900 hover:text-teal-700 transition-colors">{exhibition.title}</h3>
-                      <p className="text-gray-600 mb-4">{exhibition.artist}</p>
-
-                      <div className="space-y-2 text-sm text-gray-600 mb-4">
-                        <div className="flex items-start">
-                          <Calendar className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0 text-teal-600" />
-                          <span>{formatDate(exhibition.startDate)} - {formatDate(exhibition.endDate)}</span>
-                        </div>
-                        <div className="flex items-start">
-                          <MapPin className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0 text-teal-600" />
-                          <span>{exhibition.location}</span>
-                        </div>
-                      </div>
-
-                      <p className="text-gray-700 leading-relaxed border-t border-teal-200 pt-4 line-clamp-3">
-                        {exhibition.description}
-                      </p>
-                    </div>
-
-                    {canManage && (
-                      <div className="flex gap-2 mt-4 pt-4 border-t border-teal-200">
-                        <Button
-                          onClick={() => handleOpenEditForm(exhibition)}
-                          variant="outline"
-                          size="sm"
-                          className="flex-1"
+                    
+                    {/* 관리자 버튼 */}
+                    {isAdmin && (
+                      <div className="absolute top-2 left-2 flex gap-1 opacity-70 hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/exhibitions/edit/${exhibition.id}`);
+                          }}
+                          className="w-8 h-8 bg-[#F4F4F0] text-[#2C2C2C] rounded-full hover:bg-[#C84630] hover:text-[#F4F4F0] transition-colors flex items-center justify-center shadow-lg"
+                          title="수정"
                         >
-                          <Edit className="w-4 h-4 mr-1" />
-                          수정
-                        </Button>
-                        <Button
-                          onClick={() => handleDelete(exhibition.id)}
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(exhibition.id);
+                          }}
+                          className="w-8 h-8 bg-[#F4F4F0]/90 text-[#2C2C2C] rounded-full hover:bg-red-600 hover:text-[#F4F4F0] transition-colors flex items-center justify-center shadow-lg"
+                          title="삭제"
                         >
-                          <Trash2 className="w-4 h-4 mr-1" />
-                          삭제
-                        </Button>
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     )}
                   </div>
-                </div>
-              ))}
-              </div>
-
-              {/* 페이지네이션 */}
-              {totalPages > 1 && (
-                <div className="mt-12">
-                  <Pagination>
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious
-                          onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                          className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                        />
-                      </PaginationItem>
-                      
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                        <PaginationItem key={page}>
-                          <PaginationLink
-                            onClick={() => setCurrentPage(page)}
-                            isActive={currentPage === page}
-                            className="cursor-pointer"
-                          >
-                            {page}
-                          </PaginationLink>
-                        </PaginationItem>
-                      ))}
-                      
-                      <PaginationItem>
-                        <PaginationNext
-                          onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                          className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                        />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                </div>
-              )}
-            </>
-          )}
-
-          {/* 결과 개수 */}
-          {!isLoading && (
-            <div className="mt-8 text-center text-gray-600">
-              총 {filteredExhibitions.length}개의 전시
-            </div>
-          )}
-
-          {/* 전시 추가/수정 폼 */}
-          {showForm && (
-            <div className="fixed inset-0 bg-white bg-opacity-90 flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                <div className="p-6">
-                  <h2 className="text-2xl font-bold text-teal-900 mb-6">
-                    {editingExhibition ? '전시 수정' : '전시 추가'}
-                  </h2>
-
-                  <div className="space-y-4">
-                    {/* 이미지 업로드 */}
-                    <div>
-                      <Label htmlFor="exhibition-image">전시 이미지</Label>
-                      <Input
-                        id="exhibition-image"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                        className="mt-1"
-                      />
-                      {exhibitionImagePreview && (
-                        <div className="mt-2">
-                          <img
-                            src={exhibitionImagePreview}
-                            alt="미리보기"
-                            className="w-full h-64 object-cover rounded-lg"
-                          />
-                        </div>
-                      )}
+                  
+                  {/* 구분선 */}
+                  <div className="w-full h-px bg-[#2C2C2C]/20 mb-4"></div>
+                  
+                  {/* 텍스트 정보 */}
+                  <div 
+                    className="flex flex-col min-h-[220px] cursor-pointer"
+                    onClick={() => navigate(`/exhibitions/${exhibition.id}`)}
+                  >
+                    {/* 작가 */}
+                    <div className="text-xs text-[#2C2C2C]/60 font-medium mb-2">
+                      {exhibition.artist}
                     </div>
-
-                    {/* 전시명 */}
-                    <div>
-                      <Label htmlFor="exhibition-title">전시명</Label>
-                      <Input
-                        id="exhibition-title"
-                        value={exhibitionForm.title}
-                        onChange={(e) =>
-                          setExhibitionForm({ ...exhibitionForm, title: e.target.value })
-                        }
-                        placeholder="전시명을 입력하세요"
-                        className="mt-1"
-                      />
-                    </div>
-
-                    {/* 작가명 */}
-                    <div>
-                      <Label htmlFor="exhibition-artist">작가명</Label>
-                      <Input
-                        id="exhibition-artist"
-                        value={exhibitionForm.artist}
-                        onChange={(e) =>
-                          setExhibitionForm({ ...exhibitionForm, artist: e.target.value })
-                        }
-                        placeholder="작가명을 입력하세요"
-                        className="mt-1"
-                      />
-                    </div>
-
-                    {/* 전시 기간 */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="exhibition-start-date">전시 시작일</Label>
-                        <Input
-                          id="exhibition-start-date"
-                          type="date"
-                          value={exhibitionForm.startDate}
-                          onChange={(e) =>
-                            setExhibitionForm({ ...exhibitionForm, startDate: e.target.value })
-                          }
-                          className="mt-1"
-                        />
-                        <p className="text-xs text-gray-500 mt-1">00:00 기준</p>
+                    
+                    {/* 제목 */}
+                    <h3 className="text-xl font-bold text-[#2C2C2C] group-hover:text-[#C84630] transition-colors line-clamp-2 mb-3 min-h-[3.5rem]">
+                      {exhibition.title}
+                    </h3>
+                    
+                    {/* 설명 */}
+                    <p className="text-sm text-[#2C2C2C]/70 leading-relaxed line-clamp-3 mb-4 min-h-[3.75rem]">
+                      {exhibition.description}
+                    </p>
+                    
+                    {/* 하단 고정 영역 */}
+                    <div className="mt-auto space-y-2">
+                      {/* 전시 기간 */}
+                      <div className="flex items-center gap-1 text-xs text-[#2C2C2C]/60">
+                        <Calendar className="w-3 h-3" />
+                        <span>{formatDate(exhibition.startDate)} ~ {formatDate(exhibition.endDate)}</span>
                       </div>
-                      <div>
-                        <Label htmlFor="exhibition-end-date">전시 종료일</Label>
-                        <Input
-                          id="exhibition-end-date"
-                          type="date"
-                          value={exhibitionForm.endDate}
-                          onChange={(e) =>
-                            setExhibitionForm({ ...exhibitionForm, endDate: e.target.value })
-                          }
-                          className="mt-1"
-                        />
-                        <p className="text-xs text-gray-500 mt-1">23:59 기준</p>
+                      
+                      {/* 전시 장소 */}
+                      <div className="flex items-center gap-1 text-xs text-[#2C2C2C]/60 mb-2">
+                        <MapPin className="w-3 h-3" />
+                        <span className="line-clamp-1">{exhibition.location}</span>
                       </div>
-                    </div>
-
-                    {/* 전시 장소 */}
-                    <div>
-                      <Label htmlFor="exhibition-location">전시 장소</Label>
-                      <Input
-                        id="exhibition-location"
-                        value={exhibitionForm.location}
-                        onChange={(e) =>
-                          setExhibitionForm({ ...exhibitionForm, location: e.target.value })
-                        }
-                        placeholder="전시 장소를 입력하세요"
-                        className="mt-1"
-                      />
-                    </div>
-
-                    {/* 전시 설명 */}
-                    <div>
-                      <Label htmlFor="exhibition-description">전시 설명</Label>
-                      <Textarea
-                        id="exhibition-description"
-                        value={exhibitionForm.description}
-                        onChange={(e) =>
-                          setExhibitionForm({ ...exhibitionForm, description: e.target.value })
-                        }
-                        placeholder="전시 설명을 입력하세요"
-                        rows={6}
-                        className="mt-1"
-                      />
-                    </div>
-
-                    {/* 버튼 */}
-                    <div className="flex justify-end gap-2 pt-4">
-                      <Button
-                        onClick={handleCancelForm}
-                        variant="outline"
-                        disabled={isSubmitting}
-                      >
-                        취소
-                      </Button>
-                      <Button
-                        onClick={editingExhibition ? handleUpdate : handleCreate}
-                        disabled={isSubmitting}
-                        className="bg-teal-700 hover:bg-teal-800"
-                      >
-                        {isSubmitting ? '처리 중...' : editingExhibition ? '수정' : '추가'}
-                      </Button>
+                      
+                      {/* 전시 종류 */}
+                      <div className="flex flex-wrap gap-2">
+                        <span className="inline-block px-3 py-1 bg-[#2C2C2C] text-[#F4F4F0] text-xs rounded-full">
+                          {getTypeDisplayName(exhibition.type)}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
+              ))
+            )}
+          </div>
+
+          {/* 페이지네이션 */}
+          {totalPages > 1 && (
+            <div className="mt-12">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious 
+                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                      className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer text-[#2C2C2C] hover:text-[#C84630]'}
+                    />
+                  </PaginationItem>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <PaginationItem key={page}>
+                      <PaginationLink
+                        onClick={() => setCurrentPage(page)}
+                        isActive={currentPage === page}
+                        className={`cursor-pointer ${currentPage === page ? 'bg-[#C84630] text-white' : 'text-[#2C2C2C] hover:text-[#C84630]'}`}
+                      >
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
+                  <PaginationItem>
+                    <PaginationNext 
+                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                      className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer text-[#2C2C2C] hover:text-[#C84630]'}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+              
+              {/* 페이지 직접 입력 */}
+              <div className="mt-6 flex items-center justify-center gap-3">
+                <span className="text-[#2C2C2C]/50 text-sm">페이지 이동:</span>
+                <input
+                  type="number"
+                  min="1"
+                  max={totalPages}
+                  value={pageInput}
+                  onChange={(e) => setPageInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      const page = parseInt(pageInput);
+                      if (page >= 1 && page <= totalPages) {
+                        setCurrentPage(page);
+                        setPageInput('');
+                      }
+                    }
+                  }}
+                  placeholder={`1-${totalPages}`}
+                  className="w-20 px-3 py-2 bg-white border border-[#2C2C2C]/10 rounded-lg text-[#2C2C2C] text-center focus:ring-2 focus:ring-[#C84630] focus:border-[#C84630]"
+                />
+                <button
+                  onClick={() => {
+                    const page = parseInt(pageInput);
+                    if (page >= 1 && page <= totalPages) {
+                      setCurrentPage(page);
+                      setPageInput('');
+                    }
+                  }}
+                  className="px-4 py-2 bg-[#C84630] text-white rounded-lg hover:bg-[#A83820] transition-colors text-sm font-medium"
+                >
+                  이동
+                </button>
+              </div>
+
+              {/* 총 결과 개수 */}
+              <div className="mt-4 text-center text-[#F4F4F0]/60 text-sm">
+                총 {totalCount}개의 전시
               </div>
             </div>
           )}
         </div>
       </div>
-
-      {/* 상세보기 모달 */}
-      {isDetailModalOpen && selectedExhibition && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={closeDetailModal}>
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center z-10">
-              <h2 className="text-2xl font-bold text-teal-900">전시 상세</h2>
-              <button onClick={closeDetailModal} className="text-gray-500 hover:text-gray-700">
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            <div className="p-6">
-              <div className="grid md:grid-cols-2 gap-8">
-                {/* 이미지 */}
-                <div className="relative">
-                  <ImageWithFallback
-                    src={getImageUrl(selectedExhibition.imageUrl)}
-                    alt={selectedExhibition.title}
-                    className="w-full h-auto rounded-lg shadow-lg object-contain max-h-[500px]"
-                  />
-                  <div className="absolute top-4 right-4">
-                    {getStatusBadge(selectedExhibition.status)}
-                  </div>
-                </div>
-
-                {/* 정보 */}
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="text-3xl font-bold text-teal-900 mb-2">{selectedExhibition.title}</h3>
-                    <p className="text-xl text-gray-600 mb-4">{selectedExhibition.artist}</p>
-                    
-                    <div className="space-y-3 text-gray-700">
-                      <div className="flex items-start">
-                        <Calendar className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0 text-teal-600" />
-                        <div>
-                          <span className="font-semibold">전시 기간:</span>
-                          <br />
-                          <span>{formatDate(selectedExhibition.startDate)} - {formatDate(selectedExhibition.endDate)}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-start">
-                        <MapPin className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0 text-teal-600" />
-                        <div>
-                          <span className="font-semibold">장소:</span>
-                          <br />
-                          <span>{selectedExhibition.location}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="border-t border-gray-200 pt-6">
-                    <h4 className="font-semibold text-lg text-teal-900 mb-3">전시 소개</h4>
-                    <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                      {selectedExhibition.description}
-                    </p>
-                  </div>
-
-                  {canManage && (
-                    <div className="border-t border-gray-200 pt-6">
-                      <div className="flex gap-3">
-                        <Button
-                          onClick={() => {
-                            closeDetailModal();
-                            handleOpenEditForm(selectedExhibition);
-                          }}
-                          variant="outline"
-                          className="flex-1"
-                        >
-                          <Edit className="w-4 h-4 mr-2" />
-                          수정
-                        </Button>
-                        <Button
-                          onClick={async () => {
-                            if (confirm('정말 삭제하시겠습니까?')) {
-                              await handleDelete(selectedExhibition.id);
-                              closeDetailModal();
-                            }
-                          }}
-                          variant="outline"
-                          className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          삭제
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       <Footer />
     </div>

@@ -178,21 +178,21 @@ export function UserManagement() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#F4F4F0] flex flex-col">
       <Header />
       
-      <div className="pt-24 pb-12">
+      <div className="pt-24 pb-12 flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* 페이지 헤더 */}
           <div className="mb-8 flex justify-between items-start">
             <div>
-              <h1 className="text-4xl font-bold text-teal-900 mb-2">사용자 관리</h1>
-              <p className="text-gray-600">전체 사용자 계정을 관리하고 권한을 수정할 수 있습니다.</p>
-              <p className="text-gray-600"> * 기본으로 생성되는 admin 계정은 사용하지 않는 것을 권장합니다.</p>
+              <h1 className="text-3xl font-bold text-[#2C2C2C] mb-2">사용자 관리</h1>
+              <p className="text-[#2C2C2C]/70">전체 사용자 계정을 관리하고 권한을 수정할 수 있습니다.</p>
+              <p className="text-[#2C2C2C]/70"> * 기본으로 생성되는 admin 계정은 사용하지 않는 것을 권장합니다.</p>
             </div>
             <Button
               onClick={() => setShowAddUserModal(true)}
-              className="bg-teal-700 hover:bg-teal-800"
+              className="bg-[#C84630] hover:bg-[#A83820]"
             >
               <Plus className="w-4 h-4 mr-2" />
               사용자 추가
@@ -212,7 +212,7 @@ export function UserManagement() {
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  className="inline-flex items-center justify-between min-w-[150px] px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  className="inline-flex items-center justify-between min-w-[150px] px-4 py-2 text-sm font-medium text-[#2C2C2C] bg-white border border-[#2C2C2C]/20 rounded-md hover:bg-[#F4F4F0] focus:outline-none focus:ring-2 focus:ring-[#C84630]"
                 >
                   {roleFilter}
                   <ChevronDown className="ml-2 h-4 w-4" />

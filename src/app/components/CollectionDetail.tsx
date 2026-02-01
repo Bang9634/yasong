@@ -41,16 +41,9 @@ export function CollectionDetail() {
         const data = await collectionAPI.getCollectionById(parseInt(id));
         setCollection(data);
         
-        // 다른 소장품들 가져오기 (현재 작품 제외, 최대 5개)
-        const response = await collectionAPI.getAllCollections();
-        
-        // Spring Page 형식 처리 (content) 또는 일반 배열
-        const allCollections = response.content || response.data || response;
-        const collectionsArray = Array.isArray(allCollections) ? allCollections : [];
-        const filtered = collectionsArray
-          .filter((c: Collection) => c.id !== parseInt(id))
-          .slice(0, 5);
-        setOtherCollections(filtered);
+        // 다른 소장품들 랜덤 5개 가져오기 (백엔드 API 사용)
+        const randomCollections = await collectionAPI.getRandomCollections(5, parseInt(id));
+        setOtherCollections(randomCollections);
         
         // SEO 설정
         setPageSEO({
@@ -119,10 +112,10 @@ export function CollectionDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-[#2C2C2C]">
+    <div className="min-h-screen bg-[#2C2C2C] flex flex-col">
       <Header />
       
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-24">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-24 flex-1">
         {/* 뒤로가기 버튼 */}
         <button
           onClick={() => navigate('/collections')}

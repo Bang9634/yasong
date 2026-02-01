@@ -215,10 +215,10 @@ export function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
       
-      <div className="pt-24 pb-12">
+      <div className="pt-24 pb-12 flex-1">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* 페이지 헤더 */}
           <div className="mb-8">

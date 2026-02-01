@@ -112,10 +112,10 @@ export function WebsiteManagement() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F4F4F0]">
+    <div className="min-h-screen bg-[#F4F4F0] flex flex-col">
       <Header />
       
-      <div className="pt-24 pb-12">
+      <div className="pt-24 pb-12 flex-1">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* 페이지 헤더 */}
           <div className="mb-8">
@@ -124,14 +124,14 @@ export function WebsiteManagement() {
           </div>
 
           {/* 탭 네비게이션 */}
-          <div className="mb-6 border-b border-gray-200">
+          <div className="mb-6 border-b border-[#2C2C2C]/20">
             <nav className="flex space-x-8">
               <button
                 onClick={() => setActiveTab('footer')}
                 className={`py-4 px-1 border-b-2 font-medium text-sm ${
                   activeTab === 'footer'
-                    ? 'border-teal-600 text-teal-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-[#C84630] text-[#C84630]'
+                    : 'border-transparent text-[#2C2C2C]/60 hover:text-[#2C2C2C] hover:border-[#2C2C2C]/30'
                 }`}
               >
                 푸터
@@ -144,7 +144,7 @@ export function WebsiteManagement() {
             {/* 푸터 탭 */}
             {activeTab === 'footer' && (
               <div className="bg-white p-6 rounded-lg shadow-md">
-                <h2 className="text-2xl font-semibold text-teal-900 mb-4">푸터 관리</h2>
+                <h2 className="text-2xl font-semibold text-[#2C2C2C] mb-4">푸터 관리</h2>
                 <FooterManagement initialData={footerData} />
               </div>
             )}

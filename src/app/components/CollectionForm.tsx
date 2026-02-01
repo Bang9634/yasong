@@ -157,10 +157,10 @@ export function CollectionForm() {
   }
 
   return (
-    <div className="min-h-screen bg-[#2C2C2C]">
+    <div className="min-h-screen bg-[#2C2C2C] flex flex-col">
       <Header />
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-24">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-24 flex-1">
         {/* 뒤로가기 버튼 */}
         <button
           onClick={() => navigate('/collections')}

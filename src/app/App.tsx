@@ -5,6 +5,8 @@ import { NoticePage } from '@/app/components/NoticePage';
 import { NoticeDetailPage } from '@/app/components/NoticeDetailPage';
 import { NoticeForm } from '@/app/components/NoticeForm';
 import { ExhibitionsPage } from '@/app/components/ExhibitionsPage';
+import { ExhibitionDetail } from '@/app/components/ExhibitionDetail';
+import { ExhibitionForm } from '@/app/components/ExhibitionForm';
 import { CollectionsPage } from '@/app/components/CollectionsPage';
 import { CollectionDetail } from '@/app/components/CollectionDetail';
 import { CollectionForm } from '@/app/components/CollectionForm';
@@ -48,6 +50,9 @@ export default function App() {
           <Route path="/notice/:id" element={<NoticeDetailPage />} />
           <Route path="/notice/write" element={<NoticeForm />} />
           <Route path="/exhibitions" element={<ExhibitionsPage />} />
+          <Route path="/exhibitions/:id" element={<ExhibitionDetail />} />
+          <Route path="/exhibitions/write" element={<ExhibitionForm />} />
+          <Route path="/exhibitions/edit/:id" element={<ExhibitionForm />} />
           <Route path="/collections" element={<CollectionsPage />} />
           <Route path="/collections/:id" element={<CollectionDetail />} />
           <Route path="/admin/collections/new" element={<CollectionForm />} />

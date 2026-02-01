@@ -268,7 +268,7 @@ export function Notice() {
                       {/* 내용 미리보기 - flex-1로 남은 공간 차지 */}
                       <p className="text-[#2C2C2C]/70 text-sm leading-relaxed line-clamp-6 mb-4 flex-1">
                         {notice.content ? 
-                          notice.content.substring(0, 100) + (notice.content.length > 100 ? '...' : '')
+                          notice.content.substring(0, 140) + (notice.content.length > 140 ? '...' : '')
                           : '내용이 없습니다.'}
                       </p>
                       

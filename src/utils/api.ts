@@ -427,10 +427,41 @@ export const noticeAPI = {
  */
 export const exhibitionAPI = {
   /**
-   * 전체 전시 조회 (공개)
+   * 전시 조회 with 페이지네이션 및 필터링 (공개)
+   * GET /api/exhibitions?page=1&limit=10&search=...&status=...&type=...
+   */
+  getExhibitions: async (params: {
+    page: number;
+    limit: number;
+    search?: string;
+    status?: string; // ongoing, upcoming, past
+    type?: string; // MEMORIAL, RETROSPECTIVE
+  }) => {
+    const queryParams = new URLSearchParams({
+      page: params.page.toString(),
+      limit: params.limit.toString(),
+    });
+
+    if (params.search) {
+      queryParams.append('search', params.search);
+    }
+    if (params.status) {
+      queryParams.append('status', params.status);
+    }
+    if (params.type) {
+      queryParams.append('type', params.type);
+    }
+
+    return apiCall(`/api/exhibitions?${queryParams.toString()}`, {
+      method: 'GET'
+    });
+  },
+
+  /**
+   * 전체 전시 조회 (공개) - 레거시 호환용
    */
   getAllExhibitions: async () => {
-    return apiCall('/api/exhibitions', {
+    return apiCall('/api/exhibitions?page=1&limit=1000', {
       method: 'GET'
     });
   },
@@ -439,7 +470,7 @@ export const exhibitionAPI = {
    * 현재 전시 조회 (공개)
    */
   getOngoingExhibitions: async () => {
-    return apiCall('/api/exhibitions/ongoing', {
+    return apiCall('/api/exhibitions?status=ongoing&limit=100', {
       method: 'GET'
     });
   },
@@ -448,7 +479,7 @@ export const exhibitionAPI = {
    * 예정 전시 조회 (공개)
    */
   getUpcomingExhibitions: async () => {
-    return apiCall('/api/exhibitions/upcoming', {
+    return apiCall('/api/exhibitions?status=upcoming&limit=100', {
       method: 'GET'
     });
   },
@@ -457,7 +488,7 @@ export const exhibitionAPI = {
    * 지난 전시 조회 (공개)
    */
   getPastExhibitions: async () => {
-    return apiCall('/api/exhibitions/past', {
+    return apiCall('/api/exhibitions?status=past&limit=100', {
       method: 'GET'
     });
   },
@@ -465,7 +496,7 @@ export const exhibitionAPI = {
   /**
    * 개별 전시 조회 (공개)
    */
-  getExhibitionById: async (id: string) => {
+  getExhibitionById: async (id: string | number) => {
     return apiCall(`/api/exhibitions/${id}`, {
       method: 'GET'
     });
@@ -479,18 +510,14 @@ export const exhibitionAPI = {
     artist: string;
     location: string;
     description: string;
+    type: string; // MEMORIAL, RETROSPECTIVE
     startDate: string;
     endDate: string;
   }, imageFile: File) => {
     const formData = new FormData();
     
-    // JSON을 File 객체로 변환 (Blob 대신 File 사용)
-    const jsonFile = new File(
-      [JSON.stringify(data)], 
-      'data.json', 
-      { type: 'application/json' }
-    );
-    formData.append('data', jsonFile);
+    const jsonBlob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+    formData.append('data', jsonBlob);
     formData.append('image', imageFile);
 
     const token = localStorage.getItem('token');
@@ -518,18 +545,14 @@ export const exhibitionAPI = {
     artist: string;
     location: string;
     description: string;
+    type: string; // MEMORIAL, RETROSPECTIVE
     startDate: string;
     endDate: string;
   }, imageFile?: File) => {
     const formData = new FormData();
     
-    // JSON을 File 객체로 변환 (Blob 대신 File 사용)
-    const jsonFile = new File(
-      [JSON.stringify(data)], 
-      'data.json', 
-      { type: 'application/json' }
-    );
-    formData.append('data', jsonFile);
+    const jsonBlob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+    formData.append('data', jsonBlob);
     
     if (imageFile) {
       formData.append('image', imageFile);
@@ -683,6 +706,24 @@ export const collectionAPI = {
    */
   getCollectionById: async (id: string) => {
     return apiCall(`/api/collections/${id}`, {
+      method: 'GET'
+    });
+  },
+
+  /**
+   * 랜덤 소장품 조회 (공개)
+   * GET /api/collections/random?count=5&exclude={id}
+   */
+  getRandomCollections: async (count: number = 5, exclude?: number) => {
+    const queryParams = new URLSearchParams({
+      count: count.toString(),
+    });
+
+    if (exclude !== undefined) {
+      queryParams.append('exclude', exclude.toString());
+    }
+
+    return apiCall(`/api/collections/random?${queryParams.toString()}`, {
       method: 'GET'
     });
   },

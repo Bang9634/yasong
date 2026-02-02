@@ -177,8 +177,6 @@ export function Footer() {
                 {footerData.termsEnabled && footerData.termsUrl && (
                   <a
                     href={footerData.termsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="text-[#2C2C2C]/70 hover:text-[#C84630] transition-colors"
                   >
                     이용약관
@@ -187,8 +185,6 @@ export function Footer() {
                 {footerData.privacyPolicyEnabled && footerData.privacyPolicyUrl && (
                   <a
                     href={footerData.privacyPolicyUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="text-[#2C2C2C]/70 hover:text-[#C84630] transition-colors"
                   >
                     개인정보처리방침
@@ -197,8 +193,6 @@ export function Footer() {
                 {footerData.locationLinkEnabled && footerData.locationLinkUrl && (
                   <a
                     href={footerData.locationLinkUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="text-[#2C2C2C]/70 hover:text-[#C84630] transition-colors"
                   >
                     FAQ
@@ -207,8 +201,6 @@ export function Footer() {
                 {footerData.recruitEnabled && footerData.recruitUrl && (
                   <a
                     href={footerData.recruitUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="text-[#2C2C2C]/70 hover:text-[#C84630] transition-colors"
                   >
                     문의하기

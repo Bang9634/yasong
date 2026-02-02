@@ -169,7 +169,7 @@ export function ExhibitionsPage() {
   const getStatusColor = (status: string) => {
     const colorMap: { [key: string]: string } = {
       'ONGOING': 'bg-green-600',
-      'UPCOMING': 'bg-blue-600',
+      'UPCOMING': 'bg-orange-500',
       'PAST': 'bg-gray-600',
     };
     return colorMap[status] || 'bg-gray-600';

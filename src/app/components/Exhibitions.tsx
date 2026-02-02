@@ -143,11 +143,11 @@ export function Exhibitions() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'ONGOING':
-        return <span className="inline-block px-3 py-1 bg-[#C84630] text-white text-xs rounded-full">전시 중</span>;
+        return <span className="inline-block px-3 py-1 bg-green-600 text-white text-xs rounded-full">전시 중</span>;
       case 'UPCOMING':
-        return <span className="inline-block px-3 py-1 bg-amber-500 text-white text-xs rounded-full">전시 예정</span>;
+        return <span className="inline-block px-3 py-1 bg-orange-500 text-white text-xs rounded-full">전시 예정</span>;
       case 'PAST':
-        return <span className="inline-block px-3 py-1 bg-gray-400 text-white text-xs rounded-full">지난 전시</span>;
+        return <span className="inline-block px-3 py-1 bg-gray-600 text-white text-xs rounded-full">지난 전시</span>;
       default:
         return null;
     }

@@ -36,19 +36,27 @@ export function Notice() {
   const checkScroll = () => {
     if (scrollContainerRef) {
       const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef;
-      setIsScrollable(scrollWidth > clientWidth);
+      const canScroll = scrollWidth > clientWidth;
+      setIsScrollable(canScroll);
       setShowLeftArrow(scrollLeft > 0);
       setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 10);
       
       // 스크롤 바 인디케이터 너비 계산 (보이는 영역 비율)
-      const visibleRatio = clientWidth / scrollWidth;
-      const indicatorWidth = Math.max(5, Math.min(visibleRatio * 100, 30)); // 최소 5%, 최대 30%
-      setScrollBarWidth(indicatorWidth);
-      
-      // 스크롤 진행률 계산 (인디케이터가 범위를 벗어나지 않도록)
-      const maxScroll = scrollWidth - clientWidth;
-      const progress = maxScroll > 0 ? (scrollLeft / maxScroll) * (100 - indicatorWidth) : 0;
-      setScrollProgress(progress);
+      if (!canScroll) {
+        // 스크롤할 수 없으면 전체가 빨간색 (100%)
+        setScrollBarWidth(100);
+        setScrollProgress(0);
+      } else {
+        // 스크롤 가능하면 보이는 영역 비율만큼 표시
+        const visibleRatio = clientWidth / scrollWidth;
+        const indicatorWidth = Math.max(10, visibleRatio * 100); // 최소 10%
+        setScrollBarWidth(indicatorWidth);
+        
+        // 스크롤 진행률 계산 (인디케이터가 범위를 벗어나지 않도록)
+        const maxScroll = scrollWidth - clientWidth;
+        const progress = (scrollLeft / maxScroll) * (100 - indicatorWidth);
+        setScrollProgress(progress);
+      }
     }
   };
 
@@ -149,7 +157,7 @@ export function Notice() {
   };
 
   return (
-    <section id="notice" className="min-h-screen bg-[#F4F4F0] py-16 flex flex-col justify-center relative">
+    <section id="notice" className="h-screen bg-[#F4F4F0] pt-32 pb-16 flex flex-col relative">
       <style>{`
         .fade-in-header {
           opacity: 0;
@@ -199,17 +207,17 @@ export function Notice() {
 
         {/* 카드 스크롤 영역 */}
         {isLoading ? (
-          <div className="flex items-center justify-center text-[#2C2C2C]/60 py-20">
+          <div className="flex items-center justify-center text-[#2C2C2C]/60 h-[400px]">
             로딩 중...
           </div>
         ) : notices.length === 0 ? (
-          <div className="flex items-center justify-center text-[#2C2C2C]/60 py-20">
+          <div className="flex items-center justify-center text-[#2C2C2C]/60 h-[400px]">
             등록된 공지사항이 없습니다.
           </div>
         ) : (
           <div 
             ref={cardsRef}
-            className={`relative slide-in-cards ${isCardsVisible ? 'visible' : ''}`}
+            className={`relative slide-in-cards ${isCardsVisible ? 'visible' : ''} h-[400px]`}
           >
             {/* 스크롤 가이드 - 왼쪽 화살표 */}
             {showLeftArrow && (

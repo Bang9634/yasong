@@ -20,7 +20,6 @@ import {
 interface Exhibition {
   id: number;
   title: string;
-  artist: string;
   location: string;
   imageUrl: string;
   description: string;
@@ -103,7 +102,9 @@ export function ExhibitionsPage() {
         params.status = statusMap[statusFilter];
       }
 
+      console.log('📡 전시 로드 파라미터:', params);
       const response = await exhibitionAPI.getExhibitions(params);
+      console.log('✅ 전시 응답:', response);
       
       setExhibitions(response.content || []);
       setTotalPages(response.totalPages || 1);
@@ -293,7 +294,7 @@ export function ExhibitionsPage() {
                     <ImageWithFallback
                       src={getImageUrl(exhibition.imageUrl)}
                       alt={exhibition.title}
-                      className="w-[90%] aspect-[3/4] object-cover group-hover:opacity-90 transition-opacity duration-300"
+                      className="w-[80%] aspect-[3/4] object-cover group-hover:opacity-90 transition-opacity duration-300"
                     />
                     
                     {/* 상태 배지 */}
@@ -333,21 +334,16 @@ export function ExhibitionsPage() {
                   
                   {/* 텍스트 정보 */}
                   <div 
-                    className="flex flex-col min-h-[220px] cursor-pointer"
+                    className="flex flex-col h-[180px] cursor-pointer"
                     onClick={() => navigate(`/exhibitions/${exhibition.id}`)}
                   >
-                    {/* 작가 */}
-                    <div className="text-xs text-[#2C2C2C]/60 font-medium mb-2">
-                      {exhibition.artist}
-                    </div>
-                    
                     {/* 제목 */}
-                    <h3 className="text-xl font-bold text-[#2C2C2C] group-hover:text-[#C84630] transition-colors line-clamp-2 mb-3 min-h-[3.5rem]">
+                    <h3 className="text-xl font-bold text-[#2C2C2C] group-hover:text-[#C84630] transition-colors line-clamp-2 mb-2 h-[3.5rem]">
                       {exhibition.title}
                     </h3>
                     
                     {/* 설명 */}
-                    <p className="text-sm text-[#2C2C2C]/70 leading-relaxed line-clamp-3 mb-4 min-h-[3.75rem]">
+                    <p className="text-sm text-[#2C2C2C]/70 leading-relaxed line-clamp-2 mb-3 h-[2.75rem]">
                       {exhibition.description}
                     </p>
                     

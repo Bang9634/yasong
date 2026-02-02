@@ -12,7 +12,6 @@ import { setPageSEO } from '@/utils/seo';
 interface Exhibition {
   id: number;
   title: string;
-  artist: string;
   location: string;
   imageUrl: string;
   description: string;
@@ -46,7 +45,7 @@ export function ExhibitionDetail() {
       setPageSEO({
         title: data.title,
         description: data.description.substring(0, 160),
-        keywords: `야송미술관, 전시, ${data.title}, ${data.artist}, ${getTypeDisplayName(data.type)}`,
+        keywords: `야송미술관, 전시, ${data.title}, ${getTypeDisplayName(data.type)}`,
         image: getImageUrl(data.imageUrl),
       });
     } catch (error) {
@@ -197,12 +196,9 @@ export function ExhibitionDetail() {
           {/* 오른쪽: 정보 */}
           <div className="space-y-8">
             <div>
-              <h1 className="text-4xl md:text-5xl font-bold text-[#2C2C2C] mb-4 tracking-tight">
+              <h1 className="text-4xl md:text-5xl font-bold text-[#2C2C2C] mb-6 tracking-tight">
                 {exhibition.title}
               </h1>
-              <p className="text-xl text-[#C84630] font-semibold mb-6">
-                {exhibition.artist}
-              </p>
 
               {/* 메타 정보 */}
               <div className="space-y-4 border-t border-b border-[#2C2C2C]/10 py-6">

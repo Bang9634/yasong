@@ -35,19 +35,27 @@ export function Collections() {
   const checkScroll = () => {
     if (scrollContainerRef) {
       const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef;
-      setIsScrollable(scrollWidth > clientWidth);
+      const canScroll = scrollWidth > clientWidth;
+      setIsScrollable(canScroll);
       setShowLeftArrow(scrollLeft > 0);
       setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 10);
       
       // 스크롤 바 인디케이터 너비 계산 (보이는 영역 비율)
-      const visibleRatio = clientWidth / scrollWidth;
-      const indicatorWidth = Math.max(5, Math.min(visibleRatio * 100, 30)); // 최소 5%, 최대 30%
-      setScrollBarWidth(indicatorWidth);
-      
-      // 스크롤 진행률 계산 (인디케이터가 범위를 벗어나지 않도록)
-      const maxScroll = scrollWidth - clientWidth;
-      const progress = maxScroll > 0 ? (scrollLeft / maxScroll) * (100 - indicatorWidth) : 0;
-      setScrollProgress(progress);
+      if (!canScroll) {
+        // 스크롤할 수 없으면 전체가 빨간색 (100%)
+        setScrollBarWidth(100);
+        setScrollProgress(0);
+      } else {
+        // 스크롤 가능하면 보이는 영역 비율만큼 표시
+        const visibleRatio = clientWidth / scrollWidth;
+        const indicatorWidth = Math.max(10, visibleRatio * 100); // 최소 10%
+        setScrollBarWidth(indicatorWidth);
+        
+        // 스크롤 진행률 계산 (인디케이터가 범위를 벗어나지 않도록)
+        const maxScroll = scrollWidth - clientWidth;
+        const progress = (scrollLeft / maxScroll) * (100 - indicatorWidth);
+        setScrollProgress(progress);
+      }
     }
   };
 
@@ -139,7 +147,7 @@ export function Collections() {
 
   if (isLoading) {
     return (
-      <section id="collections" className="min-h-screen bg-[#2C2C2C] py-16 flex flex-col justify-center relative">
+      <section id="collections" className="h-screen bg-[#2C2C2C] pt-32 pb-16 flex flex-col relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <p className="text-[#F4F4F0]/60">로딩 중...</p>
@@ -150,7 +158,7 @@ export function Collections() {
   }
 
   return (
-    <section id="collections" className="min-h-screen bg-[#2C2C2C] py-16 flex flex-col justify-center relative">
+    <section id="collections" className="h-screen bg-[#2C2C2C] pt-32 pb-16 flex flex-col relative">
       <style>{`
         .fade-in-header {
           opacity: 0;
@@ -199,13 +207,13 @@ export function Collections() {
         </div>
 
         {artworks.length === 0 ? (
-          <div className="flex items-center justify-center text-[#F4F4F0]/60 py-20">
+          <div className="flex items-center justify-center text-[#F4F4F0]/60 h-[400px]">
             등록된 대표 작품이 없습니다.
           </div>
         ) : (
           <div 
             ref={cardsRef}
-            className={`relative slide-in-cards ${isCardsVisible ? 'visible' : ''}`}
+            className={`relative slide-in-cards ${isCardsVisible ? 'visible' : ''} h-[400px]`}
           >
             {/* 스크롤 가이드 - 왼쪽 화살표 */}
             {showLeftArrow && (
@@ -290,20 +298,18 @@ export function Collections() {
             </div>
 
             {/* 스크롤 가이드 바 */}
-            {isScrollable && (
-              <div className="mt-8 w-full max-w-md mx-auto">
-                <div className="relative h-1 bg-[#F4F4F0]/20 rounded-full">
-                <div 
-                  className="absolute top-0 h-full bg-[#C84630] rounded-full"
-                  style={{ 
-                    left: `${scrollProgress}%`,
-                    width: `${scrollBarWidth}%`,
-                    transition: 'none'
-                  }}
-                />
-                </div>
+            <div className="mt-8 w-full max-w-md mx-auto">
+              <div className="relative h-1 bg-[#F4F4F0]/20 rounded-full">
+              <div 
+                className="absolute top-0 h-full bg-[#C84630] rounded-full"
+                style={{ 
+                  left: `${scrollProgress}%`,
+                  width: `${scrollBarWidth}%`,
+                  transition: 'none'
+                }}
+              />
               </div>
-            )}
+            </div>
           </div>
         )}
       </div>

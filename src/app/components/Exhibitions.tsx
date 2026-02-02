@@ -7,7 +7,6 @@ import { useNavigate } from 'react-router-dom';
 interface Exhibition {
   id: number;
   title: string;
-  artist: string;
   location: string;
   imageUrl: string;
   description: string;
@@ -18,9 +17,10 @@ interface Exhibition {
 }
 
 export function Exhibitions() {
-  const [currentExhibitions, setCurrentExhibitions] = useState<Exhibition[]>([]);
-  const [upcomingExhibitions, setUpcomingExhibitions] = useState<Exhibition[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [exhibitions, setExhibitions] = useState<Exhibition[]>([]);
+  const [isLoading, setIsLoading] = useState(true); // 초기 로딩
+  const [isDataLoading, setIsDataLoading] = useState(false); // 데이터 변경 로딩
+  const [isTransitioning, setIsTransitioning] = useState(false); // 애니메이션 상태
   const [scrollContainerRef, setScrollContainerRef] = useState<HTMLDivElement | null>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(false);
@@ -30,27 +30,37 @@ export function Exhibitions() {
   const [isHeaderVisible, setIsHeaderVisible] = useState(false);
   const [isCardsVisible, setIsCardsVisible] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'memorial' | 'retrospective'>('all');
+  const [allCategoryData, setAllCategoryData] = useState<{ [key: string]: Exhibition[] }>({}); // 카테고리별 캐시
   const headerRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<HTMLDivElement>(null);
+  const isInitialLoad = useRef(true);
   const navigate = useNavigate();
 
   // 스크롤 위치 확인
   const checkScroll = () => {
     if (scrollContainerRef) {
       const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef;
-      setIsScrollable(scrollWidth > clientWidth);
+      const canScroll = scrollWidth > clientWidth;
+      setIsScrollable(canScroll);
       setShowLeftArrow(scrollLeft > 0);
       setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 10);
       
       // 스크롤 바 인디케이터 너비 계산 (보이는 영역 비율)
-      const visibleRatio = clientWidth / scrollWidth;
-      const indicatorWidth = Math.max(5, Math.min(visibleRatio * 100, 30)); // 최소 5%, 최대 30%
-      setScrollBarWidth(indicatorWidth);
-      
-      // 스크롤 진행률 계산 (인디케이터가 범위를 벗어나지 않도록)
-      const maxScroll = scrollWidth - clientWidth;
-      const progress = maxScroll > 0 ? (scrollLeft / maxScroll) * (100 - indicatorWidth) : 0;
-      setScrollProgress(progress);
+      if (!canScroll) {
+        // 스크롤할 수 없으면 전체가 빨간색 (100%)
+        setScrollBarWidth(100);
+        setScrollProgress(0);
+      } else {
+        // 스크롤 가능하면 보이는 영역 비율만큼 표시
+        const visibleRatio = clientWidth / scrollWidth;
+        const indicatorWidth = Math.max(10, visibleRatio * 100); // 최소 10%
+        setScrollBarWidth(indicatorWidth);
+        
+        // 스크롤 진행률 계산 (인디케이터가 범위를 벗어나지 않도록)
+        const maxScroll = scrollWidth - clientWidth;
+        const progress = (scrollLeft / maxScroll) * (100 - indicatorWidth);
+        setScrollProgress(progress);
+      }
     }
   };
 
@@ -60,7 +70,7 @@ export function Exhibitions() {
       scrollContainerRef.addEventListener('scroll', checkScroll);
       return () => scrollContainerRef.removeEventListener('scroll', checkScroll);
     }
-  }, [scrollContainerRef, currentExhibitions, upcomingExhibitions]);
+  }, [scrollContainerRef, exhibitions]);
 
   // Intersection Observer로 애니메이션 트리거
   useEffect(() => {
@@ -96,7 +106,7 @@ export function Exhibitions() {
       if (headerElement) headerObserver.unobserve(headerElement);
       if (cardsElement) cardsObserver.unobserve(cardsElement);
     };
-  }, [currentExhibitions, upcomingExhibitions, isLoading]);
+  }, [exhibitions, isLoading]);
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollContainerRef) {
@@ -108,16 +118,64 @@ export function Exhibitions() {
     }
   };
 
+  // 초기 로드: 모든 카테고리 데이터 한 번에 가져오기
   useEffect(() => {
-    const fetchExhibitions = async () => {
+    const fetchAllCategories = async () => {
       try {
         setIsLoading(true);
-        const [ongoing, upcoming] = await Promise.all([
-          exhibitionAPI.getOngoingExhibitions(),
-          exhibitionAPI.getUpcomingExhibitions()
-        ]);
-        setCurrentExhibitions(ongoing.content || []);
-        setUpcomingExhibitions(upcoming.content || []);
+        
+        // 카테고리별로 전시 가져오기
+        const categories: Array<'all' | 'memorial' | 'retrospective'> = ['all', 'memorial', 'retrospective'];
+        const allResults: { [key: string]: Exhibition[] } = {};
+        
+        for (const category of categories) {
+          const typeParam = category === 'memorial' ? 'MEMORIAL' : category === 'retrospective' ? 'RETROSPECTIVE' : undefined;
+          
+          // 전시 중, 전시 예정, 지난 전시를 각각 가져오기
+          const [ongoing, upcoming, past] = await Promise.all([
+            exhibitionAPI.getExhibitions({ 
+              page: 1, 
+              limit: 100, 
+              status: 'ongoing',
+              ...(typeParam && { type: typeParam })
+            }),
+            exhibitionAPI.getExhibitions({ 
+              page: 1, 
+              limit: 100, 
+              status: 'upcoming',
+              ...(typeParam && { type: typeParam })
+            }),
+            exhibitionAPI.getExhibitions({ 
+              page: 1, 
+              limit: 100, 
+              status: 'past',
+              ...(typeParam && { type: typeParam })
+            })
+          ]);
+          
+          const ongoingList = ongoing.content || [];
+          const upcomingList = upcoming.content || [];
+          const pastList = past.content || [];
+          
+          // 전시 중 + 전시 예정
+          const activeExhibitions = [...ongoingList, ...upcomingList];
+          
+          // 전시 중 + 전시 예정이 6개 미만이면 지난 전시로 채우기
+          let finalExhibitions: Exhibition[];
+          if (activeExhibitions.length >= 6) {
+            finalExhibitions = activeExhibitions.slice(0, 6);
+          } else {
+            const needed = 6 - activeExhibitions.length;
+            finalExhibitions = [...activeExhibitions, ...pastList.slice(0, needed)];
+          }
+          
+          allResults[category] = finalExhibitions;
+        }
+        
+        setAllCategoryData(allResults);
+        setExhibitions(allResults['all'] || []);
+        isInitialLoad.current = false;
+        
       } catch (err) {
         console.error('전시 조회 실패:', err);
       } finally {
@@ -125,8 +183,29 @@ export function Exhibitions() {
       }
     };
 
-    fetchExhibitions();
+    fetchAllCategories();
   }, []);
+
+  // 카테고리 변경 시: 캐시된 데이터 사용 + 애니메이션
+  useEffect(() => {
+    if (isInitialLoad.current) return;
+
+    const changeCategory = async () => {
+      setIsTransitioning(true);
+      
+      // Fade out
+      await new Promise(resolve => setTimeout(resolve, 150));
+      
+      // 데이터 변경
+      setExhibitions(allCategoryData[selectedCategory] || []);
+      
+      // Fade in
+      await new Promise(resolve => setTimeout(resolve, 50));
+      setIsTransitioning(false);
+    };
+
+    changeCategory();
+  }, [selectedCategory, allCategoryData]);
 
   const getImageUrl = (imageUrl: string) => {
     if (imageUrl.startsWith('http')) {
@@ -155,7 +234,7 @@ export function Exhibitions() {
 
   if (isLoading) {
     return (
-      <section id="exhibitions" className="py-20 bg-white">
+      <section id="exhibitions" className="h-screen bg-white flex items-center justify-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <p className="text-gray-500">로딩 중...</p>
@@ -165,19 +244,8 @@ export function Exhibitions() {
     );
   }
 
-  const allExhibitions = [...currentExhibitions, ...upcomingExhibitions];
-  
-  // 타입별 필터링
-  const filteredExhibitions = selectedCategory === 'all' 
-    ? allExhibitions 
-    : allExhibitions.filter(ex => {
-        if (selectedCategory === 'memorial') return ex.type === 'MEMORIAL';
-        if (selectedCategory === 'retrospective') return ex.type === 'RETROSPECTIVE';
-        return true;
-      });
-
   return (
-    <section id="exhibitions" className="min-h-screen bg-[#F4F4F0] py-16 flex flex-col justify-center relative">
+    <section id="exhibitions" className="h-screen bg-[#F4F4F0] pt-32 pb-16 flex flex-col relative">
       <style>{`
         .fade-in-header {
           opacity: 0;
@@ -271,12 +339,8 @@ export function Exhibitions() {
         </div>
 
         {/* 카드 스크롤 영역 */}
-        {isLoading ? (
-          <div className="flex items-center justify-center text-[#2C2C2C]/60 py-20">
-            로딩 중...
-          </div>
-        ) : filteredExhibitions.length === 0 ? (
-          <div className="flex items-center justify-center text-[#2C2C2C]/60 py-20">
+        {exhibitions.length === 0 ? (
+          <div className="flex items-center justify-center text-[#2C2C2C]/60 h-[400px]">
             {selectedCategory === 'all' 
               ? '현재 예정된 전시가 없습니다.'
               : selectedCategory === 'memorial'
@@ -286,7 +350,7 @@ export function Exhibitions() {
         ) : (
           <div 
             ref={cardsRef}
-            className={`relative slide-in-cards ${isCardsVisible ? 'visible' : ''}`}
+            className={`relative slide-in-cards ${isCardsVisible ? 'visible' : ''} h-[400px]`}
           >
             {/* 스크롤 가이드 - 왼쪽 화살표 */}
             {showLeftArrow && (
@@ -316,8 +380,12 @@ export function Exhibitions() {
                 touchAction: 'pan-x'
               }}
             >
-              <div className="flex gap-6 pb-4">
-                {filteredExhibitions.map((exhibition) => (
+              <div 
+                className={`flex gap-6 pb-4 transition-opacity duration-300 ${
+                  isTransitioning ? 'opacity-0' : 'opacity-100'
+                }`}
+              >
+                {exhibitions.map((exhibition) => (
                   <div
                     key={exhibition.id}
                     onClick={() => navigate(`/exhibitions/${exhibition.id}`)}
@@ -330,17 +398,19 @@ export function Exhibitions() {
                         alt={exhibition.title}
                         className="w-[70%] aspect-[3/4] object-cover group-hover:opacity-90 transition-opacity duration-300"
                       />
+                      {/* 상태 배지 */}
+                      <div className={"absolute top-2 right-2 flex flex-wrap gap-2"}>
+                        {getStatusBadge(exhibition.status)}
+                      </div>
                     </div>
+
+                    
                     
                     {/* 구분선 */}
                     <div className="w-full h-px bg-[#2C2C2C]/20 mb-3"></div>
                     
                     {/* 텍스트 정보 */}
                     <div className="flex flex-col h-[180px]">
-                      {/* 지역 */}
-                      <div className="text-xs text-[#2C2C2C]/60 font-medium mb-2">
-                        {exhibition.location}
-                      </div>
                       
                       {/* 제목 - 2줄 고정 */}
                       <h3 className="text-lg font-bold text-[#2C2C2C] group-hover:text-[#C84630] transition-colors line-clamp-2 mb-2 h-[3.5rem]">
@@ -354,18 +424,23 @@ export function Exhibitions() {
                       
                       {/* 하단 고정 영역 */}
                       <div className="mt-auto space-y-2">
-                        {/* 태그 */}
-                        <div className="flex flex-wrap gap-2">
-                          <span className="inline-block px-2.5 py-0.5 bg-[#2C2C2C] text-[#F4F4F0] text-xs rounded-full">
-                            {exhibition.artist}
-                          </span>
-                          {getStatusBadge(exhibition.status)}
-                        </div>
                         
                         {/* 날짜 */}
                         <div className="flex items-center text-xs text-[#2C2C2C]/60">
                           <Calendar className="w-3.5 h-3.5 mr-1.5 flex-shrink-0" />
                           <span>{formatDate(exhibition.startDate)} - {formatDate(exhibition.endDate)}</span>
+                        </div>
+                        {/* 전시 장소 */}
+                        <div className="flex items-center gap-1 text-xs text-[#2C2C2C]/60 mb-2">
+                          <MapPin className="w-3 h-3" />
+                          <span className="line-clamp-1">{exhibition.location}</span>
+                        </div>
+                        
+                        {/* 전시 종류 */}
+                        <div className="flex flex-wrap gap-2">
+                          <span className="inline-block px-3 py-1 bg-[#2C2C2C] text-[#F4F4F0] text-xs rounded-full">
+                            {exhibition.type === 'MEMORIAL' ? '추모 전시' : '회고전'}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -375,20 +450,18 @@ export function Exhibitions() {
             </div>
 
             {/* 스크롤 가이드 바 */}
-            {isScrollable && (
-              <div className="mt-8 w-full max-w-md mx-auto">
-                <div className="relative h-1 bg-[#2C2C2C]/20 rounded-full">
-                <div 
-                  className="absolute top-0 h-full bg-[#C84630] rounded-full"
-                  style={{ 
-                    left: `${scrollProgress}%`,
-                    width: `${scrollBarWidth}%`,
-                    transition: 'none'
-                  }}
-                />
-                </div>
+            <div className="mt-8 w-full max-w-md mx-auto">
+              <div className="relative h-1 bg-[#2C2C2C]/20 rounded-full">
+              <div 
+                className="absolute top-0 h-full bg-[#C84630] rounded-full"
+                style={{ 
+                  left: `${scrollProgress}%`,
+                  width: `${scrollBarWidth}%`,
+                  transition: 'none'
+                }}
+              />
               </div>
-            )}
+            </div>
           </div>
         )}
       </div>

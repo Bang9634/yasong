@@ -11,7 +11,6 @@ import { resizeImage } from '@/utils/imageUtils';
 
 interface ExhibitionFormData {
   title: string;
-  artist: string;
   location: string;
   description: string;
   type: 'MEMORIAL' | 'RETROSPECTIVE';
@@ -28,7 +27,6 @@ export function ExhibitionForm() {
 
   const [formData, setFormData] = useState<ExhibitionFormData>({
     title: '',
-    artist: '',
     location: '',
     description: '',
     type: 'MEMORIAL',
@@ -63,7 +61,6 @@ export function ExhibitionForm() {
       const data = await exhibitionAPI.getExhibitionById(parseInt(id!));
       setFormData({
         title: data.title,
-        artist: data.artist,
         location: data.location,
         description: data.description,
         type: data.type,
@@ -147,9 +144,6 @@ export function ExhibitionForm() {
 
     if (!formData.title.trim()) {
       newErrors.title = '전시 제목을 입력해주세요.';
-    }
-    if (!formData.artist.trim()) {
-      newErrors.artist = '작가명을 입력해주세요.';
     }
     if (!formData.location.trim()) {
       newErrors.location = '전시 장소를 입력해주세요.';
@@ -305,27 +299,6 @@ export function ExhibitionForm() {
             />
             {errors.title && (
               <p className="text-red-600 text-sm mt-2">{errors.title}</p>
-            )}
-          </div>
-
-          {/* 작가명 */}
-          <div>
-            <label htmlFor="artist" className="block text-sm font-medium text-[#2C2C2C] mb-2">
-              작가명 <span className="text-[#C84630]">*</span>
-            </label>
-            <input
-              type="text"
-              id="artist"
-              name="artist"
-              value={formData.artist}
-              onChange={handleInputChange}
-              className={`w-full px-4 py-3 rounded-lg border-2 ${
-                errors.artist ? 'border-red-600' : 'border-[#2C2C2C]/20'
-              } focus:border-[#C84630] focus:outline-none text-[#2C2C2C]`}
-              placeholder="작가명을 입력하세요"
-            />
-            {errors.artist && (
-              <p className="text-red-600 text-sm mt-2">{errors.artist}</p>
             )}
           </div>
 

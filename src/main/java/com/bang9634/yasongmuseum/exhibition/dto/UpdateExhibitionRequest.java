@@ -17,9 +17,6 @@ public class UpdateExhibitionRequest {
     @NotBlank(message = "전시명은 필수입니다.")
     private String title;
 
-    @NotBlank(message = "작가명은 필수입니다.")
-    private String artist;
-
     @NotBlank(message = "장소는 필수입니다.")
     private String location;
 

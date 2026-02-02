@@ -17,7 +17,6 @@ public class ExhibitionResponse {
 
     private Long id;
     private String title;
-    private String artist;
     private String location;
     private String imageUrl;
     private String description;

@@ -19,7 +19,7 @@ public class ExhibitionController {
      * 
      * @param page Page number (1-based)
      * @param limit Items per page
-     * @param search Search keyword (title, artist, description)
+     * @param search Search keyword (title, description)
      * @param status Exhibition status filter (ongoing, upcoming, past)
      * @param type Exhibition type filter (MEMORIAL, RETROSPECTIVE)
      */
@@ -31,7 +31,7 @@ public class ExhibitionController {
             @RequestParam(required = false) String status,  // ongoing, upcoming, past
             @RequestParam(required = false) String type     // MEMORIAL, RETROSPECTIVE
     ) {
-        PagedResponse<ExhibitionResponse> response = exhibitionService.getExhibitions(page, limit, search, status);
+        PagedResponse<ExhibitionResponse> response = exhibitionService.getExhibitions(page, limit, search, type, status);
         return ResponseEntity.ok(response);
     }
 

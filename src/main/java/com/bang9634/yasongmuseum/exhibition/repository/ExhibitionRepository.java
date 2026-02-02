@@ -21,8 +21,8 @@ public interface ExhibitionRepository extends JpaRepository<Exhibition, Long> {
         SELECT e FROM Exhibition e
         WHERE (:search IS NULL OR 
                LOWER(e.title) LIKE LOWER(CONCAT('%', :search, '%')) OR
-               LOWER(e.artist) LIKE LOWER(CONCAT('%', :search, '%')) OR
                LOWER(e.description) LIKE LOWER(CONCAT('%', :search, '%')))
+        AND (:type IS NULL OR CAST(e.type AS string) = :type)
         AND (:status IS NULL OR
              CASE 
                  WHEN :status = 'ongoing' THEN (e.startDate <= :now AND e.endDate >= :now)
@@ -34,6 +34,7 @@ public interface ExhibitionRepository extends JpaRepository<Exhibition, Long> {
         """)
     Page<Exhibition> findFiltered(
         @Param("search") String search,
+        @Param("type") String type,
         @Param("status") String status,
         @Param("now") LocalDateTime now,
         Pageable pageable

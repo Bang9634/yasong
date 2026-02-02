@@ -36,10 +36,10 @@ public class ExhibitionService {
     /**
      * Get exhibitions with pagination and filtering
      */
-    public PagedResponse<ExhibitionResponse> getExhibitions(int page, int limit, String search, String status) {
+    public PagedResponse<ExhibitionResponse> getExhibitions(int page, int limit, String search, String type, String status) {
         Pageable pageable = PageRequest.of(page - 1, limit);
         LocalDateTime now = LocalDateTime.now();
-        Page<Exhibition> result = exhibitionRepository.findFiltered(search, status, now, pageable);
+        Page<Exhibition> result = exhibitionRepository.findFiltered(search, type, status, now, pageable);
         
         Page<ExhibitionResponse> responsePage = result.map(this::toResponse);
         return new PagedResponse<>(responsePage);
@@ -65,7 +65,6 @@ public class ExhibitionService {
         // 2. Create exhibition entity
         Exhibition exhibition = Exhibition.builder()
                 .title(request.getTitle())
-                .artist(request.getArtist())
                 .location(request.getLocation())
                 .imageUrl(imageUrl)
                 .description(request.getDescription())
@@ -100,7 +99,6 @@ public class ExhibitionService {
 
         // Update other fields
         exhibition.setTitle(request.getTitle());
-        exhibition.setArtist(request.getArtist());
         exhibition.setLocation(request.getLocation());
         exhibition.setDescription(request.getDescription());
         exhibition.setType(request.getType());
@@ -136,7 +134,6 @@ public class ExhibitionService {
         return ExhibitionResponse.builder()
                 .id(exhibition.getId())
                 .title(exhibition.getTitle())
-                .artist(exhibition.getArtist())
                 .location(exhibition.getLocation())
                 .imageUrl(exhibition.getImageUrl())
                 .description(exhibition.getDescription())

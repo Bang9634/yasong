@@ -31,9 +31,6 @@ public class Exhibition {
 
     @Column(nullable = false, length = 200)
     private String title;
-    
-    @Column(nullable = false, length = 200)
-    private String artist;
 
     @Column(nullable = false, length = 500)
     private String location;

@@ -234,7 +234,7 @@ export function Exhibitions() {
 
   if (isLoading) {
     return (
-      <section id="exhibitions" className="h-screen bg-white flex items-center justify-center">
+      <section id="exhibitions" className="min-h-screen bg-white flex items-center justify-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <p className="text-gray-500">로딩 중...</p>
@@ -245,7 +245,7 @@ export function Exhibitions() {
   }
 
   return (
-    <section id="exhibitions" className="h-screen bg-[#F4F4F0] pt-32 pb-16 flex flex-col relative">
+    <section id="exhibitions" className="min-h-screen bg-[#F4F4F0] pt-32 pb-16 flex flex-col relative">
       <style>{`
         .fade-in-header {
           opacity: 0;
@@ -340,7 +340,7 @@ export function Exhibitions() {
 
         {/* 카드 스크롤 영역 */}
         {exhibitions.length === 0 ? (
-          <div className="flex items-center justify-center text-[#2C2C2C]/60 h-[400px]">
+          <div className="flex items-center justify-center text-[#2C2C2C]/60 h-[20vw] md:h-[25vw] lg:h-[272px]">
             {selectedCategory === 'all' 
               ? '현재 예정된 전시가 없습니다.'
               : selectedCategory === 'memorial'
@@ -350,7 +350,7 @@ export function Exhibitions() {
         ) : (
           <div 
             ref={cardsRef}
-            className={`relative slide-in-cards ${isCardsVisible ? 'visible' : ''} h-[400px]`}
+            className={`relative slide-in-cards ${isCardsVisible ? 'visible' : ''} h-[20vw] md:h-[25vw] lg:h-[272px]`}
           >
             {/* 스크롤 가이드 - 왼쪽 화살표 */}
             {showLeftArrow && (
@@ -381,7 +381,7 @@ export function Exhibitions() {
               }}
             >
               <div 
-                className={`flex gap-6 pb-4 transition-opacity duration-300 ${
+                className={`flex gap-5 pb-4 transition-opacity duration-300 ${
                   isTransitioning ? 'opacity-0' : 'opacity-100'
                 }`}
               >
@@ -407,38 +407,38 @@ export function Exhibitions() {
                     
                     
                     {/* 구분선 */}
-                    <div className="w-full h-px bg-[#2C2C2C]/20 mb-3"></div>
+                    <div className="w-full h-px bg-[#2C2C2C]/20 mb-2.5"></div>
                     
                     {/* 텍스트 정보 */}
                     <div className="flex flex-col h-[180px]">
                       
                       {/* 제목 - 2줄 고정 */}
-                      <h3 className="text-lg font-bold text-[#2C2C2C] group-hover:text-[#C84630] transition-colors line-clamp-2 mb-2 h-[3.5rem]">
+                      <h3 className="text-lg font-bold text-[#2C2C2C] group-hover:text-[#C84630] transition-colors line-clamp-2 mb-1.5 h-[3.5rem]">
                         {exhibition.title}
                       </h3>
                       
                       {/* 설명 - 2줄 고정 */}
-                      <p className="text-sm text-[#2C2C2C]/70 leading-relaxed line-clamp-2 mb-3 h-[2.75rem]">
+                      <p className="text-sm text-[#2C2C2C]/70 leading-relaxed line-clamp-2 mb-2.5 h-[3rem]">
                         {exhibition.description}
                       </p>
                       
                       {/* 하단 고정 영역 */}
-                      <div className="mt-auto space-y-2">
+                      <div className="mt-auto space-y-1.5">
                         
                         {/* 날짜 */}
-                        <div className="flex items-center text-xs text-[#2C2C2C]/60">
-                          <Calendar className="w-3.5 h-3.5 mr-1.5 flex-shrink-0" />
+                        <div className="flex items-center text-[11px] text-[#2C2C2C]/60">
+                          <Calendar className="w-3 h-3 mr-1 flex-shrink-0" />
                           <span>{formatDate(exhibition.startDate)} - {formatDate(exhibition.endDate)}</span>
                         </div>
                         {/* 전시 장소 */}
-                        <div className="flex items-center gap-1 text-xs text-[#2C2C2C]/60 mb-2">
-                          <MapPin className="w-3 h-3" />
+                        <div className="flex items-center gap-1 text-[11px] text-[#2C2C2C]/60 mb-1.5">
+                          <MapPin className="w-2.5 h-2.5" />
                           <span className="line-clamp-1">{exhibition.location}</span>
                         </div>
                         
                         {/* 전시 종류 */}
-                        <div className="flex flex-wrap gap-2">
-                          <span className="inline-block px-3 py-1 bg-[#2C2C2C] text-[#F4F4F0] text-xs rounded-full">
+                        <div className="flex flex-wrap gap-1.5">
+                          <span className="inline-block px-2.5 py-0.5 bg-[#2C2C2C] text-[#F4F4F0] text-[11px] rounded-full">
                             {exhibition.type === 'MEMORIAL' ? '추모 전시' : '회고전'}
                           </span>
                         </div>

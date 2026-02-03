@@ -329,7 +329,7 @@ export function Header() {
 
             {/* 공모전 */}
             <button
-              onClick={() => scrollToSection('contest')}
+              onClick={() => navigate('/contests')}
               className={`transition-colors py-2 relative after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[2px] after:bg-[#C84630] after:transition-all after:duration-300 hover:after:w-full ${
                 isDarkBackground 
                   ? 'text-[#2C2C2C] hover:text-[#C84630]' 
@@ -594,7 +594,7 @@ export function Header() {
             {/* 공모전 */}
             <button
               onClick={() => {
-                scrollToSection('contest');
+                navigate('/contests');
                 setIsMenuOpen(false);
               }}
               className={`block w-full text-left px-4 py-3 font-medium transition-colors ${

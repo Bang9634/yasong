@@ -88,12 +88,27 @@ export function NoticePage() {
         '시스템': 'MAINTENANCE'
       };
 
-      const response = await noticeAPI.getNotices({
+      // 임시저장/숨김 탭인 경우 관리자 API 사용
+      const isStatusTab = selectedCategory === '임시저장' || selectedCategory === '숨김';
+
+      let params: any = {
         page: currentPage,
         limit: itemsPerPage,
         search: searchQuery || undefined,
-        category: selectedCategory !== '전체' ? categoryMap[selectedCategory] : undefined,
-      });
+      };
+
+      if (selectedCategory === '임시저장') {
+        params.status = 'DRAFT';
+      } else if (selectedCategory === '숨김') {
+        params.status = 'HIDDEN';
+      } else if (selectedCategory !== '전체') {
+        params.category = categoryMap[selectedCategory];
+      }
+
+      // 상태 탭이면 관리자 API, 아니면 공개 API 호출
+      const response = isStatusTab 
+        ? await noticeAPI.getManagementNotices(params)
+        : await noticeAPI.getNotices(params);
 
       setNotices(response.content || []);
       setTotalPages(response.totalPages || 1);
@@ -127,6 +142,30 @@ export function NoticePage() {
       'MAINTENANCE': '시스템'
     };
     return categoryMap[category] || category;
+  };
+
+  // 상태 표시 이름 변환
+  const getStatusDisplayName = (status: string): string => {
+    const statusMap: { [key: string]: string } = {
+      'PUBLISHED': '공개',
+      'DRAFT': '임시저장',
+      'HIDDEN': '숨김'
+    };
+    return statusMap[status] || status;
+  };
+
+  // 상태 배지 색상
+  const getStatusBadgeColor = (status: string): string => {
+    switch (status) {
+      case 'PUBLISHED':
+        return 'bg-green-100 text-green-700';
+      case 'DRAFT':
+        return 'bg-yellow-100 text-yellow-700';
+      case 'HIDDEN':
+        return 'bg-gray-100 text-gray-700';
+      default:
+        return 'bg-gray-100 text-gray-700';
+    }
   };
 
   // 공지사항 삭제
@@ -184,7 +223,7 @@ export function NoticePage() {
           {/* 카테고리 탭 */}
           <div className="mb-8 border-b border-[#2C2C2C]/20">
             <div className="flex gap-6 overflow-x-auto scrollbar-hide">
-              {['전체', '일반', '전시', '공모전', '시스템'].map((category) => (
+              {['전체', '일반', '전시', '공모전', '시스템', ...(canManage ? ['임시저장', '숨김'] : [])].map((category) => (
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
@@ -244,6 +283,11 @@ export function NoticePage() {
                           <span className="px-2 py-0.5 bg-[#2C2C2C]/5 text-[#2C2C2C]/70 text-xs rounded font-medium">
                             {getCategoryDisplayName(notice.category)}
                           </span>
+                          {canManage && notice.status !== 'PUBLISHED' && (
+                            <span className={`px-2 py-0.5 text-xs rounded font-medium ${getStatusBadgeColor(notice.status)}`}>
+                              {getStatusDisplayName(notice.status)}
+                            </span>
+                          )}
                           <h3 className="text-base font-semibold text-[#2C2C2C] group-hover:text-[#C84630] transition-colors truncate flex-1">
                             {notice.title}
                           </h3>
@@ -353,6 +397,11 @@ export function NoticePage() {
                 >
                   이동
                 </button>
+              </div>
+
+              {/* 총 결과 개수 */}
+              <div className="mt-4 text-center text-[#2C2C2C]/60 text-sm">
+                총 {totalCount}개의 공지사항
               </div>
             </div>
           )}

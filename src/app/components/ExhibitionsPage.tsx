@@ -213,7 +213,7 @@ export function ExhibitionsPage() {
                 placeholder="전시명, 작가명으로 검색..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 text-sm bg-[#2C2C2C]/10 border border-[#2C2C2C]/20 rounded-lg focus:ring-2 focus:ring-[#C84630] focus:border-[#C84630] text-[#2C2C2C] placeholder:text-[#2C2C2C]/40"
+                className="w-full pl-9 pr-4 py-2 text-sm bg-white border border-[#2C2C2C]/10 rounded-lg focus:ring-2 focus:ring-[#C84630] focus:border-[#C84630] text-[#2C2C2C] placeholder:text-[#2C2C2C]/40"
               />
             </div>
           </div>
@@ -441,7 +441,7 @@ export function ExhibitionsPage() {
               </div>
 
               {/* 총 결과 개수 */}
-              <div className="mt-4 text-center text-[#F4F4F0]/60 text-sm">
+              <div className="mt-4 text-center text-[#2C2C2C]/60 text-sm">
                 총 {totalCount}개의 전시
               </div>
             </div>

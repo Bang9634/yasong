@@ -1,24 +1,28 @@
 import { useState, useEffect, useRef } from 'react';
-import { Trophy, FileText, ChevronRight, ChevronLeft, Calendar } from 'lucide-react';
-import { websiteAPI } from '../../utils/api';
+import { Trophy, FileText, ChevronRight, ChevronLeft, Calendar, MapPin, User } from 'lucide-react';
+import { contestAPI, getFullImageUrl } from '../../utils/api';
 import { useNavigate } from 'react-router-dom';
+import { ImageWithFallback } from './figma/ImageWithFallback';
 
 interface ContestItem {
-  id: string;
+  id: number;
   title: string;
-  subtitle: string;
-  content: string;
+  location: string;
   imageUrl: string;
-  status: 'ongoing' | 'ended';
-  startDate?: string;
-  endDate?: string;
-  introLink: string;
-  noticeLink: string;
+  host: string;
+  description: string;
+  announcementUrl: string;
+  startDate: string;
+  endDate: string;
+  status: 'ONGOING' | 'UPCOMING' | 'PAST';
+  createdAt: string;
+  updatedAt: string;
 }
 
 export function Contest() {
   const [contests, setContests] = useState<ContestItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const [scrollContainerRef, setScrollContainerRef] = useState<HTMLDivElement | null>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(false);
@@ -27,9 +31,11 @@ export function Contest() {
   const [isScrollable, setIsScrollable] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(false);
   const [isCardsVisible, setIsCardsVisible] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<'all' | 'ongoing' | 'ended'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<'all' | 'ongoing' | 'upcoming' | 'past'>('all');
+  const [allCategoryData, setAllCategoryData] = useState<{ [key: string]: ContestItem[] }>({});
   const headerRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<HTMLDivElement>(null);
+  const isInitialLoad = useRef(true);
   const navigate = useNavigate();
 
   // 스크롤 위치 확인
@@ -114,64 +120,88 @@ export function Contest() {
     }
   };
 
-  // 공모전 데이터 가져오기
+  // 공모전 데이터 가져오기 (초기 로드: 모든 카테고리 데이터 캐싱)
   useEffect(() => {
-    const fetchContestData = async () => {
+    const fetchAllCategories = async () => {
       try {
         setIsLoading(true);
         
-        const [titleData, subtitleData, contentData, imageData, activeData, introLinkData, noticeLinkData] = await Promise.all([
-          websiteAPI.getTextSetting('contest_title'),
-          websiteAPI.getTextSetting('contest_subtitle'),
-          websiteAPI.getTextSetting('contest_content'),
-          websiteAPI.getImage('contest_poster'),
-          websiteAPI.getTextSetting('contest_active'),
-          websiteAPI.getTextSetting('contest_intro_link'),
-          websiteAPI.getTextSetting('contest_notice_link'),
+        // 각 카테고리별로 데이터 가져오기
+        const [all, ongoing, upcoming, past] = await Promise.all([
+          contestAPI.getContests({ page: 1, limit: 100 }),
+          contestAPI.getContests({ page: 1, limit: 100, status: 'ongoing' }),
+          contestAPI.getContests({ page: 1, limit: 100, status: 'upcoming' }),
+          contestAPI.getContests({ page: 1, limit: 100, status: 'past' })
         ]);
         
-        // 이미지 URL 처리
-        let imageUrl = '';
-        if (imageData.imageUrl) {
-          imageUrl = imageData.imageUrl.startsWith('http')
-            ? imageData.imageUrl
-            : `${import.meta.env.VITE_API_BASE_URL || ''}${imageData.imageUrl}`;
-        }
-
-        // 단일 공모전 데이터를 배열로 변환
-        const contestItem: ContestItem = {
-          id: '1',
-          title: titleData?.value || '야송배 대한민국 청소년 그림그리기 대회',
-          subtitle: subtitleData?.value || 'Yasong Cup National Youth Drawing Contest',
-          content: contentData?.value || '야송 권재행 화백의 예술정신을 계승하고 청소년 문화예술 발전에 기여하기 위한 청소년 그림그리기 대회입니다.',
-          imageUrl: imageUrl,
-          status: activeData?.value === 'true' ? 'ongoing' : 'ended',
-          introLink: introLinkData?.value || '',
-          noticeLink: noticeLinkData?.value || ''
+        // 상태 순으로 정렬 (진행 중 → 진행 예정 → 종료됨)
+        const statusOrder = { ONGOING: 0, UPCOMING: 1, PAST: 2 };
+        const sortContests = (contests: ContestItem[]) => {
+          return contests.sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
         };
-
-        setContests([contestItem]);
+        
+        const allResults = {
+          all: sortContests(all.content || []).slice(0, 6),
+          ongoing: (ongoing.content || []).slice(0, 6),
+          upcoming: (upcoming.content || []).slice(0, 6),
+          past: (past.content || []).slice(0, 6)
+        };
+        
+        setAllCategoryData(allResults);
+        setContests(allResults.all);
+        isInitialLoad.current = false;
       } catch (err) {
         console.error('공모전 데이터 조회 실패:', err);
+        setContests([]);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchContestData();
+    fetchAllCategories();
   }, []);
 
-  const filteredContests = contests.filter(contest => {
-    if (selectedCategory === 'all') return true;
-    return contest.status === selectedCategory;
-  });
+  // 카테고리 변경 시: 캐시된 데이터 사용 + 애니메이션
+  useEffect(() => {
+    if (isInitialLoad.current) return;
 
-  if (isLoading || contests.length === 0) {
-    return null;
-  }
+    const changeCategory = async () => {
+      setIsTransitioning(true);
+      
+      // Fade out
+      await new Promise(resolve => setTimeout(resolve, 150));
+      
+      // 데이터 변경
+      setContests(allCategoryData[selectedCategory] || []);
+      
+      // Fade in
+      await new Promise(resolve => setTimeout(resolve, 50));
+      setIsTransitioning(false);
+    };
+
+    changeCategory();
+  }, [selectedCategory, allCategoryData]);
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+  };
+
+  const getStatusDisplayName = (status: string) => {
+    const statusMap: { [key: string]: string } = {
+      'ONGOING': '진행 중',
+      'UPCOMING': '진행 예정',
+      'PAST': '종료됨',
+    };
+    return statusMap[status] || status;
+  };
+
+  const handleCardClick = (contest: ContestItem) => {
+    navigate(`/contests/${contest.id}`);
+  };
 
   return (
-    <section id="contest" className="h-screen bg-[#2C2C2C] pt-32 pb-16 flex flex-col relative">
+    <section id="contest" className="min-h-screen bg-[#2C2C2C] pt-32 pb-16 flex flex-col relative">
       <style>{`
         .fade-in-header {
           opacity: 0;
@@ -249,15 +279,28 @@ export function Contest() {
               )}
             </button>
             <button
-              onClick={() => setSelectedCategory('ended')}
+              onClick={() => setSelectedCategory('upcoming')}
               className={`pb-3 px-4 font-medium transition-all relative ${
-                selectedCategory === 'ended'
+                selectedCategory === 'upcoming'
                   ? 'text-[#C84630]'
                   : 'text-[#F4F4F0]/60 hover:text-[#F4F4F0]'
               }`}
             >
-              종료
-              {selectedCategory === 'ended' && (
+              진행 예정
+              {selectedCategory === 'upcoming' && (
+                <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#C84630]"></div>
+              )}
+            </button>
+            <button
+              onClick={() => setSelectedCategory('past')}
+              className={`pb-3 px-4 font-medium transition-all relative ${
+                selectedCategory === 'past'
+                  ? 'text-[#C84630]'
+                  : 'text-[#F4F4F0]/60 hover:text-[#F4F4F0]'
+              }`}
+            >
+              종료됨
+              {selectedCategory === 'past' && (
                 <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#C84630]"></div>
               )}
             </button>
@@ -266,21 +309,23 @@ export function Contest() {
 
         {/* 카드 스크롤 영역 */}
         {isLoading ? (
-          <div className="flex items-center justify-center text-[#F4F4F0]/60 h-[400px]">
+          <div className="flex items-center justify-center text-[#F4F4F0]/60 h-[20vw] md:h-[25vw] lg:h-[272px]">
             로딩 중...
           </div>
-        ) : filteredContests.length === 0 ? (
-          <div className="flex items-center justify-center text-[#F4F4F0]/60 h-[400px]">
+        ) : contests.length === 0 ? (
+          <div className="flex items-center justify-center text-[#F4F4F0]/60 h-[20vw] md:h-[25vw] lg:h-[272px]">
             {selectedCategory === 'all' 
               ? '현재 예정된 공모전이 없습니다.'
               : selectedCategory === 'ongoing'
               ? '진행 중인 공모전이 없습니다.'
+              : selectedCategory === 'upcoming'
+              ? '진행 예정인 공모전이 없습니다.'
               : '종료된 공모전이 없습니다.'}
           </div>
         ) : (
           <div 
             ref={cardsRef}
-            className={`relative slide-in-cards ${isCardsVisible ? 'visible' : ''} h-[400px]`}
+            className={`relative slide-in-cards ${isCardsVisible ? 'visible' : ''} h-[20vw] md:h-[25vw] lg:h-[272px]`}
           >
             {/* 스크롤 가이드 - 왼쪽 화살표 */}
             {showLeftArrow && (
@@ -310,62 +355,69 @@ export function Contest() {
                 touchAction: 'pan-x'
               }}
             >
-              <div className="flex gap-8 pb-4">
-                {filteredContests.map((contest) => (
+              <div className={`flex gap-5 pb-4 transition-opacity duration-300 ${
+                isTransitioning ? 'opacity-0' : 'opacity-100'
+              }`}>
+                {contests.map((contest) => (
                   <div
                     key={contest.id}
-                    onClick={() => navigate(`/contests/${contest.id}`)}
-                    className="flex-shrink-0 w-80 cursor-pointer group"
+                    onClick={() => handleCardClick(contest)}
+                    className="flex-shrink-0 w-64 cursor-pointer group"
                   >
                     {/* 포스터 이미지 */}
                     <div className="relative overflow-hidden flex justify-center">
-                      <img
-                        src={contest.imageUrl}
+                      <ImageWithFallback
+                        src={getFullImageUrl(contest.imageUrl)}
                         alt={contest.title}
                         className="w-[70%] aspect-[3/4] object-cover group-hover:opacity-90 transition-opacity duration-300"
                       />
+                      
+                      {/* 상태 배지 */}
+                      <div className={`absolute top-2 right-2 px-3 py-1 rounded-full text-xs text-white ${
+                        contest.status === 'ONGOING' 
+                          ? 'bg-green-600' 
+                          : contest.status === 'UPCOMING'
+                          ? 'bg-orange-500'
+                          : 'bg-gray-600'
+                      }`}>
+                        {getStatusDisplayName(contest.status)}
+                      </div>
                     </div>
                     
                     {/* 구분선 */}
-                    <div className="w-full h-px bg-[#F4F4F0]/20 mb-4"></div>
+                    <div className="w-full h-px bg-[#F4F4F0]/20 mb-2.5"></div>
                     
                     {/* 텍스트 정보 */}
-                    <div className="flex flex-col min-h-[180px]">
-                      {/* 부제목 */}
-                      <div className="text-xs text-[#F4F4F0]/60 font-medium mb-2">
-                        {contest.subtitle}
-                      </div>
-                      
+                    <div className="flex flex-col h-[180px]">
                       {/* 제목 */}
-                      <h3 className="text-xl font-bold text-[#F4F4F0] group-hover:text-[#C84630] transition-colors line-clamp-2 mb-3">
+                      <h3 className="text-lg font-bold text-[#F4F4F0] group-hover:text-[#C84630] transition-colors line-clamp-2 mb-1.5 h-[3.5rem]">
                         {contest.title}
                       </h3>
                       
                       {/* 설명 */}
-                      <p className="text-sm text-[#F4F4F0]/70 leading-relaxed line-clamp-2 mb-4">
-                        {contest.content}
+                      <p className="text-sm text-[#F4F4F0]/70 leading-relaxed line-clamp-2 mb-2.5 h-[3rem]">
+                        {contest.description}
                       </p>
                       
                       {/* 하단 고정 영역 */}
-                      <div className="mt-auto space-y-3">
-                        {/* 태그 */}
-                        <div className="flex flex-wrap gap-2">
-                          <span className={`inline-block px-3 py-1 text-xs rounded-full ${
-                            contest.status === 'ongoing'
-                              ? 'bg-[#C84630] text-[#F4F4F0]'
-                              : 'bg-[#F4F4F0] text-[#2C2C2C]'
-                          }`}>
-                            {contest.status === 'ongoing' ? '진행 중' : '종료'}
-                          </span>
+                      <div className="mt-auto space-y-1.5">
+                        {/* 날짜 */}
+                        <div className="flex items-center text-[11px] text-[#F4F4F0]/60">
+                          <Calendar className="w-3 h-3 mr-1 flex-shrink-0" />
+                          <span>{formatDate(contest.startDate)} ~ {formatDate(contest.endDate)}</span>
                         </div>
                         
-                        {/* 날짜 */}
-                        {contest.startDate && contest.endDate && (
-                          <div className="flex items-center text-sm text-[#F4F4F0]/60">
-                            <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
-                            <span>{contest.startDate} - {contest.endDate}</span>
-                          </div>
-                        )}
+                        {/* 주최자 */}
+                        <div className="flex items-center gap-1 text-[11px] text-[#F4F4F0]/60">
+                          <User className="w-2.5 h-2.5" />
+                          <span className="line-clamp-1">{contest.host}</span>
+                        </div>
+                        
+                        {/* 장소 */}
+                        <div className="flex items-center gap-1 text-[11px] text-[#F4F4F0]/60">
+                          <MapPin className="w-2.5 h-2.5" />
+                          <span className="line-clamp-1">{contest.location}</span>
+                        </div>
                       </div>
                     </div>
                   </div>

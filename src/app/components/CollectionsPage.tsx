@@ -447,7 +447,7 @@ export function CollectionsPage() {
                   <PaginationItem>
                     <PaginationPrevious 
                       onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                      className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer text-[#F4F4F0] hover:text-[#C84630]'}
+                      className={currentPage === 1 ? 'pointer-events-none text-[#F4F4F0]/20' : 'cursor-pointer text-[#F4F4F0] hover:text-[#C84630]'}
                     />
                   </PaginationItem>
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
@@ -464,7 +464,7 @@ export function CollectionsPage() {
                   <PaginationItem>
                     <PaginationNext 
                       onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                      className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer text-[#F4F4F0] hover:text-[#C84630]'}
+                      className={currentPage === totalPages ? 'pointer-events-none text-[#F4F4F0]/20' : 'cursor-pointer text-[#F4F4F0] hover:text-[#C84630]'}
                     />
                   </PaginationItem>
                 </PaginationContent>
@@ -503,6 +503,11 @@ export function CollectionsPage() {
                 >
                   이동
                 </button>
+              </div>
+
+              {/* 총 결과 개수 */}
+              <div className="mt-4 text-center text-[#F4F4F0]/60 text-sm">
+                총 {totalCount}개의 작품
               </div>
             </div>
           )}

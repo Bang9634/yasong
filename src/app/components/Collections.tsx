@@ -147,7 +147,7 @@ export function Collections() {
 
   if (isLoading) {
     return (
-      <section id="collections" className="h-screen bg-[#2C2C2C] pt-32 pb-16 flex flex-col relative">
+      <section id="collections" className="min-h-screen bg-[#2C2C2C] pt-32 pb-16 flex flex-col relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <p className="text-[#F4F4F0]/60">로딩 중...</p>
@@ -158,7 +158,7 @@ export function Collections() {
   }
 
   return (
-    <section id="collections" className="h-screen bg-[#2C2C2C] pt-32 pb-16 flex flex-col relative">
+    <section id="collections" className="min-h-screen bg-[#2C2C2C] pt-32 pb-16 flex flex-col relative">
       <style>{`
         .fade-in-header {
           opacity: 0;
@@ -207,13 +207,13 @@ export function Collections() {
         </div>
 
         {artworks.length === 0 ? (
-          <div className="flex items-center justify-center text-[#F4F4F0]/60 h-[400px]">
+          <div className="flex items-center justify-center text-[#F4F4F0]/60 h-[25vw] md:h-[30vw] lg:h-[350px]">
             등록된 대표 작품이 없습니다.
           </div>
         ) : (
           <div 
             ref={cardsRef}
-            className={`relative slide-in-cards ${isCardsVisible ? 'visible' : ''} h-[400px]`}
+            className={`relative slide-in-cards ${isCardsVisible ? 'visible' : ''} h-[25vw] md:h-[30vw] lg:h-[350px]`}
           >
             {/* 스크롤 가이드 - 왼쪽 화살표 */}
             {showLeftArrow && (
@@ -251,7 +251,7 @@ export function Collections() {
                     className="flex-shrink-0 w-80 cursor-pointer group"
                   >
                     {/* 작품 이미지 */}
-                    <div className="relative overflow-hidden flex justify-center h-[300px] items-end mb-0">
+                    <div className="relative overflow-hidden flex justify-center h-[280px] items-end mb-0">
                       <ImageWithFallback
                         src={getImageUrl(artwork.imageUrl)}
                         alt={artwork.title}
@@ -260,10 +260,10 @@ export function Collections() {
                     </div>
                     
                     {/* 구분선 */}
-                    <div className="w-full h-px bg-[#F4F4F0]/20 mb-4"></div>
+                    <div className="w-full h-px bg-[#F4F4F0]/20 mb-3"></div>
                     
                     {/* 텍스트 정보 */}
-                    <div className="flex flex-col min-h-[180px]">
+                    <div className="flex flex-col h-[180px]">
                       {/* 작가 */}
                       <div className="text-xs text-[#F4F4F0]/60 font-medium mb-2">
                         {artwork.artist}

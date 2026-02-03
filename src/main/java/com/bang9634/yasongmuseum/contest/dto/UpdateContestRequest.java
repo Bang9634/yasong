@@ -21,9 +21,6 @@ public class UpdateContestRequest {
     @NotBlank(message = "장소는 필수입니다.")
     private String location;
     
-    @NotBlank(message = "이미지 URL은 필수입니다.")
-    private String imageUrl;
-    
     @NotBlank(message = "주최자는 필수입니다.")
     private String host;
     

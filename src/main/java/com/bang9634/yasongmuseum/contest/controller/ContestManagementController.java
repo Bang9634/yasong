@@ -6,10 +6,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.bang9634.yasongmuseum.common.dto.PagedResponse;
 import com.bang9634.yasongmuseum.contest.dto.ContestResponse;
@@ -56,18 +57,28 @@ public class ContestManagementController {
         return ResponseEntity.ok(contest);
     }
 
+    /**
+     * Create new contest (Admin only)
+     * Multipart form data with JSON and image file
+     */
     @PostMapping
     public ResponseEntity<ContestResponse> createContest(
-            @Valid @RequestBody CreateContestRequest request) {
-        ContestResponse contest = contestService.createContest(request);
+            @RequestPart("data") @Valid CreateContestRequest request,
+            @RequestPart("image") MultipartFile imageFile) {
+        ContestResponse contest = contestService.createContest(request, imageFile);
         return ResponseEntity.ok(contest);
     }
 
+    /**
+     * Update contest (Admin only)
+     * Image file is optional - if not provided, keeps existing image
+     */
     @PutMapping("/{id}")
     public ResponseEntity<ContestResponse> updateContest(
             @PathVariable Long id,
-            @Valid @RequestBody UpdateContestRequest request) {
-        ContestResponse contest = contestService.updateContest(id, request);
+            @RequestPart("data") @Valid UpdateContestRequest request,
+            @RequestPart(value = "image", required = false) MultipartFile imageFile) {
+        ContestResponse contest = contestService.updateContest(id, request, imageFile);
         return ResponseEntity.ok(contest);
     }
 

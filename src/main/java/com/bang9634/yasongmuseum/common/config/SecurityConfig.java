@@ -50,6 +50,7 @@ public class SecurityConfig {
             .requestMatchers("/api/website/settings/**").permitAll() // permit public website settings fetching
             .requestMatchers("/api/collections/**").permitAll() // permit public collections fetching
             .requestMatchers("/api/exhibitions/**").permitAll() // permit public exhibitions fetching
+            .requestMatchers("/api/contests/**").permitAll() // permit public contests fetching
             .requestMatchers("/uploads/**").permitAll() // permit uploaded files access
 
             // Admin and Manager endpoints

@@ -7,9 +7,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.bang9634.yasongmuseum.common.dto.PagedResponse;
 import com.bang9634.yasongmuseum.common.exception.ResourceNotFoundException;
+import com.bang9634.yasongmuseum.common.service.FileStorageService;
 import com.bang9634.yasongmuseum.contest.dto.ContestResponse;
 import com.bang9634.yasongmuseum.contest.dto.CreateContestRequest;
 import com.bang9634.yasongmuseum.contest.dto.UpdateContestRequest;
@@ -24,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 public class ContestService {
 
     private final ContestRepository contestRepository;
+    private final FileStorageService fileStorageService;
 
     /**
      * Get contests with pagination and filters
@@ -56,11 +59,13 @@ public class ContestService {
      * Create new contest
      */
     @Transactional
-    public ContestResponse createContest(CreateContestRequest request) {
+    public ContestResponse createContest(CreateContestRequest request, MultipartFile imageFile) {
+        String imageUrl = fileStorageService.saveFile(imageFile, "contests", "contest-");
+        
         Contest contest = Contest.builder()
                 .title(request.getTitle())
                 .location(request.getLocation())
-                .imageUrl(request.getImageUrl())
+                .imageUrl(imageUrl)
                 .host(request.getHost())
                 .description(request.getDescription())
                 .announcementUrl(request.getAnnouncementUrl())
@@ -76,13 +81,18 @@ public class ContestService {
      * Update contest
      */
     @Transactional
-    public ContestResponse updateContest(Long id, UpdateContestRequest request) {
+    public ContestResponse updateContest(Long id, UpdateContestRequest request, MultipartFile imageFile) {
         Contest contest = contestRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("공모전을 찾을 수 없습니다."));
         
+        // Update image if new file is provided
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String newImageUrl = fileStorageService.saveFile(imageFile, "contests", "contest-");
+            contest.setImageUrl(newImageUrl);
+        }
+        
         contest.setTitle(request.getTitle());
         contest.setLocation(request.getLocation());
-        contest.setImageUrl(request.getImageUrl());
         contest.setHost(request.getHost());
         contest.setDescription(request.getDescription());
         contest.setAnnouncementUrl(request.getAnnouncementUrl());

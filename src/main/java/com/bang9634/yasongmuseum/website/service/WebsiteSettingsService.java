@@ -6,7 +6,6 @@ import com.bang9634.yasongmuseum.website.dto.TextSettingResponse;
 import com.bang9634.yasongmuseum.website.dto.UploadImageResponse;
 import com.bang9634.yasongmuseum.website.entity.ImageType;
 import com.bang9634.yasongmuseum.website.entity.WebsiteSettings;
-import com.bang9634.yasongmuseum.website.exception.SettingNotFoundException;
 import com.bang9634.yasongmuseum.website.repository.WebsiteSettingsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

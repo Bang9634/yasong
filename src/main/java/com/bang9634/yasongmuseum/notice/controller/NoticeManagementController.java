@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.bang9634.yasongmuseum.common.dto.PagedResponse;
 import com.bang9634.yasongmuseum.notice.dto.CreateNoticeRequest;
 import com.bang9634.yasongmuseum.notice.dto.ImageUploadResponse;
 import com.bang9634.yasongmuseum.notice.dto.NoticeAttachmentResponse;
@@ -33,10 +34,26 @@ public class NoticeManagementController {
 
     private final NoticeService noticeService;
 
+    /**
+     * Get notices with pagination (Admin API)
+     * Supports all status values including DRAFT and HIDDEN
+     * 
+     * @param page Page number (1-based)
+     * @param limit Items per page
+     * @param search Search keyword (title, content)
+     * @param category Notice category filter (NOTICE, EVENT, GUIDE, CONTEST)
+     * @param status Notice status filter (DRAFT, PUBLISHED, HIDDEN)
+     */
     @GetMapping
-    public ResponseEntity<List<NoticeResponse>> getAllNotices() {
-        List<NoticeResponse> notices = noticeService.getAllNotices();
-        return ResponseEntity.ok(notices);
+    public ResponseEntity<PagedResponse<NoticeResponse>> getNotices(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String status
+    ) {
+        PagedResponse<NoticeResponse> response = noticeService.getNotices(page, limit, search, category, status);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")

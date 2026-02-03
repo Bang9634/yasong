@@ -1,7 +1,5 @@
 package com.bang9634.yasongmuseum.notice.controller;
 
-import java.util.List;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,6 +26,12 @@ public class NoticeController {
     
     /**
      * Get notices with pagination (Public API)
+     * Always returns only PUBLISHED notices for security
+     * 
+     * @param page Page number (1-based)
+     * @param limit Items per page
+     * @param search Search keyword (title, content)
+     * @param category Notice category filter (NOTICE, EVENT, GUIDE, CONTEST)
      */
     @GetMapping
     public ResponseEntity<PagedResponse<NoticeResponse>> getNotices(
@@ -36,7 +40,8 @@ public class NoticeController {
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String category
     ) {
-        PagedResponse<NoticeResponse> response = noticeService.getNotices(page, limit, search, category);
+        // Force PUBLISHED status for public API (security)
+        PagedResponse<NoticeResponse> response = noticeService.getNotices(page, limit, search, category, "PUBLISHED");
         return ResponseEntity.ok(response);
     }
 

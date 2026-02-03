@@ -6,8 +6,6 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.springframework.stereotype.Service;
 
-import com.bang9634.yasongmuseum.auth.repository.LoginLogRepository;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,11 +17,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 public class LoginAttemptService {
-    
+     
     private static final int MAX_ATTEMPTS = 5;
     private static final int BLOCK_DURATION_MINUTES = 15;
-    
-    private final LoginLogRepository loginLogRepository;
     
     // IP Address -> Login Attempt Info
     private final ConcurrentMap<String, LoginAttempt> ipAttempts = new ConcurrentHashMap<>();

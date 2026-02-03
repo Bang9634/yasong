@@ -62,7 +62,6 @@ public class AuthService {
                 .name(savedUser.getName())
                 .role(savedUser.getRole())
                 .createdAt(savedUser.getCreatedAt())
-                .message("회원가입이 완료되었습니다.")
                 .build();
     }
 
@@ -122,7 +121,6 @@ public class AuthService {
                     .role(user.getRole())
                     .token(token)
                     .createdAt(user.getCreatedAt())
-                    .message("로그인 성공")
                     .build();
         } catch (UserNotFoundException e) {
             loginAttemptService.loginFailed(ipAddress, username);

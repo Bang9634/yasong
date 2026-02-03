@@ -43,9 +43,9 @@ public class NoticeService {
     /**
      * Get notices with pagination and filtering
      */
-    public PagedResponse<NoticeResponse> getNotices(int page, int limit, String search, String category) {
+    public PagedResponse<NoticeResponse> getNotices(int page, int limit, String search, String category, String status) {
         Pageable pageable = PageRequest.of(page - 1, limit);
-        Page<Notice> result = noticeRepository.findFiltered(search, category, pageable);
+        Page<Notice> result = noticeRepository.findFiltered(search, category, status, pageable);
         
         Page<NoticeResponse> responsePage = result.map(NoticeResponse::from);
         return new PagedResponse<>(responsePage);

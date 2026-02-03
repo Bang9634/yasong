@@ -47,7 +47,7 @@ public interface NoticeRepository extends JpaRepository<Notice, Long>{
     @Query("""
         SELECT n FROM Notice n
         WHERE n.deletedAt IS NULL
-        AND n.status = 'PUBLISHED'
+        AND (:status IS NULL OR CAST(n.status AS string) = :status)
         AND (:search IS NULL OR 
              LOWER(n.title) LIKE LOWER(CONCAT('%', :search, '%')) OR
              LOWER(n.content) LIKE LOWER(CONCAT('%', :search, '%')))
@@ -57,6 +57,7 @@ public interface NoticeRepository extends JpaRepository<Notice, Long>{
     Page<Notice> findFiltered(
         @Param("search") String search,
         @Param("category") String category,
+        @Param("status") String status,
         Pageable pageable
     );
 }

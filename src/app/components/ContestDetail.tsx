@@ -211,7 +211,7 @@ export function ContestDetail() {
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <User className="w-5 h-5 text-[#F4F4F0]/60 mt-0.5" />
+                  <MapPin className="w-5 h-5 text-[#F4F4F0]/60 mt-0.5" />
                   <div>
                     <p className="text-sm text-[#F4F4F0]/60 mb-1">주최</p>
                     <p className="text-[#F4F4F0] font-medium">{contest.host}</p>
@@ -219,9 +219,9 @@ export function ContestDetail() {
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <MapPin className="w-5 h-5 text-[#F4F4F0]/60 mt-0.5" />
+                  <User className="w-5 h-5 text-[#F4F4F0]/60 mt-0.5" />
                   <div>
-                    <p className="text-sm text-[#F4F4F0]/60 mb-1">개최 장소</p>
+                    <p className="text-sm text-[#F4F4F0]/60 mb-1">공모 대상</p>
                     <p className="text-[#F4F4F0] font-medium">{contest.location}</p>
                   </div>
                 </div>

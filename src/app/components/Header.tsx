@@ -16,77 +16,90 @@ export function Header() {
   const isHomePage = location.pathname === '/';
   const { user, logout } = useAuth();
 
-  // 페이지별 예상 배경색 설정 (깜빡임 방지)
-  const getInitialBackground = (pathname: string) => {
-    // 어두운 배경 페이지들
-    if (pathname.startsWith('/collections')) return true;
-    // 밝은 배경 페이지들
-    if (pathname.startsWith('/notice') || pathname.startsWith('/exhibitions')) return false;
-    // 홈페이지는 스크롤 위치에 따라 달라지므로 false (기본값)
-    return false;
+  // sessionStorage에서 이전 헤더 상태 불러오기
+  const getInitialHeaderState = () => {
+    const saved = sessionStorage.getItem('headerDarkBackground');
+    return saved !== null ? saved === 'true' : false;
   };
 
-  const [isDarkBackground, setIsDarkBackground] = useState(() => getInitialBackground(location.pathname));
+  const [isDarkBackground, setIsDarkBackground] = useState(getInitialHeaderState);
   const [prevPathname, setPrevPathname] = useState(location.pathname);
+  const [isPageTransitioning, setIsPageTransitioning] = useState(false);
 
-  // 페이지 변경 감지 및 예상 배경색으로 전환
+  // 배경색 감지 함수 (모든 페이지에서 사용)
+  const detectBackgroundColor = () => {
+    const headerBottom = 80;
+    const centerY = headerBottom + 100;
+    const element = document.elementFromPoint(window.innerWidth / 2, centerY);
+    
+    if (element && element.tagName !== 'HEADER' && !element.closest('header')) {
+      let currentElement: HTMLElement | null = element as HTMLElement;
+      let foundDarkBg = false;
+      
+      while (currentElement && currentElement !== document.body) {
+        const bgColor = window.getComputedStyle(currentElement).backgroundColor;
+        
+        if (bgColor === 'rgb(44, 44, 44)' || 
+            bgColor.includes('rgba(44, 44, 44') ||
+            currentElement.classList.contains('bg-[#2C2C2C]')) {
+          foundDarkBg = true;
+          break;
+        }
+        
+        if (bgColor === 'rgb(244, 244, 240)' || 
+            bgColor.includes('rgba(244, 244, 240') ||
+            currentElement.classList.contains('bg-[#F4F4F0]')) {
+          foundDarkBg = false;
+          break;
+        }
+        
+        currentElement = currentElement.parentElement;
+      }
+      
+      // 상태 업데이트 및 sessionStorage에 저장
+      setIsDarkBackground(foundDarkBg);
+      sessionStorage.setItem('headerDarkBackground', String(foundDarkBg));
+    }
+  };
+
+  // 초기 배경색 감지
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      detectBackgroundColor();
+    }, 50);
+    
+    return () => clearTimeout(timer);
+  }, []);
+
+  // 페이지 변경 감지 및 배경색 감지 (애니메이션 없이 즉시 변경)
   useEffect(() => {
     if (location.pathname !== prevPathname) {
       setPrevPathname(location.pathname);
-      const newBackground = getInitialBackground(location.pathname);
       
-      // 상태가 실제로 변경될 때만 업데이트 (transition 발생)
-      if (newBackground !== isDarkBackground) {
-        setIsDarkBackground(newBackground);
-      }
+      // transition 비활성화
+      setIsPageTransitioning(true);
+      
+      // DOM 렌더링 후 배경색 감지
+      const timer = setTimeout(() => {
+        detectBackgroundColor();
+        
+        // transition 다시 활성화 (스크롤 감지용)
+        setTimeout(() => {
+          setIsPageTransitioning(false);
+        }, 30);
+      }, 100);
+      
+      return () => clearTimeout(timer);
     }
-  }, [location.pathname, prevPathname, isDarkBackground]);
+  }, [location.pathname, prevPathname]);
 
-  // 스크롤 위치에 따른 배경색 감지
+  // 스크롤 위치에 따른 배경색 감지 (홈페이지만 동적 감지)
   useEffect(() => {
+    // 홈페이지가 아니면 스크롤 감지 비활성화
+    if (location.pathname !== '/') return;
+
     const handleScroll = () => {
-      // 헤더 하단의 중앙 지점 - 좀 더 아래쪽으로 조정
-      const headerBottom = 80; // 헤더 높이
-      const centerY = headerBottom + 100; // 180px 지점 (더 아래로)
-      
-      // 해당 위치의 요소 가져오기
-      const element = document.elementFromPoint(window.innerWidth / 2, centerY);
-      
-      if (element) {
-        // 현재 요소와 부모 요소들의 배경색 확인
-        let currentElement: HTMLElement | null = element as HTMLElement;
-        let foundDarkBg = false;
-        
-        // 헤더 자신은 건너뛰기
-        if (currentElement.tagName === 'HEADER' || currentElement.closest('header')) {
-          return;
-        }
-        
-        while (currentElement && currentElement !== document.body) {
-          const bgColor = window.getComputedStyle(currentElement).backgroundColor;
-          
-          // rgb(44, 44, 44) = #2C2C2C (먹색/어두운 배경)
-          if (bgColor === 'rgb(44, 44, 44)' || 
-              bgColor.includes('rgba(44, 44, 44') ||
-              currentElement.classList.contains('bg-[#2C2C2C]')) {
-            foundDarkBg = true;
-            break;
-          }
-          
-          // rgb(244, 244, 240) = #F4F4F0 (한지 화이트/밝은 배경)
-          // 밝은 배경이면 헤더를 어둡게 해야 하므로 foundDarkBg = false
-          if (bgColor === 'rgb(244, 244, 240)' || 
-              bgColor.includes('rgba(244, 244, 240') ||
-              currentElement.classList.contains('bg-[#F4F4F0]')) {
-            foundDarkBg = false;
-            break;
-          }
-          
-          currentElement = currentElement.parentElement;
-        }
-        
-        setIsDarkBackground(foundDarkBg);
-      }
+      detectBackgroundColor();
     };
 
     // 스크롤 이벤트 리스너
@@ -98,50 +111,7 @@ export function Header() {
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, []);
-
-  // 페이지 변경 시 배경색 재감지
-  useEffect(() => {
-    // pathname이 변경될 때만 실행
-    if (location.pathname === prevPathname) return;
-    
-    // DOM 렌더링 후 재감지 (홈페이지의 경우 스크롤 위치 고려)
-    const timer = setTimeout(() => {
-      const headerBottom = 80;
-      const centerY = headerBottom + 100;
-      const element = document.elementFromPoint(window.innerWidth / 2, centerY);
-      
-      if (element && element.tagName !== 'HEADER' && !element.closest('header')) {
-        let currentElement: HTMLElement | null = element as HTMLElement;
-        let foundDarkBg = false;
-        
-        while (currentElement && currentElement !== document.body) {
-          const bgColor = window.getComputedStyle(currentElement).backgroundColor;
-          
-          if (bgColor === 'rgb(44, 44, 44)' || bgColor.includes('rgba(44, 44, 44') || currentElement.classList.contains('bg-[#2C2C2C]')) {
-            foundDarkBg = true;
-            break;
-          }
-          
-          if (bgColor === 'rgb(244, 244, 240)' || bgColor.includes('rgba(244, 244, 240') || currentElement.classList.contains('bg-[#F4F4F0]')) {
-            foundDarkBg = false;
-            break;
-          }
-          
-          currentElement = currentElement.parentElement;
-        }
-        
-        // 홈페이지에서만 감지 값으로 업데이트 (다른 페이지는 예상값 유지)
-        if (location.pathname === '/') {
-          setIsDarkBackground(foundDarkBg);
-        }
-      }
-    }, 200);
-    
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [location.pathname, prevPathname]);
+  }, [location.pathname]);
 
   const handleLogout = () => {
     logout();
@@ -172,7 +142,9 @@ export function Header() {
   };
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-500 ${
+    <header className={`fixed top-0 left-0 right-0 z-50 ${
+      isPageTransitioning ? 'transition-none' : 'transition-colors duration-700'
+    } ${
       isDarkBackground 
         ? 'bg-[#F4F4F0]/98' 
         : 'bg-[#2C2C2C]/98'
@@ -187,7 +159,7 @@ export function Header() {
               className="w-10 h-10 sm:w-12 sm:h-12"
             />
             <div className="flex items-center gap-2">
-              <h1 className={`text-xl sm:text-2xl font-bold tracking-wider transition-colors duration-300 ${
+              <h1 className={`text-xl sm:text-2xl font-bold tracking-wider transition-colors duration-700 ${
                 isDarkBackground ? 'text-[#2C2C2C]' : 'text-[#F4F4F0]'
               }`}>
                 YASONG
@@ -200,7 +172,7 @@ export function Header() {
             {/* 야송 이야기 드롭다운 */}
             <div className="relative group">
               <button
-                className={`transition-colors py-2 relative after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[2px] after:bg-[#C84630] after:transition-all after:duration-300 hover:after:w-full ${
+                className={`transition-colors duration-700 py-2 relative after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[2px] after:bg-[#C84630] after:transition-all after:duration-300 hover:after:w-full ${
                   isDarkBackground 
                     ? 'text-[#2C2C2C] hover:text-[#C84630]' 
                     : 'text-[#F4F4F0] hover:text-[#C84630]'
@@ -209,7 +181,7 @@ export function Header() {
                 야송 이야기
               </button>
               <div
-                className={`absolute top-full left-1/2 -translate-x-1/2 mt-3 w-44 shadow-lg border rounded-sm overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 ${
+                className={`absolute top-full left-1/2 -translate-x-1/2 mt-3 w-44 shadow-lg border rounded-sm overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-700 z-50 ${
                   isDarkBackground 
                     ? 'bg-[#F4F4F0] border-[#E0E0E0]' 
                     : 'bg-[#2C2C2C] border-[#404040]'
@@ -217,7 +189,7 @@ export function Header() {
               >
                 <button
                   onClick={() => scrollToSection('director')}
-                  className={`block w-full text-left px-4 py-2.5 transition-all ${
+                  className={`block w-full text-left px-4 py-2.5 transition-all duration-700 ${
                     isDarkBackground
                       ? 'text-[#2C2C2C] hover:bg-[#C84630]/5 hover:text-[#C84630]'
                       : 'text-[#F4F4F0] hover:bg-[#C84630]/20 hover:text-[#C84630]'
@@ -230,7 +202,7 @@ export function Header() {
                     setIsMenuOpen(false);
                     // TODO: 일대기 페이지 구현 후 navigate 추가
                   }}
-                  className={`block w-full text-left px-4 py-2.5 transition-all ${
+                  className={`block w-full text-left px-4 py-2.5 transition-all duration-700 ${
                     isDarkBackground
                       ? 'text-[#2C2C2C] hover:bg-[#C84630]/5 hover:text-[#C84630]'
                       : 'text-[#F4F4F0] hover:bg-[#C84630]/20 hover:text-[#C84630]'
@@ -243,7 +215,7 @@ export function Header() {
                     setIsMenuOpen(false);
                     // TODO: 화업의 평가 페이지 구현 후 navigate 추가
                   }}
-                  className={`block w-full text-left px-4 py-2.5 transition-all ${
+                  className={`block w-full text-left px-4 py-2.5 transition-all duration-700 ${
                     isDarkBackground
                       ? 'text-[#2C2C2C] hover:bg-[#C84630]/5 hover:text-[#C84630]'
                       : 'text-[#F4F4F0] hover:bg-[#C84630]/20 hover:text-[#C84630]'
@@ -256,7 +228,7 @@ export function Header() {
                     setIsMenuOpen(false);
                     // TODO: 사진 자료 페이지 구현 후 navigate 추가
                   }}
-                  className={`block w-full text-left px-4 py-2.5 transition-all ${
+                  className={`block w-full text-left px-4 py-2.5 transition-all duration-700 ${
                     isDarkBackground
                       ? 'text-[#2C2C2C] hover:bg-[#C84630]/5 hover:text-[#C84630]'
                       : 'text-[#F4F4F0] hover:bg-[#C84630]/20 hover:text-[#C84630]'
@@ -270,7 +242,7 @@ export function Header() {
             {/* 작품 소개 */}
             <button
               onClick={() => { navigate('/collections'); }}
-              className={`transition-colors py-2 relative after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[2px] after:bg-[#C84630] after:transition-all after:duration-300 hover:after:w-full ${
+              className={`transition-colors duration-700 py-2 relative after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[2px] after:bg-[#C84630] after:transition-all after:duration-300 hover:after:w-full ${
                 isDarkBackground 
                   ? 'text-[#2C2C2C] hover:text-[#C84630]' 
                   : 'text-[#F4F4F0] hover:text-[#C84630]'
@@ -283,7 +255,7 @@ export function Header() {
             <div className="relative group">
               <button
                 onClick={() => { navigate('/exhibitions'); }}
-                className={`transition-colors py-2 relative after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[2px] after:bg-[#C84630] after:transition-all after:duration-300 hover:after:w-full ${
+                className={`transition-colors duration-700 py-2 relative after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[2px] after:bg-[#C84630] after:transition-all after:duration-300 hover:after:w-full ${
                   isDarkBackground 
                     ? 'text-[#2C2C2C] hover:text-[#C84630]' 
                     : 'text-[#F4F4F0] hover:text-[#C84630]'
@@ -292,7 +264,7 @@ export function Header() {
                 전시
               </button>
               <div
-                className={`absolute top-full left-1/2 -translate-x-1/2 mt-3 w-44 shadow-lg border rounded-sm overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 ${
+                className={`absolute top-full left-1/2 -translate-x-1/2 mt-3 w-44 shadow-lg border rounded-sm overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-700 z-50 ${
                   isDarkBackground 
                     ? 'bg-[#F4F4F0] border-[#E0E0E0]' 
                     : 'bg-[#2C2C2C] border-[#404040]'
@@ -303,7 +275,7 @@ export function Header() {
                     setIsMenuOpen(false);
                     navigate('/exhibitions');
                   }}
-                  className={`block w-full text-left px-4 py-2.5 transition-all ${
+                  className={`block w-full text-left px-4 py-2.5 transition-all duration-700 ${
                     isDarkBackground
                       ? 'text-[#2C2C2C] hover:bg-[#C84630]/5 hover:text-[#C84630]'
                       : 'text-[#F4F4F0] hover:bg-[#C84630]/20 hover:text-[#C84630]'
@@ -316,7 +288,7 @@ export function Header() {
                     setIsMenuOpen(false);
                     // TODO: 언론 보도 페이지 구현 후 navigate 추가
                   }}
-                  className={`block w-full text-left px-4 py-2.5 transition-all ${
+                  className={`block w-full text-left px-4 py-2.5 transition-all duration-700 ${
                     isDarkBackground
                       ? 'text-[#2C2C2C] hover:bg-[#C84630]/5 hover:text-[#C84630]'
                       : 'text-[#F4F4F0] hover:bg-[#C84630]/20 hover:text-[#C84630]'
@@ -330,7 +302,7 @@ export function Header() {
             {/* 공모전 */}
             <button
               onClick={() => navigate('/contests')}
-              className={`transition-colors py-2 relative after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[2px] after:bg-[#C84630] after:transition-all after:duration-300 hover:after:w-full ${
+              className={`transition-colors duration-700 py-2 relative after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[2px] after:bg-[#C84630] after:transition-all after:duration-300 hover:after:w-full ${
                 isDarkBackground 
                   ? 'text-[#2C2C2C] hover:text-[#C84630]' 
                   : 'text-[#F4F4F0] hover:text-[#C84630]'
@@ -345,7 +317,7 @@ export function Header() {
                 navigate('/notice');
                 setIsMenuOpen(false);
               }}
-              className={`transition-colors py-2 relative after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[2px] after:bg-[#C84630] after:transition-all after:duration-300 hover:after:w-full ${
+              className={`transition-colors duration-700 py-2 relative after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[2px] after:bg-[#C84630] after:transition-all after:duration-300 hover:after:w-full ${
                 isDarkBackground 
                   ? 'text-[#2C2C2C] hover:text-[#C84630]' 
                   : 'text-[#F4F4F0] hover:text-[#C84630]'
@@ -363,14 +335,14 @@ export function Header() {
                 {/* 관리자 메뉴 (MANAGER, ADMIN) */}
                 {isManagerOrAbove(user.role) && (
                   <div className="relative group">
-                    <button className={`transition-colors py-2 relative after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[2px] after:bg-[#C84630] after:transition-all after:duration-300 hover:after:w-full ${
+                    <button className={`transition-colors duration-700 py-2 relative after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[2px] after:bg-[#C84630] after:transition-all after:duration-300 hover:after:w-full ${
                       isDarkBackground 
                         ? 'text-[#2C2C2C] hover:text-[#C84630]' 
                         : 'text-[#F4F4F0] hover:text-[#C84630]'
                     }`}>
                       관리
                     </button>
-                    <div className={`absolute top-full right-0 mt-3 w-44 shadow-lg border rounded-sm overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 ${
+                    <div className={`absolute top-full right-0 mt-3 w-44 shadow-lg border rounded-sm overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-700 z-50 ${
                         isDarkBackground 
                           ? 'bg-[#F4F4F0] border-[#E0E0E0]' 
                           : 'bg-[#2C2C2C] border-[#404040]'
@@ -381,7 +353,7 @@ export function Header() {
                             navigate('/admin/users');
                             setIsMenuOpen(false);
                           }}
-                          className={`block w-full text-left px-4 py-2.5 transition-all ${
+                          className={`block w-full text-left px-4 py-2.5 transition-all duration-700 ${
                             isDarkBackground
                               ? 'text-[#2C2C2C] hover:bg-[#C84630]/5 hover:text-[#C84630]'
                               : 'text-[#F4F4F0] hover:bg-[#C84630]/20 hover:text-[#C84630]'
@@ -395,7 +367,7 @@ export function Header() {
                           navigate('/admin/website');
                           setIsMenuOpen(false);
                         }}
-                        className={`block w-full text-left px-4 py-2.5 transition-all ${
+                        className={`block w-full text-left px-4 py-2.5 transition-all duration-700 ${
                           isDarkBackground
                             ? 'text-[#2C2C2C] hover:bg-[#C84630]/5 hover:text-[#C84630]'
                             : 'text-[#F4F4F0] hover:bg-[#C84630]/20 hover:text-[#C84630]'
@@ -409,7 +381,7 @@ export function Header() {
                             navigate('/admin/analytics');
                             setIsMenuOpen(false);
                           }}
-                          className={`block w-full text-left px-4 py-2.5 transition-all ${
+                          className={`block w-full text-left px-4 py-2.5 transition-all duration-700 ${
                             isDarkBackground
                               ? 'text-[#2C2C2C] hover:bg-[#C84630]/5 hover:text-[#C84630]'
                               : 'text-[#F4F4F0] hover:bg-[#C84630]/20 hover:text-[#C84630]'
@@ -424,7 +396,7 @@ export function Header() {
                 
                 <button
                   onClick={() => navigate('/profile')}
-                  className={`transition-colors py-2 relative after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[2px] after:bg-[#C84630] after:transition-all after:duration-300 hover:after:w-full ${
+                  className={`transition-colors duration-700 py-2 relative after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[2px] after:bg-[#C84630] after:transition-all after:duration-300 hover:after:w-full ${
                     isDarkBackground 
                       ? 'text-[#2C2C2C] hover:text-[#C84630]' 
                       : 'text-[#F4F4F0] hover:text-[#C84630]'
@@ -447,9 +419,9 @@ export function Header() {
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               {isMenuOpen ? (
-                <X className={`w-6 h-6 transition-colors ${isDarkBackground ? 'text-[#2C2C2C]' : 'text-[#F4F4F0]'}`} />
+                <X className={`w-6 h-6 transition-colors duration-700 ${isDarkBackground ? 'text-[#2C2C2C]' : 'text-[#F4F4F0]'}`} />
               ) : (
-                <Menu className={`w-6 h-6 transition-colors ${isDarkBackground ? 'text-[#2C2C2C]' : 'text-[#F4F4F0]'}`} />
+                <Menu className={`w-6 h-6 transition-colors duration-700 ${isDarkBackground ? 'text-[#2C2C2C]' : 'text-[#F4F4F0]'}`} />
               )}
             </button>
           </div>
@@ -464,7 +436,7 @@ export function Header() {
                 scrollToSection('director');
                 setIsMenuOpen(false);
               }}
-              className={`block w-full text-left px-4 py-3 font-medium transition-colors ${
+              className={`block w-full text-left px-4 py-3 font-medium transition-colors duration-700 ${
                 isDarkBackground 
                   ? 'text-[#2C2C2C] hover:bg-[#2C2C2C]/5 hover:text-[#C84630]'
                   : 'text-[#F4F4F0] hover:bg-[#F4F4F0]/5 hover:text-[#C84630]'
@@ -473,7 +445,7 @@ export function Header() {
               야송 이야기
             </button>
             {/* 야송 이야기 하위 메뉴 */}
-            <div className={`py-1 ${
+            <div className={`py-1 transition-colors duration-700 ${
               isDarkBackground ? 'bg-[#2C2C2C]/3' : 'bg-[#F4F4F0]/3'
             }`}>
               <button
@@ -481,7 +453,7 @@ export function Header() {
                   scrollToSection('director');
                   setIsMenuOpen(false);
                 }}
-                className={`block w-full text-left px-10 py-2 text-sm transition-colors ${
+                className={`block w-full text-left px-10 py-2 text-sm transition-colors duration-700 ${
                   isDarkBackground 
                     ? 'text-[#2C2C2C]/80 hover:bg-[#2C2C2C]/5 hover:text-[#C84630]'
                     : 'text-[#F4F4F0]/80 hover:bg-[#F4F4F0]/5 hover:text-[#C84630]'
@@ -494,7 +466,7 @@ export function Header() {
                   setIsMenuOpen(false);
                   // TODO: 일대기 페이지 구현 후 navigate 추가
                 }}
-                className={`block w-full text-left px-10 py-2 text-sm transition-colors ${
+                className={`block w-full text-left px-10 py-2 text-sm transition-colors duration-700 ${
                   isDarkBackground 
                     ? 'text-[#2C2C2C]/80 hover:bg-[#2C2C2C]/5 hover:text-[#C84630]'
                     : 'text-[#F4F4F0]/80 hover:bg-[#F4F4F0]/5 hover:text-[#C84630]'
@@ -507,7 +479,7 @@ export function Header() {
                   setIsMenuOpen(false);
                   // TODO: 화업의 평가 페이지 구현 후 navigate 추가
                 }}
-                className={`block w-full text-left px-10 py-2 text-sm transition-colors ${
+                className={`block w-full text-left px-10 py-2 text-sm transition-colors duration-700 ${
                   isDarkBackground 
                     ? 'text-[#2C2C2C]/80 hover:bg-[#2C2C2C]/5 hover:text-[#C84630]'
                     : 'text-[#F4F4F0]/80 hover:bg-[#F4F4F0]/5 hover:text-[#C84630]'
@@ -520,7 +492,7 @@ export function Header() {
                   setIsMenuOpen(false);
                   // TODO: 사진 자료 페이지 구현 후 navigate 추가
                 }}
-                className={`block w-full text-left px-10 py-2 text-sm transition-colors ${
+                className={`block w-full text-left px-10 py-2 text-sm transition-colors duration-700 ${
                   isDarkBackground 
                     ? 'text-[#2C2C2C]/80 hover:bg-[#2C2C2C]/5 hover:text-[#C84630]'
                     : 'text-[#F4F4F0]/80 hover:bg-[#F4F4F0]/5 hover:text-[#C84630]'
@@ -536,7 +508,7 @@ export function Header() {
                 navigate('/collections');
                 setIsMenuOpen(false);
               }}
-              className={`block w-full text-left px-4 py-3 font-medium transition-colors ${
+              className={`block w-full text-left px-4 py-3 font-medium transition-colors duration-700 ${
                 isDarkBackground 
                   ? 'text-[#2C2C2C] hover:bg-[#2C2C2C]/5 hover:text-[#C84630]'
                   : 'text-[#F4F4F0] hover:bg-[#F4F4F0]/5 hover:text-[#C84630]'
@@ -551,7 +523,7 @@ export function Header() {
                 navigate('/exhibitions');
                 setIsMenuOpen(false);
               }}
-              className={`block w-full text-left px-4 py-3 font-medium transition-colors ${
+              className={`block w-full text-left px-4 py-3 font-medium transition-colors duration-700 ${
                 isDarkBackground 
                   ? 'text-[#2C2C2C] hover:bg-[#2C2C2C]/5 hover:text-[#C84630]'
                   : 'text-[#F4F4F0] hover:bg-[#F4F4F0]/5 hover:text-[#C84630]'
@@ -560,7 +532,7 @@ export function Header() {
               전시
             </button>
             {/* 전시 하위 메뉴 */}
-            <div className={`py-1 ${
+            <div className={`py-1 transition-colors duration-700 ${
               isDarkBackground ? 'bg-[#2C2C2C]/3' : 'bg-[#F4F4F0]/3'
             }`}>
               <button
@@ -568,7 +540,7 @@ export function Header() {
                   setIsMenuOpen(false);
                   navigate('/exhibitions');
                 }}
-                className={`block w-full text-left px-10 py-2 text-sm transition-colors ${
+                className={`block w-full text-left px-10 py-2 text-sm transition-colors duration-700 ${
                   isDarkBackground 
                     ? 'text-[#2C2C2C]/80 hover:bg-[#2C2C2C]/5 hover:text-[#C84630]'
                     : 'text-[#F4F4F0]/80 hover:bg-[#F4F4F0]/5 hover:text-[#C84630]'
@@ -581,7 +553,7 @@ export function Header() {
                   setIsMenuOpen(false);
                   // TODO: 언론 보도 페이지 구현 후 navigate 추가
                 }}
-                className={`block w-full text-left px-10 py-2 text-sm transition-colors ${
+                className={`block w-full text-left px-10 py-2 text-sm transition-colors duration-700 ${
                   isDarkBackground 
                     ? 'text-[#2C2C2C]/80 hover:bg-[#2C2C2C]/5 hover:text-[#C84630]'
                     : 'text-[#F4F4F0]/80 hover:bg-[#F4F4F0]/5 hover:text-[#C84630]'
@@ -597,7 +569,7 @@ export function Header() {
                 navigate('/contests');
                 setIsMenuOpen(false);
               }}
-              className={`block w-full text-left px-4 py-3 font-medium transition-colors ${
+              className={`block w-full text-left px-4 py-3 font-medium transition-colors duration-700 ${
                 isDarkBackground 
                   ? 'text-[#2C2C2C] hover:bg-[#2C2C2C]/5 hover:text-[#C84630]'
                   : 'text-[#F4F4F0] hover:bg-[#F4F4F0]/5 hover:text-[#C84630]'
@@ -612,7 +584,7 @@ export function Header() {
                 navigate('/notice');
                 setIsMenuOpen(false);
               }}
-              className={`block w-full text-left px-4 py-3 font-medium transition-colors ${
+              className={`block w-full text-left px-4 py-3 font-medium transition-colors duration-700 ${
                 isDarkBackground 
                   ? 'text-[#2C2C2C] hover:bg-[#2C2C2C]/5 hover:text-[#C84630]'
                   : 'text-[#F4F4F0] hover:bg-[#F4F4F0]/5 hover:text-[#C84630]'
@@ -622,14 +594,14 @@ export function Header() {
             </button>
             
             {/* 로그인 상태에 따른 버튼 */}
-            <div className={`border-t pt-4 mt-4 space-y-2 ${
+            <div className={`border-t pt-4 mt-4 space-y-2 transition-colors duration-700 ${
               isDarkBackground ? 'border-[#2C2C2C]/20' : 'border-[#F4F4F0]/20'
             }`}>
               {user && (
                 <>
                   {/* 관리자 메뉴 (모바일) */}
                   {isManagerOrAbove(user.role) && (
-                    <div className={`border-b pb-3 mb-3 ${
+                    <div className={`border-b pb-3 mb-3 transition-colors duration-700 ${
                       isDarkBackground ? 'border-[#2C2C2C]/20' : 'border-[#F4F4F0]/20'
                     }`}>
                       <div className="px-4 py-2 text-sm text-[#C84630] font-bold">관리</div>
@@ -639,7 +611,7 @@ export function Header() {
                             navigate('/admin/users');
                             setIsMenuOpen(false);
                           }}
-                          className={`block w-full text-left px-8 py-2 transition-colors ${
+                          className={`block w-full text-left px-8 py-2 transition-colors duration-700 ${
                             isDarkBackground 
                               ? 'text-[#2C2C2C] hover:bg-[#2C2C2C]/5 hover:text-[#C84630]'
                               : 'text-[#F4F4F0] hover:bg-[#F4F4F0]/5 hover:text-[#C84630]'
@@ -653,7 +625,7 @@ export function Header() {
                           navigate('/admin/website');
                           setIsMenuOpen(false);
                         }}
-                        className={`block w-full text-left px-8 py-2 transition-colors ${
+                        className={`block w-full text-left px-8 py-2 transition-colors duration-700 ${
                           isDarkBackground 
                             ? 'text-[#2C2C2C] hover:bg-[#2C2C2C]/5 hover:text-[#C84630]'
                             : 'text-[#F4F4F0] hover:bg-[#F4F4F0]/5 hover:text-[#C84630]'
@@ -667,7 +639,7 @@ export function Header() {
                             navigate('/admin/analytics');
                             setIsMenuOpen(false);
                           }}
-                          className={`block w-full text-left px-8 py-2 transition-colors ${
+                          className={`block w-full text-left px-8 py-2 transition-colors duration-700 ${
                             isDarkBackground 
                               ? 'text-[#2C2C2C] hover:bg-[#2C2C2C]/5 hover:text-[#C84630]'
                               : 'text-[#F4F4F0] hover:bg-[#F4F4F0]/5 hover:text-[#C84630]'
@@ -684,7 +656,7 @@ export function Header() {
                       navigate('/profile');
                       setIsMenuOpen(false);
                     }}
-                    className={`block w-full text-left px-4 py-3 transition-colors ${
+                    className={`block w-full text-left px-4 py-3 transition-colors duration-700 ${
                       isDarkBackground 
                         ? 'text-[#2C2C2C] hover:bg-[#2C2C2C]/5 hover:text-[#C84630]'
                         : 'text-[#F4F4F0] hover:bg-[#F4F4F0]/5 hover:text-[#C84630]'
@@ -694,7 +666,7 @@ export function Header() {
                   </button>
                   <button
                     onClick={handleLogout}
-                    className={`block w-full text-left px-4 py-3 transition-colors ${
+                    className={`block w-full text-left px-4 py-3 transition-colors duration-700 ${
                       isDarkBackground 
                         ? 'bg-[#C84630] text-[#F4F4F0] hover:bg-[#A83820]'
                         : 'bg-[#C84630] text-[#F4F4F0] hover:bg-[#A83820]'

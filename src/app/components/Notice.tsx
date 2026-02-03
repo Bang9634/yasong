@@ -207,17 +207,17 @@ export function Notice() {
 
         {/* 카드 스크롤 영역 */}
         {isLoading ? (
-          <div className="flex items-center justify-center text-[#2C2C2C]/60 h-[28vw] md:h-[32vw] lg:h-[400px]">
+          <div className="flex items-center justify-center text-[#2C2C2C]/60 h-[500px]">
             로딩 중...
           </div>
         ) : notices.length === 0 ? (
-          <div className="flex items-center justify-center text-[#2C2C2C]/60 h-[28vw] md:h-[32vw] lg:h-[400px]">
+          <div className="flex items-center justify-center text-[#2C2C2C]/60 h-[500px]">
             등록된 공지사항이 없습니다.
           </div>
         ) : (
           <div 
             ref={cardsRef}
-            className={`relative slide-in-cards ${isCardsVisible ? 'visible' : ''} h-[28vw] md:h-[32vw] lg:h-[400px]`}
+            className={`relative slide-in-cards ${isCardsVisible ? 'visible' : ''} h-[500px]`}
           >
             {/* 스크롤 가이드 - 왼쪽 화살표 */}
             {showLeftArrow && (
@@ -243,8 +243,7 @@ export function Notice() {
               ref={setScrollContainerRef}
               className="overflow-x-auto scrollbar-hide scroll-smooth"
               style={{ 
-                WebkitOverflowScrolling: 'touch',
-                touchAction: 'pan-x'
+                WebkitOverflowScrolling: 'touch'
               }}
             >
               <div className="flex gap-6 pb-4">
@@ -252,7 +251,7 @@ export function Notice() {
                   <div
                     key={notice.id}
                     onClick={() => navigate(`/notice/${notice.id}`)}
-                    className="flex-shrink-0 w-80 h-[28vw] md:h-[32vw] lg:h-[400px] cursor-pointer group relative"
+                    className="flex-shrink-0 w-80 h-[400px] cursor-pointer group relative"
                   >
                     {/* 화이트 배경 카드 */}
                     <div className="h-full flex flex-col p-6 bg-white rounded-lg hover:shadow-lg transition-shadow border border-[#2C2C2C]/10">

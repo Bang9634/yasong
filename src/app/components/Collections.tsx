@@ -207,13 +207,13 @@ export function Collections() {
         </div>
 
         {artworks.length === 0 ? (
-          <div className="flex items-center justify-center text-[#F4F4F0]/60 h-[25vw] md:h-[30vw] lg:h-[350px]">
+          <div className="flex items-center justify-center text-[#F4F4F0]/60 h-[500px]">
             등록된 대표 작품이 없습니다.
           </div>
         ) : (
           <div 
             ref={cardsRef}
-            className={`relative slide-in-cards ${isCardsVisible ? 'visible' : ''} h-[25vw] md:h-[30vw] lg:h-[350px]`}
+            className={`relative slide-in-cards ${isCardsVisible ? 'visible' : ''} h-[500px]`}
           >
             {/* 스크롤 가이드 - 왼쪽 화살표 */}
             {showLeftArrow && (
@@ -239,19 +239,18 @@ export function Collections() {
               ref={setScrollContainerRef}
               className="overflow-x-auto scrollbar-hide scroll-smooth"
               style={{ 
-                WebkitOverflowScrolling: 'touch',
-                touchAction: 'pan-x'
+                WebkitOverflowScrolling: 'touch'
               }}
             >
-              <div className="flex gap-8 pb-4">
+              <div className="flex gap-8 pb-4 h-full">
                 {artworks.map((artwork) => (
                   <div
                     key={artwork.id}
                     onClick={() => setSelectedArtwork(artwork)}
-                    className="flex-shrink-0 w-80 cursor-pointer group"
+                    className="flex-shrink-0 w-80 h-full flex flex-col cursor-pointer group"
                   >
                     {/* 작품 이미지 */}
-                    <div className="relative overflow-hidden flex justify-center h-[280px] items-end mb-0">
+                    <div className="relative overflow-hidden flex justify-center h-[20vh] sm:h-[23vh] md:h-[26vh] lg:h-[280px] items-end mb-0 flex-shrink-0">
                       <ImageWithFallback
                         src={getImageUrl(artwork.imageUrl)}
                         alt={artwork.title}
@@ -260,33 +259,33 @@ export function Collections() {
                     </div>
                     
                     {/* 구분선 */}
-                    <div className="w-full h-px bg-[#F4F4F0]/20 mb-3"></div>
+                    <div className="w-full h-px bg-[#F4F4F0]/20 mb-2 sm:mb-2.5 lg:mb-3"></div>
                     
                     {/* 텍스트 정보 */}
-                    <div className="flex flex-col h-[180px]">
+                    <div className="flex flex-col flex-1 min-h-0">
                       {/* 작가 */}
-                      <div className="text-xs text-[#F4F4F0]/60 font-medium mb-2">
+                      <div className="text-[10px] sm:text-xs text-[#F4F4F0]/60 font-medium mb-1 sm:mb-1.5 lg:mb-2">
                         {artwork.artist}
                       </div>
                       
                       {/* 제목 */}
-                      <h3 className="text-xl font-bold text-[#F4F4F0] group-hover:text-[#C84630] transition-colors line-clamp-2 mb-3">
+                      <h3 className="text-base sm:text-lg lg:text-xl font-bold text-[#F4F4F0] group-hover:text-[#C84630] transition-colors line-clamp-2 mb-2 sm:mb-2.5 lg:mb-3">
                         {artwork.title}
                       </h3>
                       
                       {/* 설명 */}
-                      <p className="text-sm text-[#F4F4F0]/70 leading-relaxed line-clamp-3 mb-4">
+                      <p className="text-xs sm:text-sm text-[#F4F4F0]/70 leading-relaxed line-clamp-3 mb-2 sm:mb-3 lg:mb-4 flex-1">
                         {artwork.description}
                       </p>
                       
                       {/* 하단 고정 영역 */}
-                      <div className="mt-auto space-y-2">
+                      <div className="mt-auto space-y-1 sm:space-y-1.5 lg:space-y-2">
                         {/* 제작 연도 및 크기 */}
-                        <div className="flex flex-wrap gap-2">
-                          <span className="inline-block px-3 py-1 bg-[#F4F4F0] text-[#2C2C2C] text-xs rounded-full">
+                        <div className="flex flex-wrap gap-1 sm:gap-1.5 lg:gap-2">
+                          <span className="inline-block px-2 sm:px-2.5 lg:px-3 py-0.5 sm:py-1 bg-[#F4F4F0] text-[#2C2C2C] text-[10px] sm:text-xs rounded-full">
                             {artwork.year}
                           </span>
-                          <span className="inline-block px-3 py-1 bg-[#F4F4F0]/20 text-[#F4F4F0] text-xs rounded-full">
+                          <span className="inline-block px-2 sm:px-2.5 lg:px-3 py-0.5 sm:py-1 bg-[#F4F4F0]/20 text-[#F4F4F0] text-[10px] sm:text-xs rounded-full">
                             {artwork.size}
                           </span>
                         </div>

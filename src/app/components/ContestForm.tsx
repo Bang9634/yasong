@@ -152,7 +152,7 @@ export function ContestForm() {
       newErrors.host = '주최자를 입력해주세요.';
     }
     if (!formData.location.trim()) {
-      newErrors.location = '개최 장소를 입력해주세요.';
+      newErrors.location = '공모 대상을 입력해주세요.';
     }
     if (!formData.description.trim()) {
       newErrors.description = '공모전 설명을 입력해주세요.';
@@ -385,10 +385,10 @@ export function ContestForm() {
             </div>
           </div>
 
-          {/* 개최 장소 */}
+          {/* 공모 대상 */}
           <div>
             <label htmlFor="location" className="block text-sm font-medium text-[#F4F4F0] mb-2">
-              개최 장소 <span className="text-[#C84630]">*</span>
+              공모 대상 <span className="text-[#C84630]">*</span>
             </label>
             <input
               type="text"
@@ -399,7 +399,7 @@ export function ContestForm() {
               className={`w-full px-4 py-3 rounded-lg border-2 ${
                 errors.location ? 'border-red-600' : 'border-[#F4F4F0]/20'
               } focus:border-[#C84630] focus:outline-none bg-[#F4F4F0]/10 text-[#F4F4F0]`}
-              placeholder="예: 야송미술관"
+              placeholder="예: 대학(원)생, 일반인 등"
             />
             {errors.location && (
               <p className="text-red-400 text-sm mt-2">{errors.location}</p>

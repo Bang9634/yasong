@@ -340,7 +340,7 @@ export function Exhibitions() {
 
         {/* 카드 스크롤 영역 */}
         {exhibitions.length === 0 ? (
-          <div className="flex items-center justify-center text-[#2C2C2C]/60 h-[20vw] md:h-[25vw] lg:h-[272px]">
+          <div className="flex items-center justify-center text-[#2C2C2C]/60 h-[500px]">
             {selectedCategory === 'all' 
               ? '현재 예정된 전시가 없습니다.'
               : selectedCategory === 'memorial'
@@ -350,7 +350,7 @@ export function Exhibitions() {
         ) : (
           <div 
             ref={cardsRef}
-            className={`relative slide-in-cards ${isCardsVisible ? 'visible' : ''} h-[20vw] md:h-[25vw] lg:h-[272px]`}
+            className={`relative slide-in-cards ${isCardsVisible ? 'visible' : ''} h-[500px]`}
           >
             {/* 스크롤 가이드 - 왼쪽 화살표 */}
             {showLeftArrow && (
@@ -376,12 +376,11 @@ export function Exhibitions() {
               ref={setScrollContainerRef}
               className="overflow-x-auto scrollbar-hide scroll-smooth"
               style={{ 
-                WebkitOverflowScrolling: 'touch',
-                touchAction: 'pan-x'
+                WebkitOverflowScrolling: 'touch'
               }}
             >
               <div 
-                className={`flex gap-5 pb-4 transition-opacity duration-300 ${
+                className={`flex gap-5 pb-4 h-full transition-opacity duration-300 ${
                   isTransitioning ? 'opacity-0' : 'opacity-100'
                 }`}
               >
@@ -389,10 +388,10 @@ export function Exhibitions() {
                   <div
                     key={exhibition.id}
                     onClick={() => navigate(`/exhibitions/${exhibition.id}`)}
-                    className="flex-shrink-0 w-64 cursor-pointer group"
+                    className="flex-shrink-0 w-64 h-full flex flex-col cursor-pointer group"
                   >
                     {/* 포스터 이미지 */}
-                    <div className="relative overflow-hidden flex justify-center">
+                    <div className="relative overflow-hidden flex justify-center flex-shrink-0">
                       <ImageWithFallback
                         src={getImageUrl(exhibition.imageUrl)}
                         alt={exhibition.title}
@@ -407,38 +406,38 @@ export function Exhibitions() {
                     
                     
                     {/* 구분선 */}
-                    <div className="w-full h-px bg-[#2C2C2C]/20 mb-2.5"></div>
+                    <div className="w-full h-px bg-[#2C2C2C]/20 mb-1.5 sm:mb-2 lg:mb-2.5"></div>
                     
                     {/* 텍스트 정보 */}
-                    <div className="flex flex-col h-[180px]">
+                    <div className="flex flex-col flex-1 min-h-0">
                       
                       {/* 제목 - 2줄 고정 */}
-                      <h3 className="text-lg font-bold text-[#2C2C2C] group-hover:text-[#C84630] transition-colors line-clamp-2 mb-1.5 h-[3.5rem]">
+                      <h3 className="text-sm sm:text-base lg:text-lg font-bold text-[#2C2C2C] group-hover:text-[#C84630] transition-colors line-clamp-2 mb-1 sm:mb-1.5">
                         {exhibition.title}
                       </h3>
                       
                       {/* 설명 - 2줄 고정 */}
-                      <p className="text-sm text-[#2C2C2C]/70 leading-relaxed line-clamp-2 mb-2.5 h-[3rem]">
+                      <p className="text-xs sm:text-sm text-[#2C2C2C]/70 leading-relaxed line-clamp-2 mb-1.5 sm:mb-2 lg:mb-2.5 flex-1">
                         {exhibition.description}
                       </p>
                       
                       {/* 하단 고정 영역 */}
-                      <div className="mt-auto space-y-1.5">
+                      <div className="mt-auto space-y-1 sm:space-y-1.5">
                         
                         {/* 날짜 */}
-                        <div className="flex items-center text-[11px] text-[#2C2C2C]/60">
-                          <Calendar className="w-3 h-3 mr-1 flex-shrink-0" />
+                        <div className="flex items-center text-[10px] sm:text-[11px]  text-[#2C2C2C]/60">
+                          <Calendar className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1 flex-shrink-0" />
                           <span>{formatDate(exhibition.startDate)} - {formatDate(exhibition.endDate)}</span>
                         </div>
                         {/* 전시 장소 */}
-                        <div className="flex items-center gap-1 text-[11px] text-[#2C2C2C]/60 mb-1.5">
-                          <MapPin className="w-2.5 h-2.5" />
+                        <div className="flex items-center gap-1 text-[10px] sm:text-[11px] text-[#2C2C2C]/60 mb-1 sm:mb-1.5">
+                          <MapPin className="w-2 h-2 sm:w-2.5 sm:h-2.5" />
                           <span className="line-clamp-1">{exhibition.location}</span>
                         </div>
                         
                         {/* 전시 종류 */}
-                        <div className="flex flex-wrap gap-1.5">
-                          <span className="inline-block px-2.5 py-0.5 bg-[#2C2C2C] text-[#F4F4F0] text-[11px] rounded-full">
+                        <div className="flex flex-wrap gap-1 sm:gap-1.5">
+                          <span className="inline-block px-2 sm:px-2.5 py-0.5 bg-[#2C2C2C] text-[#F4F4F0] text-[10px] sm:text-[11px] rounded-full">
                             {exhibition.type === 'MEMORIAL' ? '추모 전시' : '회고전'}
                           </span>
                         </div>

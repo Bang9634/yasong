@@ -4,7 +4,7 @@ import { Header } from './Header';
 import { Footer } from './Footer';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { contestAPI, getFullImageUrl } from '@/utils/api';
-import { Calendar, MapPin, Plus, Search, Edit2, Trash2, User, ExternalLink } from 'lucide-react';
+import { Calendar, MapPin, Plus, Search, Edit2, Trash2, User } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { isManagerOrAbove } from '@/utils/auth';
 import { setPageSEO } from '@/utils/seo';
@@ -206,7 +206,7 @@ export function ContestsPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#F4F4F0]/40 w-4 h-4" />
               <input
                 type="text"
-                placeholder="공모전명, 주최자, 장소로 검색..."
+                placeholder="공모전명, 주최자, 대상으로 검색..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-9 pr-4 py-2 text-sm bg-[#F4F4F0]/10 border border-[#F4F4F0]/20 rounded-lg focus:ring-2 focus:ring-[#C84630] focus:border-[#C84630] text-[#F4F4F0] placeholder:text-[#F4F4F0]/40"
@@ -275,13 +275,6 @@ export function ContestsPage() {
                       {getStatusDisplayName(contest.status)}
                     </div>
                     
-                    {/* 공고 링크 아이콘 */}
-                    {contest.announcementUrl && (
-                      <div className="absolute bottom-2 right-2 bg-[#F4F4F0]/90 text-[#2C2C2C] p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                        <ExternalLink className="w-4 h-4" />
-                      </div>
-                    )}
-                    
                     {/* 관리자 버튼 */}
                     {isAdmin && (
                       <div className="absolute top-2 left-2 flex gap-1 opacity-70 hover:opacity-100 transition-opacity">
@@ -337,13 +330,13 @@ export function ContestsPage() {
                       
                       {/* 주최자 */}
                       <div className="flex items-center gap-1 text-xs text-[#F4F4F0]/60">
-                        <User className="w-3 h-3" />
+                        <MapPin className="w-3 h-3" />
                         <span className="line-clamp-1">{contest.host}</span>
                       </div>
                       
-                      {/* 장소 */}
+                      {/* 공모 대상 */}
                       <div className="flex items-center gap-1 text-xs text-[#F4F4F0]/60 mb-2">
-                        <MapPin className="w-3 h-3" />
+                        <User className="w-3 h-3" />
                         <span className="line-clamp-1">{contest.location}</span>
                       </div>
                     </div>

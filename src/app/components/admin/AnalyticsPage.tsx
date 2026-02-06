@@ -119,7 +119,11 @@ export function AnalyticsPage() {
         analyticsAPI.getAnalytics(7)
       ]);
       setSummaryData(summaryResponse);
-      setSummaryDailyData(weekDataResponse.dailyMetrics || []);
+      // 날짜순으로 정렬 (오름차순)
+      const sortedDailyData = (weekDataResponse.dailyMetrics || []).sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
+      setSummaryDailyData(sortedDailyData);
     } catch (error) {
       console.error('요약 정보 로드 실패:', error);
       alert('요약 정보를 불러오는데 실패했습니다.');
@@ -132,6 +136,12 @@ export function AnalyticsPage() {
     try {
       setIsLoading(true);
       const data = await analyticsAPI.getAnalytics(selectedDays);
+      // 날짜순으로 정렬 (오름차순)
+      if (data.dailyMetrics) {
+        data.dailyMetrics = data.dailyMetrics.sort(
+          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
+      }
       setAnalyticsData(data);
     } catch (error) {
       console.error('통계 로드 실패:', error);

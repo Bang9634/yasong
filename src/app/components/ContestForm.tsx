@@ -54,7 +54,7 @@ export function ContestForm() {
 
     setPageSEO({
       title: isEditMode ? '공모전 수정' : '공모전 추가',
-      description: '야송미술관 공모전 관리',
+      description: '공모전 관리',
     });
   }, [id, canManage]);
 

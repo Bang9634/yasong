@@ -52,7 +52,7 @@ export function ExhibitionForm() {
 
     setPageSEO({
       title: isEditMode ? '전시 수정' : '전시 추가',
-      description: '야송미술관 전시 관리',
+      description: '야송 전시 관리',
     });
   }, [id, canManage]);
 

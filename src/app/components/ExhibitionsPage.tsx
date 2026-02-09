@@ -50,8 +50,8 @@ export function ExhibitionsPage() {
   useEffect(() => {
     setPageSEO({
       title: '전시',
-      description: '야송미술관의 과거, 현재, 그리고 미래의 전시를 만나보세요',
-      keywords: '야송미술관, 전시, 추모전시, 회고전, 미술 전시',
+      description: '야송 이원좌의 과거, 현재, 그리고 미래의 전시를 만나보세요',
+      keywords: '야송, 이원좌, 전시, 추모전시, 회고전, 미술 전시',
     });
   }, []);
 

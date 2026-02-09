@@ -50,8 +50,8 @@ export function ContestsPage() {
   useEffect(() => {
     setPageSEO({
       title: '공모전',
-      description: '야송미술관의 미술 공모전 정보를 확인하세요',
-      keywords: '야송미술관, 공모전, 미술 공모전, 미술대회',
+      description: '청송에서 개최하는 미술 공모전 정보를 확인하세요',
+      keywords: '야송, 공모전, 미술 공모전, 미술대회',
     });
   }, []);
 
@@ -187,7 +187,7 @@ export function ContestsPage() {
           <div className="mb-8 flex justify-between items-start">
             <div>
               <h1 className="text-4xl sm:text-5xl font-bold text-[#F4F4F0] tracking-tight mb-2">공모전</h1>
-              <p className="text-[#F4F4F0]/70">야송미술관의 미술 공모전 정보</p>
+              <p className="text-[#F4F4F0]/70">미술 공모전 정보</p>
             </div>
             {isAdmin && (
               <button

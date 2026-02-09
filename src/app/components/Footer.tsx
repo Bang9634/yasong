@@ -174,22 +174,20 @@ export function Footer() {
               </Link>
               {/* 네비게이션 링크 */}
               <nav className="flex flex-wrap gap-4 text-sm font-bold">
-                {footerData.termsEnabled && footerData.termsUrl && (
-                  <a
-                    href={footerData.termsUrl}
-                    className="text-[#2C2C2C]/70 hover:text-[#C84630] transition-colors"
-                  >
-                    이용약관
-                  </a>
-                )}
-                {footerData.privacyPolicyEnabled && footerData.privacyPolicyUrl && (
-                  <a
-                    href={footerData.privacyPolicyUrl}
-                    className="text-[#2C2C2C]/70 hover:text-[#C84630] transition-colors"
-                  >
-                    개인정보처리방침
-                  </a>
-                )}
+                {/* 이용약관 - 항상 표시 */}
+                <Link
+                  to="/legal/terms"
+                  className="text-[#2C2C2C]/70 hover:text-[#C84630] transition-colors"
+                >
+                  이용약관
+                </Link>
+                {/* 개인정보 처리방침 - 항상 표시 */}
+                <Link
+                  to="/legal/privacy"
+                  className="text-[#2C2C2C]/70 hover:text-[#C84630] transition-colors"
+                >
+                  개인정보처리방침
+                </Link>
                 {footerData.locationLinkEnabled && footerData.locationLinkUrl && (
                   <a
                     href={footerData.locationLinkUrl}

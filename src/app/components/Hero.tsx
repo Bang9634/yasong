@@ -5,7 +5,7 @@ export function Hero() {
       <div className="absolute inset-0">
         <img
           src="/hero-img.webp"
-          alt="군립청송야송미술관"
+          alt="야송"
           className="w-full h-full object-cover"
           loading="eager"
           fetchpriority="high"

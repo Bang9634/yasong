@@ -52,8 +52,8 @@ export function CollectionForm() {
 
     setPageSEO({
       title: isEditing ? '소장품 수정' : '소장품 추가',
-      description: '야송미술관 소장품 관리',
-      keywords: '야송미술관, 소장품, 관리',
+      description: '야송 소장품 관리',
+      keywords: '야송, 소장품, 관리',
     });
   }, [id, user, navigate, isEditing]);
 

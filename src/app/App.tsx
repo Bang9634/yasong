@@ -14,6 +14,10 @@ import { CollectionsPage } from '@/app/components/CollectionsPage';
 import { CollectionDetail } from '@/app/components/CollectionDetail';
 import { CollectionForm } from '@/app/components/CollectionForm';
 import { SouvenirsPage } from '@/app/components/SouvenirsPage';
+import { LegalTermDetail } from '@/app/components/LegalTermDetail';
+import { LegalTermHistory } from '@/app/components/LegalTermHistory';
+import { LegalTermManagement } from '@/app/components/admin/LegalTermManagement';
+import { LegalTermForm } from '@/app/components/admin/LegalTermForm';
 import { Profile } from '@/app/components/Profile';
 import { UserManagement } from '@/app/components/admin/UserManagement';
 import { WebsiteManagement } from '@/app/components/admin/WebsiteManagement';
@@ -64,12 +68,21 @@ export default function App() {
           <Route path="/collections/:id" element={<CollectionDetail />} />
           <Route path="/admin/collections/new" element={<CollectionForm />} />
           <Route path="/admin/collections/edit/:id" element={<CollectionForm />} />
+          
+          {/* 이용약관 & 개인정보 처리방침 */}
+          <Route path="/legal/:type" element={<LegalTermDetail />} />
+          <Route path="/legal/detail/:id" element={<LegalTermDetail />} />
+          <Route path="/legal/:type/history" element={<LegalTermHistory />} />
+          
           <Route path="/profile" element={<Profile />} />
           
           {/* 관리자 페이지 */}
           <Route path="/admin/users" element={<UserManagement />} />
           <Route path="/admin/website" element={<WebsiteManagement />} />
           <Route path="/admin/analytics" element={<AnalyticsPage />} />
+          <Route path="/admin/legal" element={<LegalTermManagement />} />
+          <Route path="/admin/legal/new" element={<LegalTermForm />} />
+          <Route path="/admin/legal/edit/:id" element={<LegalTermForm />} />
         </Routes>
       </Router>
     </AuthProvider>

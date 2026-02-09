@@ -46,7 +46,7 @@ export function ContestDetail() {
       setPageSEO({
         title: data.title,
         description: data.description.substring(0, 160),
-        keywords: `야송미술관, 공모전, ${data.title}, ${data.host}`,
+        keywords: `야송, 공모전, ${data.title}, ${data.host}`,
         image: getImageUrl(data.imageUrl),
       });
     } catch (error) {

@@ -47,9 +47,9 @@ export function CollectionDetail() {
         
         // SEO 설정
         setPageSEO({
-          title: `${data.title} - 야송미술관`,
+          title: `${data.title} - 야송`,
           description: data.description,
-          keywords: `${data.artist}, ${data.title}, 야송미술관, 소장품`,
+          keywords: `${data.artist}, ${data.title}, 야송, 소장품`,
         });
       } catch (error) {
         console.error('소장품 로드 실패:', error);

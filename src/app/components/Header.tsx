@@ -155,7 +155,7 @@ export function Header() {
           <div className="cursor-pointer flex items-center gap-3 flex-shrink-0" onClick={() => scrollToSection('hero')}>
             <img 
               src="/yasong-icon.png" 
-              alt="야송미술관 로고" 
+              alt="야송 로고" 
               className="w-10 h-10 sm:w-12 sm:h-12"
             />
             <div className="flex items-center gap-2">

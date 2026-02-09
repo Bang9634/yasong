@@ -94,7 +94,7 @@ export function NoticeDetailPage() {
       setPageSEO({
         title: notice.title,
         description: description,
-        keywords: `청송야송미술관, 공지사항, ${getCategoryDisplayName(notice.category)}`,
+        keywords: `야송, 공지사항, ${getCategoryDisplayName(notice.category)}`,
       });
     }
   }, [notice]);

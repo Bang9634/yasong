@@ -45,7 +45,7 @@ export function ExhibitionDetail() {
       setPageSEO({
         title: data.title,
         description: data.description.substring(0, 160),
-        keywords: `야송미술관, 전시, ${data.title}, ${getTypeDisplayName(data.type)}`,
+        keywords: `야송, 전시, ${data.title}, ${getTypeDisplayName(data.type)}`,
         image: getImageUrl(data.imageUrl),
       });
     } catch (error) {

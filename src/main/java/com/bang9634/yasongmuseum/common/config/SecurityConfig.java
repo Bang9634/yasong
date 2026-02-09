@@ -52,6 +52,7 @@ public class SecurityConfig {
             .requestMatchers("/api/exhibitions/**").permitAll() // permit public exhibitions fetching
             .requestMatchers("/api/contests/**").permitAll() // permit public contests fetching
             .requestMatchers("/api/legal/**").permitAll() // permit public legal terms fetching
+            .requestMatchers("/api/updates/**").permitAll() // permit public update logs fetching
             .requestMatchers("/uploads/**").permitAll() // permit uploaded files access
 
             // Admin and Manager endpoints

@@ -18,6 +18,9 @@ import { LegalTermDetail } from '@/app/components/LegalTermDetail';
 import { LegalTermHistory } from '@/app/components/LegalTermHistory';
 import { LegalTermManagement } from '@/app/components/admin/LegalTermManagement';
 import { LegalTermForm } from '@/app/components/admin/LegalTermForm';
+import { UpdateLogsPage } from '@/app/components/UpdateLogsPage';
+import { UpdateLogDetail } from '@/app/components/UpdateLogDetail';
+import { UpdateLogForm } from '@/app/components/UpdateLogForm';
 import { Profile } from '@/app/components/Profile';
 import { UserManagement } from '@/app/components/admin/UserManagement';
 import { WebsiteManagement } from '@/app/components/admin/WebsiteManagement';
@@ -73,6 +76,11 @@ export default function App() {
           <Route path="/legal/:type" element={<LegalTermDetail />} />
           <Route path="/legal/detail/:id" element={<LegalTermDetail />} />
           <Route path="/legal/:type/history" element={<LegalTermHistory />} />
+          
+          {/* 업데이트 내역 */}
+          <Route path="/updates" element={<UpdateLogsPage />} />
+          <Route path="/updates/:id" element={<UpdateLogDetail />} />
+          <Route path="/updates/write" element={<UpdateLogForm />} />
           
           <Route path="/profile" element={<Profile />} />
           

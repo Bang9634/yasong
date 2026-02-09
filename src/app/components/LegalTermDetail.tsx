@@ -138,7 +138,7 @@ export function LegalTermDetail() {
     return (
       <div className="min-h-screen bg-[#F4F4F0] flex flex-col">
         <Header />
-        <main className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-24 flex-1">
+        <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-24 flex-1">
           {/* 뒤로 가기 버튼 */}
           <button
             onClick={() => navigate(-1)}
@@ -176,7 +176,7 @@ export function LegalTermDetail() {
     <div className="min-h-screen bg-[#F4F4F0] flex flex-col">
       <Header />
       
-      <main className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-24 flex-1">
+      <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-24 flex-1">
         {/* 뒤로 가기 버튼 */}
         <button
           onClick={() => navigate(-1)}

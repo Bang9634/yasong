@@ -188,6 +188,13 @@ export function Footer() {
                 >
                   개인정보처리방침
                 </Link>
+                {/* 업데이트 내역 - 항상 표시 */}
+                <Link
+                  to="/updates"
+                  className="text-[#2C2C2C]/70 hover:text-[#C84630] transition-colors"
+                >
+                  업데이트 내역
+                </Link>
                 {footerData.locationLinkEnabled && footerData.locationLinkUrl && (
                   <a
                     href={footerData.locationLinkUrl}

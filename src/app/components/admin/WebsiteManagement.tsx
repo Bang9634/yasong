@@ -27,10 +27,6 @@ export function WebsiteManagement() {
     youtubeEnabled: false,
     kakaoUrl: '',
     kakaoEnabled: false,
-    privacyPolicyUrl: '',
-    privacyPolicyEnabled: false,
-    termsUrl: '',
-    termsEnabled: false,
   });
 
   // 권한 확인
@@ -61,10 +57,6 @@ export function WebsiteManagement() {
           footerYoutubeEnabledData,
           footerKakaoUrlData,
           footerKakaoEnabledData,
-          footerPrivacyPolicyUrlData,
-          footerPrivacyPolicyEnabledData,
-          footerTermsUrlData,
-          footerTermsEnabledData,
         ] = await Promise.all([
           websiteAPI.getTextSetting('footer_phone'),
           websiteAPI.getTextSetting('footer_email'),
@@ -76,10 +68,6 @@ export function WebsiteManagement() {
           websiteAPI.getTextSetting('footer_youtube_enabled'),
           websiteAPI.getTextSetting('footer_kakao_url'),
           websiteAPI.getTextSetting('footer_kakao_enabled'),
-          websiteAPI.getTextSetting('footer_privacy_policy_url'),
-          websiteAPI.getTextSetting('footer_privacy_policy_enabled'),
-          websiteAPI.getTextSetting('footer_terms_url'),
-          websiteAPI.getTextSetting('footer_terms_enabled'),
         ]);
 
         setFooterData({
@@ -93,10 +81,6 @@ export function WebsiteManagement() {
           youtubeEnabled: footerYoutubeEnabledData.value === 'true',
           kakaoUrl: footerKakaoUrlData.value || '',
           kakaoEnabled: footerKakaoEnabledData.value === 'true',
-          privacyPolicyUrl: footerPrivacyPolicyUrlData.value || '',
-          privacyPolicyEnabled: footerPrivacyPolicyEnabledData.value === 'true',
-          termsUrl: footerTermsUrlData.value || '',
-          termsEnabled: footerTermsEnabledData.value === 'true',
         });
 
       } catch (err) {

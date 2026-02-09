@@ -12,10 +12,6 @@ interface FooterData {
   youtubeEnabled: boolean;
   kakaoUrl: string;
   kakaoEnabled: boolean;
-  privacyPolicyUrl: string;
-  privacyPolicyEnabled: boolean;
-  termsUrl: string;
-  termsEnabled: boolean;
 }
 
 interface FooterManagementProps {
@@ -33,10 +29,6 @@ export function FooterManagement({ initialData }: FooterManagementProps) {
   const [youtubeEnabled, setYoutubeEnabled] = useState(initialData.youtubeEnabled);
   const [kakaoUrl, setKakaoUrl] = useState(initialData.kakaoUrl);
   const [kakaoEnabled, setKakaoEnabled] = useState(initialData.kakaoEnabled);
-  const [privacyPolicyUrl, setPrivacyPolicyUrl] = useState(initialData.privacyPolicyUrl);
-  const [privacyPolicyEnabled, setPrivacyPolicyEnabled] = useState(initialData.privacyPolicyEnabled);
-  const [termsUrl, setTermsUrl] = useState(initialData.termsUrl);
-  const [termsEnabled, setTermsEnabled] = useState(initialData.termsEnabled);
 
   useEffect(() => {
     setPhone(initialData.phone);
@@ -49,10 +41,6 @@ export function FooterManagement({ initialData }: FooterManagementProps) {
     setYoutubeEnabled(initialData.youtubeEnabled);
     setKakaoUrl(initialData.kakaoUrl);
     setKakaoEnabled(initialData.kakaoEnabled);
-    setPrivacyPolicyUrl(initialData.privacyPolicyUrl);
-    setPrivacyPolicyEnabled(initialData.privacyPolicyEnabled);
-    setTermsUrl(initialData.termsUrl);
-    setTermsEnabled(initialData.termsEnabled);
   }, [initialData]);
 
   const handleSave = async () => {
@@ -79,14 +67,6 @@ export function FooterManagement({ initialData }: FooterManagementProps) {
       if (kakaoUrl || kakaoEnabled) {
         promises.push(websiteAPI.updateTextSetting('footer_kakao_url', kakaoUrl || '-'));
         promises.push(websiteAPI.updateTextSetting('footer_kakao_enabled', kakaoEnabled ? 'true' : 'false'));
-      }
-      if (privacyPolicyUrl || privacyPolicyEnabled) {
-        promises.push(websiteAPI.updateTextSetting('footer_privacy_policy_url', privacyPolicyUrl || '-'));
-        promises.push(websiteAPI.updateTextSetting('footer_privacy_policy_enabled', privacyPolicyEnabled ? 'true' : 'false'));
-      }
-      if (termsUrl || termsEnabled) {
-        promises.push(websiteAPI.updateTextSetting('footer_terms_url', termsUrl || '-'));
-        promises.push(websiteAPI.updateTextSetting('footer_terms_enabled', termsEnabled ? 'true' : 'false'));
       }
       await Promise.all(promises);
       
@@ -223,58 +203,6 @@ export function FooterManagement({ initialData }: FooterManagementProps) {
             disabled={!kakaoEnabled}
           />
         </div>
-      </div>
-
-      {/* 하단 링크 섹션 */}
-      <div className="border-t pt-6 mt-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">하단 링크 (선택사항)</h3>
-        
-        {/* 개인정보처리방침 */}
-        <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-          <div className="flex items-center mb-3">
-            <input
-              type="checkbox"
-              checked={privacyPolicyEnabled}
-              onChange={(e) => setPrivacyPolicyEnabled(e.target.checked)}
-              className="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500"
-            />
-            <label className="ml-2 text-sm font-medium text-gray-700">
-              개인정보처리방침 링크 표시
-            </label>
-          </div>
-          <input
-            type="url"
-            value={privacyPolicyUrl}
-            onChange={(e) => setPrivacyPolicyUrl(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg"
-            placeholder="https://yasong-museum.kr/privacy (선택사항)"
-            disabled={!privacyPolicyEnabled}
-          />
-        </div>
-
-        {/* 이용약관 */}
-        <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-          <div className="flex items-center mb-3">
-            <input
-              type="checkbox"
-              checked={termsEnabled}
-              onChange={(e) => setTermsEnabled(e.target.checked)}
-              className="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500"
-            />
-            <label className="ml-2 text-sm font-medium text-gray-700">
-              이용약관 링크 표시
-            </label>
-          </div>
-          <input
-            type="url"
-            value={termsUrl}
-            onChange={(e) => setTermsUrl(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg"
-            placeholder="https://yasong-museum.kr/terms (선택사항)"
-            disabled={!termsEnabled}
-          />
-        </div>
-
       </div>
 
       <button

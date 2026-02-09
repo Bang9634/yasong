@@ -121,14 +121,17 @@ export function UpdateLogDetail() {
         <div className="mb-8">
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
-              <div className="flex items-center gap-3 mb-3">
-                <h1 className="text-4xl md:text-5xl font-bold text-[#2C2C2C] tracking-tight">
-                  {log.title}
-                </h1>
-                <span className="px-4 py-1.5 bg-[#C84630] text-white text-sm rounded-full font-medium">
+              {/* 버전 배지 */}
+              <div className="w-full flex items-center gap-2 flex-wrap mb-4">
+                <span className="px-3 py-1 bg-[#C84630] text-[#F4F4F0] text-sm rounded font-medium">
                   v{log.version}
                 </span>
               </div>
+              
+              {/* 제목 */}
+              <h1 className="w-full text-4xl md:text-5xl font-bold text-[#2C2C2C] leading-tight mb-4">
+                {log.title}
+              </h1>
               
               <div className="flex flex-wrap items-center gap-4 text-sm text-[#2C2C2C]/60">
                 <div className="flex items-center gap-2">

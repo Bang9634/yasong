@@ -202,12 +202,12 @@ export function UpdateLogsPage() {
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <h2 className="text-base font-semibold text-[#2C2C2C] group-hover:text-[#C84630] transition-colors truncate">
-                          {log.title}
-                        </h2>
                           <span className="px-2 py-0.5 bg-[#C84630] text-white text-xs rounded font-medium whitespace-nowrap">
-                          v{log.version}
-                        </span>
+                            v{log.version}
+                          </span>
+                          <h2 className="text-base font-semibold text-[#2C2C2C] group-hover:text-[#C84630] transition-colors truncate">
+                            {log.title}
+                          </h2>
                       </div>
                       
                         <div className="flex items-center gap-3 text-xs text-[#2C2C2C]/40">
@@ -217,9 +217,8 @@ export function UpdateLogsPage() {
                         </div>
                       </div>
 
-                      <p className="text-[#2C2C2C]/70 line-clamp-2">
-                        {log.content.replace(/<[^>]*>/g, '').substring(0, 150)}
-                        {log.content.length > 150 ? '...' : ''}
+                      <p className="text-[#2C2C2C]/70 line-clamp-1">
+                        {log.content.replace(/<[^>]*>/g, '').split('\n')[0]}
                       </p>
                     </div>
 

@@ -42,7 +42,8 @@ public interface CollectionRepository extends JpaRepository<ArtCollection, Long>
     /**
      * Get random collections (for recommendations)
      * Excludes specified collection ID (e.g., currently viewing collection)
+     * Uses Pageable to handle LIMIT clause in standard way
      */
-    @Query(value = "SELECT * FROM collections WHERE (:excludeId IS NULL OR id != :excludeId) ORDER BY RAND() LIMIT :limit", nativeQuery = true)
-    List<ArtCollection> findRandomCollections(@Param("limit") int limit, @Param("excludeId") Long excludeId);
+    @Query(value = "SELECT * FROM collections WHERE (:excludeId IS NULL OR id != :excludeId) ORDER BY RAND()", nativeQuery = true)
+    List<ArtCollection> findRandomCollections(@Param("excludeId") Long excludeId, Pageable pageable);
 }

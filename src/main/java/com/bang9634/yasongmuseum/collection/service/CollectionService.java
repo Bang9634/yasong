@@ -51,7 +51,8 @@ public class CollectionService {
      * @return List of random collections
      */
     public List<CollectionResponse> getRandomCollections(int count, Long excludeId) {
-        return collectionRepository.findRandomCollections(count, excludeId)
+        Pageable pageable = PageRequest.of(0, count);
+        return collectionRepository.findRandomCollections(excludeId, pageable)
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());

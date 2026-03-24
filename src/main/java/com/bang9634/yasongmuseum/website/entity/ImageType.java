@@ -14,7 +14,8 @@ public enum ImageType {
     MAIN_BUILDING("main_building_image_url", "main_building", "main-building-", "Main building image"),
     CHEONGRYANGDAE_BUILDING("cheongryangdae_building_image_url", "cheongryangdae_building", "cheongryangdae-building-", "Cheongryangdae building image"),
     CONTEST_POSTER("contest_poster_image_url", "contest_poster", "contest-poster-", "Contest poster image"),
-    NOTICE_CONTENT("notice_content_image_url", "notice_content", "notice-content-", "Notice content image");
+    NOTICE_CONTENT("notice_content_image_url", "notice_content", "notice-content-", "Notice content image"),
+    BIOGRAPHY("biography_image_url", "biography", "biography-", "Biography section image");
 
     private final String settingKey;
     private final String subDirectory;

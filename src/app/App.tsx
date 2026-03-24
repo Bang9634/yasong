@@ -14,6 +14,8 @@ import { CollectionsPage } from '@/app/components/CollectionsPage';
 import { CollectionDetail } from '@/app/components/CollectionDetail';
 import { CollectionForm } from '@/app/components/CollectionForm';
 import { SouvenirsPage } from '@/app/components/SouvenirsPage';
+import { StoryPage } from '@/app/components/StoryPage';
+import { BiographyPage } from '@/app/components/BiographyPage';
 import { LegalTermDetail } from '@/app/components/LegalTermDetail';
 import { LegalTermHistory } from '@/app/components/LegalTermHistory';
 import { LegalTermManagement } from '@/app/components/admin/LegalTermManagement';
@@ -56,6 +58,8 @@ export default function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/story" element={<StoryPage />} />
+          <Route path="/biography" element={<BiographyPage />} />
           <Route path="/notice" element={<NoticePage />} />
           <Route path="/notice/:id" element={<NoticeDetailPage />} />
           <Route path="/notice/write" element={<NoticeForm />} />

@@ -172,6 +172,7 @@ export function Header() {
             {/* 야송 이야기 드롭다운 */}
             <div className="relative group">
               <button
+                onClick={() => navigate('/story')}
                 className={`transition-colors duration-700 py-2 relative after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[2px] after:bg-[#C84630] after:transition-all after:duration-300 hover:after:w-full ${
                   isDarkBackground 
                     ? 'text-[#2C2C2C] hover:text-[#C84630]' 
@@ -188,7 +189,7 @@ export function Header() {
                 }`}
               >
                 <button
-                  onClick={() => scrollToSection('director')}
+                  onClick={() => navigate('/biography')}
                   className={`block w-full text-left px-4 py-2.5 transition-all duration-700 ${
                     isDarkBackground
                       ? 'text-[#2C2C2C] hover:bg-[#C84630]/5 hover:text-[#C84630]'
@@ -200,6 +201,7 @@ export function Header() {
                 <button
                   onClick={() => {
                     setIsMenuOpen(false);
+                    navigate('/');
                     // TODO: 일대기 페이지 구현 후 navigate 추가
                   }}
                   className={`block w-full text-left px-4 py-2.5 transition-all duration-700 ${
@@ -433,7 +435,7 @@ export function Header() {
             {/* 야송 이야기 */}
             <button
               onClick={() => {
-                scrollToSection('director');
+                navigate('/story');
                 setIsMenuOpen(false);
               }}
               className={`block w-full text-left px-4 py-3 font-medium transition-colors duration-700 ${
@@ -450,7 +452,7 @@ export function Header() {
             }`}>
               <button
                 onClick={() => {
-                  scrollToSection('director');
+                  navigate('/biography');
                   setIsMenuOpen(false);
                 }}
                 className={`block w-full text-left px-10 py-2 text-sm transition-colors duration-700 ${

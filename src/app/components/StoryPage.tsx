@@ -101,7 +101,7 @@ export function StoryPage() {
       color: 'from-orange-500 to-orange-600',
       action: () => {
         // TODO: 사진 자료 페이지 구현 후 navigate 추가
-        alert('사진 자료 페이지는 준비 중입니다.');
+        navigate('/photos');
       }
     }
   ];

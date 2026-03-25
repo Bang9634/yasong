@@ -12,6 +12,7 @@ export { contestAPI } from './contest.api';
 export { legalAPI } from './legal.api';
 export { analyticsAPI } from './analytics.api';
 export { updateLogAPI } from './updateLog.api';
+export { photoAPI } from './photo.api';
 
 // Default export for backward compatibility
 export { default } from './client';

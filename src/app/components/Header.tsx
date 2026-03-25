@@ -227,8 +227,8 @@ export function Header() {
                 </button>
                 <button
                   onClick={() => {
+                    navigate('/photos');
                     setIsMenuOpen(false);
-                    // TODO: 사진 자료 페이지 구현 후 navigate 추가
                   }}
                   className={`block w-full text-left px-4 py-2.5 transition-all duration-700 ${
                     isDarkBackground
@@ -491,8 +491,8 @@ export function Header() {
               </button>
               <button
                 onClick={() => {
+                  navigate('/photos');
                   setIsMenuOpen(false);
-                  // TODO: 사진 자료 페이지 구현 후 navigate 추가
                 }}
                 className={`block w-full text-left px-10 py-2 text-sm transition-colors duration-700 ${
                   isDarkBackground 

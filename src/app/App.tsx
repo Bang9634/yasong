@@ -16,6 +16,9 @@ import { CollectionForm } from '@/app/components/CollectionForm';
 import { SouvenirsPage } from '@/app/components/SouvenirsPage';
 import { StoryPage } from '@/app/components/StoryPage';
 import { BiographyPage } from '@/app/components/BiographyPage';
+import { PhotoPage } from '@/app/components/PhotoPage';
+import { PhotoDetail } from '@/app/components/PhotoDetail';
+import { PhotoForm } from '@/app/components/PhotoForm';
 import { LegalTermDetail } from '@/app/components/LegalTermDetail';
 import { LegalTermHistory } from '@/app/components/LegalTermHistory';
 import { LegalTermManagement } from '@/app/components/admin/LegalTermManagement';
@@ -75,6 +78,12 @@ export default function App() {
           <Route path="/collections/:id" element={<CollectionDetail />} />
           <Route path="/admin/collections/new" element={<CollectionForm />} />
           <Route path="/admin/collections/edit/:id" element={<CollectionForm />} />
+          
+          {/* 사진 자료 */}
+          <Route path="/photos" element={<PhotoPage />} />
+          <Route path="/photos/:id" element={<PhotoDetail />} />
+          <Route path="/photos/write" element={<PhotoForm />} />
+          <Route path="/photos/edit/:id" element={<PhotoForm />} />
           
           {/* 이용약관 & 개인정보 처리방침 */}
           <Route path="/legal/:type" element={<LegalTermDetail />} />

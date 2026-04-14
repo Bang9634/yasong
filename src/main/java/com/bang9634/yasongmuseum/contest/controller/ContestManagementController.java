@@ -1,5 +1,7 @@
 package com.bang9634.yasongmuseum.contest.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.bang9634.yasongmuseum.common.dto.PagedResponse;
+import com.bang9634.yasongmuseum.contest.dto.ContestAttachmentResponse;
 import com.bang9634.yasongmuseum.contest.dto.ContestResponse;
 import com.bang9634.yasongmuseum.contest.dto.CreateContestRequest;
 import com.bang9634.yasongmuseum.contest.dto.UpdateContestRequest;
@@ -82,9 +85,70 @@ public class ContestManagementController {
         return ResponseEntity.ok(contest);
     }
 
+    /**
+     * Delete contest (Admin only)
+     * Also deletes all associated attachments and files
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteContest(@PathVariable Long id) {
         contestService.deleteContest(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // ==================== Attachment Endpoints ====================
+
+    /**
+     * Upload attachment to a contest
+     * POST /api/management/contests/{contestId}/attachments
+     * 
+     * Accepts documents (PDF, DOC, HWP, etc.) for contest forms and announcements
+     * Maximum file size controlled by application.properties
+     * 
+     * @param contestId Contest ID to attach file to
+     * @param file Multipart file to upload
+     * @return ContestAttachmentResponse with file metadata
+     */
+    @PostMapping("/{contestId}/attachments")
+    public ResponseEntity<ContestAttachmentResponse> uploadAttachment(
+            @PathVariable Long contestId,
+            @RequestParam("file") MultipartFile file) {
+        ContestAttachmentResponse attachment = contestService.uploadAttachment(contestId, file);
+        return ResponseEntity.ok(attachment);
+    }
+
+    /**
+     * Get all attachments of a contest
+     * GET /api/management/contests/{contestId}/attachments
+     * 
+     * Returns empty list if no attachments found
+     * Useful for managing attachments in admin panel
+     * 
+     * @param contestId Contest ID
+     * @return List of attachment responses
+     */
+    @GetMapping("/{contestId}/attachments")
+    public ResponseEntity<List<ContestAttachmentResponse>> getAttachments(
+            @PathVariable Long contestId) {
+        List<ContestAttachmentResponse> attachments = contestService.getAttachments(contestId);
+        return ResponseEntity.ok(attachments);
+    }
+
+    /**
+     * Delete a specific attachment
+     * DELETE /api/management/contests/{contestId}/attachments/{attachmentId}
+     * 
+     * Removes both database record and physical file
+     * Verifies attachment belongs to specified contest
+     * 
+     * @param contestId Contest ID (for verification)
+     * @param attachmentId Attachment ID to delete
+     * @return 204 No Content on success
+     */
+    @DeleteMapping("/{contestId}/attachments/{attachmentId}")
+    public ResponseEntity<Void> deleteAttachment(
+            @PathVariable Long contestId,
+            @PathVariable Long attachmentId) {
+        contestService.deleteAttachment(contestId, attachmentId);
         return ResponseEntity.noContent().build();
     }
 }

@@ -1,5 +1,7 @@
 package com.bang9634.yasongmuseum.common.controller;
 
+import com.bang9634.yasongmuseum.contest.entity.ContestAttachment;
+import com.bang9634.yasongmuseum.contest.repository.ContestAttachmentRepository;
 import com.bang9634.yasongmuseum.notice.entity.NoticeAttachment;
 import com.bang9634.yasongmuseum.notice.exception.NoticeNotFoundException;
 import com.bang9634.yasongmuseum.notice.repository.NoticeAttachmentRepository;
@@ -32,6 +34,7 @@ import java.net.URLEncoder;
 public class FileDownloadController {
 
     private final NoticeAttachmentRepository noticeAttachmentRepository;
+    private final ContestAttachmentRepository contestAttachmentRepository;
 
     /**
      * Download notice attachment with original filename
@@ -77,4 +80,51 @@ public class FileDownloadController {
             throw new NoticeNotFoundException("파일 경로가 올바르지 않습니다.");
         }
     }
+
+    /**
+     * Download contest attachment with original filename
+     * GET /api/files/contest-attachments/{attachmentId}
+     */
+    @GetMapping("/contest-attachments/{attachmentId}")
+    public ResponseEntity<Resource> downloadContestAttachment(@PathVariable Long attachmentId) {
+        log.info("Downloading contest attachment ID: {}", attachmentId);
+
+        ContestAttachment attachment = contestAttachmentRepository.findById(attachmentId)
+                .orElseThrow(() -> new NoticeNotFoundException("첨부파일을 찾을 수 없습니다."));
+
+        try {
+            // Load file as Resource
+            String relativePath = attachment.getFileUrl().startsWith("/") 
+                ? attachment.getFileUrl().substring(1) 
+                : attachment.getFileUrl();
+            Path filePath = Paths.get(relativePath);
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (!resource.exists() || !resource.isReadable()) {
+                throw new NoticeNotFoundException("파일을 읽을 수 없습니다.");
+            }
+
+            // Encode filename for Content-Disposition (support Korean filenames)
+            String encodedFilename = URLEncoder.encode(attachment.getFileName(), StandardCharsets.UTF_8)
+                    .replaceAll("\\+", "%20");
+
+            // Set Content-Disposition header with original filename
+            String contentDisposition = String.format("attachment; filename=\"%s\"; filename*=UTF-8''%s",
+                    encodedFilename, encodedFilename);
+
+            log.info("Contest file downloaded successfully: {} (original: {})", 
+                     attachment.getFileUrl(), attachment.getFileName());
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(attachment.getContentType()))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
+                    .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(attachment.getFileSize()))
+                    .body(resource);
+
+        } catch (MalformedURLException e) {
+            log.error("Invalid file path: {}", attachment.getFileUrl(), e);
+            throw new NoticeNotFoundException("파일 경로가 올바르지 않습니다.");
+        }
+    }
 }
+

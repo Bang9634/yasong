@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Header } from './Header';
 import { Footer } from './Footer';
+import { AttachmentUploader, UploadedAttachment } from './common/AttachmentUploader';
 import { contestAPI } from '@/utils/api';
 import { ChevronLeft, Upload, X } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -40,6 +41,11 @@ export function ContestForm() {
   const [imagePreview, setImagePreview] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  
+  // 첨부파일 관련 상태
+  const [attachments, setAttachments] = useState<UploadedAttachment[]>([]);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [uploadingFile, setUploadingFile] = useState(false);
 
   useEffect(() => {
     if (!canManage) {
@@ -76,6 +82,11 @@ export function ContestForm() {
           ? data.imageUrl 
           : `${import.meta.env.VITE_API_BASE_URL || ''}${data.imageUrl}`;
         setImagePreview(imageUrl);
+      }
+
+      // 첨부파일 로드
+      if (data.attachments) {
+        setAttachments(data.attachments);
       }
     } catch (error) {
       console.error('공모전 정보 조회 실패:', error);
@@ -142,6 +153,49 @@ export function ContestForm() {
     setImagePreview('');
   };
 
+  // 첨부파일 핸들러
+  const handleAddPendingFile = (file: File) => {
+    setPendingFiles([...pendingFiles, file]);
+  };
+
+  const handleRemovePendingFile = (index: number) => {
+    setPendingFiles(pendingFiles.filter((_, i) => i !== index));
+  };
+
+  const handleUploadFile = async (file: File) => {
+    if (!id) {
+      alert('공모전을 먼저 저장한 후 첨부파일을 업로드할 수 있습니다.');
+      return;
+    }
+
+    try {
+      setUploadingFile(true);
+      const result = await contestAPI.uploadAttachment(id, file);
+      setAttachments([...attachments, result]);
+      alert('첨부파일이 업로드되었습니다.');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '파일 업로드에 실패했습니다.';
+      alert(`업로드 실패\n\n${errorMessage}`);
+    } finally {
+      setUploadingFile(false);
+    }
+  };
+
+  const handleDeleteAttachment = async (attachmentId: number) => {
+    if (!id) return;
+
+    if (!confirm('이 첨부파일을 삭제하시겠습니까?')) return;
+
+    try {
+      await contestAPI.deleteAttachment(id, attachmentId);
+      setAttachments(attachments.filter(a => a.id !== attachmentId));
+      alert('첨부파일이 삭제되었습니다.');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '삭제에 실패했습니다.';
+      alert(`삭제 실패\n\n${errorMessage}`);
+    }
+  };
+
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
 
@@ -206,16 +260,30 @@ export function ContestForm() {
         endDate: `${formData.endDate}T23:59:59`,
       };
 
+      let savedContestId = id;
+
       if (isEditMode) {
         // 수정 모드
         await contestAPI.updateContest(parseInt(id!), requestData, imageFile || undefined);
-        alert('공모전이 수정되었습니다.');
       } else {
         // 추가 모드
-        await contestAPI.createContest(requestData, imageFile!);
-        alert('공모전이 등록되었습니다.');
+        const result = await contestAPI.createContest(requestData, imageFile!);
+        savedContestId = result.id?.toString();
       }
 
+      // 임시 첨부파일이 있으면 업로드
+      if (pendingFiles.length > 0 && savedContestId) {
+        for (const file of pendingFiles) {
+          try {
+            await contestAPI.uploadAttachment(savedContestId, file);
+          } catch (err) {
+            console.error('첨부파일 업로드 실패:', file.name, err);
+          }
+        }
+        setPendingFiles([]); // 업로드 완료 후 초기화
+      }
+
+      alert(isEditMode ? '공모전이 수정되었습니다.' : '공모전이 등록되었습니다.');
       navigate('/contests');
     } catch (error: any) {
       console.error('공모전 저장 실패:', error);
@@ -447,6 +515,20 @@ export function ContestForm() {
               <p className="text-red-400 text-sm mt-2">{errors.description}</p>
             )}
           </div>
+
+          {/* 첨부파일 */}
+          <AttachmentUploader
+            uploaded={attachments}
+            pending={pendingFiles}
+            isUploading={uploadingFile}
+            isEditMode={isEditMode}
+            savedId={id}
+            onAddPending={handleAddPendingFile}
+            onRemovePending={handleRemovePendingFile}
+            onUploadFile={handleUploadFile}
+            onDeleteUploaded={handleDeleteAttachment}
+            theme="dark"
+          />
 
           {/* 버튼 */}
           <div className="flex gap-4 pt-4">

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import { AttachmentList, Attachment } from './common/AttachmentList';
 import { contestAPI } from '@/utils/api';
 import { Calendar, MapPin, Edit2, Trash2, ChevronLeft, User, ExternalLink } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -22,6 +23,7 @@ interface Contest {
   status: 'ONGOING' | 'UPCOMING' | 'PAST';
   createdAt: string;
   updatedAt: string;
+  attachments?: Attachment[];
 }
 
 export function ContestDetail() {
@@ -179,6 +181,15 @@ export function ContestDetail() {
                 {getStatusDisplayName(contest.status)}
               </div>
             </div>
+
+            {/* 첨부파일 섹션 - 이미지 바로 아래 */}
+            {contest.attachments && contest.attachments.length > 0 && (
+              <AttachmentList 
+                attachments={contest.attachments}
+                title="첨부파일"
+                theme="dark"
+              />
+            )}
           </div>
 
           {/* 오른쪽: 정보 */}

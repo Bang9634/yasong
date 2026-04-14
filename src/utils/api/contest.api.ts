@@ -157,4 +157,53 @@ export const contestAPI = {
       method: 'DELETE'
     });
   },
+
+  /**
+   * 관리자 - 첨부파일 업로드
+   * POST /api/management/contests/{contestId}/attachments
+   */
+  uploadAttachment: async (contestId: string | number, file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const token = localStorage.getItem('token');
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const url = `${API_BASE_URL}/api/management/contests/${contestId}/attachments`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Upload failed' }));
+      throw new Error(error.message || `HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  },
+
+  /**
+   * 관리자 - 첨부파일 목록 조회
+   * GET /api/management/contests/{contestId}/attachments
+   */
+  getAttachments: async (contestId: string | number) => {
+    return apiCall(`/api/management/contests/${contestId}/attachments`, {
+      method: 'GET'
+    });
+  },
+
+  /**
+   * 관리자 - 첨부파일 삭제
+   * DELETE /api/management/contests/{contestId}/attachments/{attachmentId}
+   */
+  deleteAttachment: async (contestId: string | number, attachmentId: number) => {
+    return apiCall(`/api/management/contests/${contestId}/attachments/${attachmentId}`, {
+      method: 'DELETE'
+    });
+  },
 };

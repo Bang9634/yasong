@@ -5,7 +5,7 @@ import { Header } from './Header';
 import { Footer } from './Footer';
 import { useAuth } from '@/context/AuthContext';
 import { isManagerOrAbove } from '@/utils/auth';
-import { noticeAPI } from '@/utils/api';
+import { noticeAPI, getFullImageUrl, API_BASE_URL } from '@/utils/api';
 import { setPageSEO } from '@/utils/seo';
 
 interface NoticeAttachment {
@@ -296,10 +296,41 @@ export function NoticeDetailPage() {
                     key={attachment.id}
                     onClick={async () => {
                       try {
-                        const response = await fetch(attachment.downloadUrl);
+                        // 개발 환경에서 상세 로그
+                        if (import.meta.env.DEV) {
+                          console.group('🔽 [첨부파일 다운로드 시도]');
+                          console.log('파일명:', attachment.fileName);
+                          console.log('attachment 객체:', attachment);
+                          console.log('downloadUrl (원본):', attachment.downloadUrl);
+                          console.log('fileUrl (원본):', attachment.fileUrl);
+                          console.log('API_BASE_URL:', API_BASE_URL);
+                          console.log('getFullImageUrl(fileUrl):', getFullImageUrl(attachment.fileUrl));
+                          console.log('getFullImageUrl(downloadUrl):', getFullImageUrl(attachment.downloadUrl));
+                          console.groupEnd();
+                        }
+                        
+                        const downloadUrl = getFullImageUrl(attachment.downloadUrl);
+                        
+                        if (import.meta.env.DEV) {
+                          console.log('📡 실제 요청 URL:', downloadUrl);
+                        }
+                        
+                        const response = await fetch(downloadUrl);
+                        
+                        if (import.meta.env.DEV) {
+                          console.log('📥 응답 상태:', response.status, response.statusText);
+                          console.log('📦 Content-Type:', response.headers.get('Content-Type'));
+                          console.log('📦 Content-Length:', response.headers.get('Content-Length'));
+                        }
+                        
                         if (!response.ok) throw new Error('다운로드 실패');
                         
                         const blob = await response.blob();
+                        
+                        if (import.meta.env.DEV) {
+                          console.log('✅ Blob 생성:', blob.size, 'bytes, type:', blob.type);
+                        }
+                        
                         const url = window.URL.createObjectURL(blob);
                         const a = document.createElement('a');
                         a.href = url;
@@ -308,7 +339,14 @@ export function NoticeDetailPage() {
                         a.click();
                         window.URL.revokeObjectURL(url);
                         document.body.removeChild(a);
+                        
+                        if (import.meta.env.DEV) {
+                          console.log('✅ 다운로드 완료:', attachment.fileName);
+                        }
                       } catch (error) {
+                        if (import.meta.env.DEV) {
+                          console.error('❌ 파일 다운로드 실패:', error);
+                        }
                         console.error('파일 다운로드 실패:', error);
                         alert('파일 다운로드에 실패했습니다.');
                       }

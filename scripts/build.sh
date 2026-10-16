@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+# shellcheck source=scripts/lib/local-env.sh
+source "$ROOT/scripts/lib/local-env.sh"
+configure_local_environment
+python3 "$ROOT/scripts/check-frontend-imports.py"
 
 if [[ -n "${NAVER_MAP_CLIENT_ID:-}" ]]; then
     export VITE_NAVER_MAP_CLIENT_ID="$NAVER_MAP_CLIENT_ID"

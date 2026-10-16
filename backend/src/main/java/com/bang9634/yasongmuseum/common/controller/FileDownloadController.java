@@ -5,6 +5,7 @@ import com.bang9634.yasongmuseum.contest.repository.ContestAttachmentRepository;
 import com.bang9634.yasongmuseum.notice.entity.NoticeAttachment;
 import com.bang9634.yasongmuseum.notice.exception.NoticeNotFoundException;
 import com.bang9634.yasongmuseum.notice.repository.NoticeAttachmentRepository;
+import com.bang9634.yasongmuseum.common.service.UploadStoragePaths;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
@@ -19,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.net.MalformedURLException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.charset.StandardCharsets;
 import java.net.URLEncoder;
 
@@ -35,6 +35,7 @@ public class FileDownloadController {
 
     private final NoticeAttachmentRepository noticeAttachmentRepository;
     private final ContestAttachmentRepository contestAttachmentRepository;
+    private final UploadStoragePaths storagePaths;
 
     /**
      * Download notice attachment with original filename
@@ -49,10 +50,7 @@ public class FileDownloadController {
 
         try {
             // Load file as Resource
-            String relativePath = attachment.getFileUrl().startsWith("/") 
-                ? attachment.getFileUrl().substring(1) 
-                : attachment.getFileUrl();
-            Path filePath = Paths.get(relativePath);
+            Path filePath = storagePaths.resolveUrl(attachment.getFileUrl());
             Resource resource = new UrlResource(filePath.toUri());
 
             if (!resource.exists() || !resource.isReadable()) {
@@ -75,7 +73,7 @@ public class FileDownloadController {
                     .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(attachment.getFileSize()))
                     .body(resource);
 
-        } catch (MalformedURLException e) {
+        } catch (MalformedURLException | IllegalArgumentException e) {
             log.error("Invalid file path: {}", attachment.getFileUrl(), e);
             throw new NoticeNotFoundException("파일 경로가 올바르지 않습니다.");
         }
@@ -94,10 +92,7 @@ public class FileDownloadController {
 
         try {
             // Load file as Resource
-            String relativePath = attachment.getFileUrl().startsWith("/") 
-                ? attachment.getFileUrl().substring(1) 
-                : attachment.getFileUrl();
-            Path filePath = Paths.get(relativePath);
+            Path filePath = storagePaths.resolveUrl(attachment.getFileUrl());
             Resource resource = new UrlResource(filePath.toUri());
 
             if (!resource.exists() || !resource.isReadable()) {
@@ -121,7 +116,7 @@ public class FileDownloadController {
                     .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(attachment.getFileSize()))
                     .body(resource);
 
-        } catch (MalformedURLException e) {
+        } catch (MalformedURLException | IllegalArgumentException e) {
             log.error("Invalid file path: {}", attachment.getFileUrl(), e);
             throw new NoticeNotFoundException("파일 경로가 올바르지 않습니다.");
         }

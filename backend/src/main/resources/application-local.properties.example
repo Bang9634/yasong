@@ -4,5 +4,6 @@ spring.datasource.username=root
 spring.datasource.password=your_password_here
 spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 
-# JWT Secret Key (최소 32자 이상 권장)
-jwt.secret=your-secret-key-here-please-change-this-to-something-more-secure-at-least-32-characters
+# Base64 JWT key. Generate with: openssl rand -base64 64 | tr -d '\n'
+# Set JWT_SECRET in your shell, or replace this expression with a private generated key.
+jwt.secret=${JWT_SECRET}

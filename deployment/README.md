@@ -1,6 +1,6 @@
 # Ubuntu 배포 설정
 
-이 문서는 모노레포 CI/CD의 기준입니다. 기존 setup.sh/start-prod.sh/setup-env.sh 및 예전 HTTPS·환경변수 문서는 이전 수동 배포용으로 경로·서비스 이름이 다를 수 있으므로 이 절차와 섞어 실행하지 마세요. DB와 Nginx를 새로 설치하거나 기존 .env를 재생성할 필요는 없습니다.
+이 문서는 모노레포 CI/CD의 기준입니다. 기존 setup.sh/setup-env.sh 및 예전 HTTPS·환경변수 문서는 이전 수동 배포용으로 경로·서비스 이름이 다를 수 있으므로 이 절차와 섞어 실행하지 마세요. start-prod.sh는 이제 설치된 systemd 서비스를 시작하며 루트 target의 구버전 JAR를 실행하지 않습니다. DB와 Nginx를 새로 설치하거나 기존 .env를 재생성할 필요는 없습니다.
 
 ## 1. 운영 설정 확인 (최초 1회)
 
@@ -15,6 +15,8 @@
 | 실행 JAR | /home/yasong-art-gallery/yasong-art-gallery.jar |
 | 업로드 파일 | /home/yasong-art-gallery/uploads |
 | Nginx upstream | 127.0.0.1:8080 |
+
+unit은 FILE_UPLOAD_DIR를 위 업로드 절대 경로로 지정합니다. 서버 .env의 FILE_UPLOAD_DIR로 변경할 수 있습니다. 공개 URL은 `/uploads/...`로 동일하고 기존 파일/DB URL을 이동·수정할 필요는 없습니다. 로컬 개발 스크립트는 저장소 루트 uploads를 사용하므로 소스 디렉토리 backend와 구분합니다.
 
 JDK 21, Python 3, OpenSSH/SFTP, util-linux(flock), coreutils가 필요합니다. 서버에서는 npm이나 Maven 빌드를 실행하지 않습니다.
 

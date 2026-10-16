@@ -13,7 +13,6 @@ import { ContestForm } from '@/app/components/ContestForm';
 import { CollectionsPage } from '@/app/components/CollectionsPage';
 import { CollectionDetail } from '@/app/components/CollectionDetail';
 import { CollectionForm } from '@/app/components/CollectionForm';
-import { SouvenirsPage } from '@/app/components/SouvenirsPage';
 import { StoryPage } from '@/app/components/StoryPage';
 import { BiographyPage } from '@/app/components/BiographyPage';
 import { PhotoPage } from '@/app/components/PhotoPage';

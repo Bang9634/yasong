@@ -3,7 +3,6 @@ import { Hero } from '@/app/components/Hero';
 import { AboutStory } from '@/app/components/AboutStory';
 import { Notice } from '@/app/components/Notice';
 import { Contest } from '@/app/components/Contest';
-import { DirectorIntro } from '@/app/components/DirectorIntro';
 import { Collections } from '@/app/components/Collections';
 import { Footer } from '@/app/components/Footer';
 import { useEffect } from 'react';

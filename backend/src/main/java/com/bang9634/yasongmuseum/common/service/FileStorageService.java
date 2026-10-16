@@ -1,6 +1,7 @@
 package com.bang9634.yasongmuseum.common.service;
 
 import com.bang9634.yasongmuseum.website.exception.FileUploadException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -9,7 +10,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.List;
@@ -22,13 +22,13 @@ import java.util.UUID;
  */
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class FileStorageService {
 
-    @Value("${file.upload.dir:uploads}")
-    private String uploadDir;
+    private final UploadStoragePaths storagePaths;
 
     @Value("${file.upload.max-size:10485760}") // 10MB default
-    private long maxFileSize;
+    private long maxFileSize = 10485760;
 
     private static final List<String> ALLOWED_IMAGE_EXTENSIONS = Arrays.asList("jpg", "jpeg", "png", "gif", "webp");
     private static final List<String> ALLOWED_DOCUMENT_EXTENSIONS = Arrays.asList("pdf", "hwp", "hwpx", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "zip");
@@ -66,16 +66,18 @@ public class FileStorageService {
     private String saveFileInternal(MultipartFile file, String subDir, String prefix) {
         try {
             String savedFileName = generateFileName(file.getOriginalFilename(), prefix);
-            Path uploadPath = Paths.get(uploadDir, subDir);
+            Path uploadPath = storagePaths.resolveRelative(subDir);
             
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
 
-            Path filePath = uploadPath.resolve(savedFileName);
-            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            Path filePath = storagePaths.resolveRelative(subDir + "/" + savedFileName);
+            try (var input = file.getInputStream()) {
+                Files.copy(input, filePath, StandardCopyOption.REPLACE_EXISTING);
+            }
 
-            String fileUrl = "/" + uploadDir + "/" + subDir + "/" + savedFileName;
+            String fileUrl = UploadStoragePaths.URL_PREFIX + subDir + "/" + savedFileName;
             log.info("File saved successfully: {}", fileUrl);
             
             return fileUrl;
@@ -97,15 +99,13 @@ public class FileStorageService {
         }
 
         try {
-            // Extract filename from URL: /uploads/hero/hero-uuid.jpg -> uploads/hero/hero-uuid.jpg
-            String relativePath = fileUrl.startsWith("/") ? fileUrl.substring(1) : fileUrl;
-            Path filePath = Paths.get(relativePath);
+            Path filePath = storagePaths.resolveUrl(fileUrl);
             
             if (Files.exists(filePath)) {
                 Files.delete(filePath);
                 log.info("File deleted successfully: {}", fileUrl);
             }
-        } catch (IOException e) {
+        } catch (IOException | IllegalArgumentException e) {
             log.warn("Failed to delete file: {}", fileUrl, e);
             // Don't throw exception - deletion failure shouldn't block the main operation
         }

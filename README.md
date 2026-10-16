@@ -16,8 +16,10 @@ Node.js 22, JDK 21, Python 3가 필요합니다. Maven은 backend의 Wrapper를 
 
 ```bash
 nvm use
-cp backend/src/main/resources/application-local.properties.example backend/src/main/resources/application-local.properties
+cp -n backend/src/main/resources/application-local.properties.example backend/src/main/resources/application-local.properties
 # 위 로컬 설정을 자신의 개발 DB와 키로 수정합니다. 운영 자격증명을 넣지 않습니다.
+# 예제를 새로 복사했다면 로컬 JWT 키도 설정합니다. 기존 설정은 덮어쓰지 않습니다.
+export JWT_SECRET=$(openssl rand -base64 64 | tr -d '\n')
 ./scripts/build.sh
 ```
 
@@ -31,7 +33,17 @@ npm ci
 npm run dev
 ```
 
-백엔드만 개발할 때는 backend 디렉토리에서 `./mvnw spring-boot:run`을 실행합니다. 프런트 개발 서버는 `.env.development`의 API 주소를 사용합니다. 통합 JAR는 `/api`를 같은 도메인으로 호출합니다.
+백엔드 개발은 저장소 루트에서 `./scripts/dev-backend.sh`로 실행합니다. 이 스크립트는 Git에 넣지 않는 로컬 properties를 외부 설정으로 읽고, 업로드 저장소를 루트 `uploads/`로 지정합니다. 프런트 개발 서버는 `.env.development`의 API 주소를 사용합니다. 통합 JAR는 `./scripts/build.sh` 후 `./scripts/run-local.sh`로 실행하고 http://localhost:8080 에 접속합니다.
+
+두 터미널에서 프런트 `npm run dev`와 백엔드 `scripts/dev-backend.sh`를 각각 실행하면 http://localhost:5173 에서 개발할 수 있습니다. Java 21을 사용합니다. 프런트 빌드는 존재하지 않는 로컬 import도 따로 검사하며, 사용하지 않는 import가 번들에서 사라져 오류를 숨기는 경우를 방지합니다.
+
+## uploads 위치
+
+로컬 실행 스크립트는 `<저장소 루트>/uploads`를 사용합니다. 기존 파일을 backend로 옮길 필요가 없습니다. 운영 systemd는 `/home/yasong-art-gallery/uploads`를 사용하며, 이 폴더는 Git이나 JAR에 포함되지 않습니다. 공개 URL은 저장 디렉토리와 관계없이 `/uploads/...`를 유지합니다.
+
+물리 저장 경로를 바꾸려면 `FILE_UPLOAD_DIR` 환경변수에 절대 경로를 지정하세요. 저장·이미지 제공·첨부 다운로드·삭제 모두 동일한 설정을 사용합니다. 스크립트 없이 backend에서 Maven/IDE를 직접 실행하면 기본 상대 경로 `uploads`는 `backend/uploads`가 되므로, 기존 루트 파일을 사용하려면 IDE 실행 환경에도 절대 `FILE_UPLOAD_DIR`와 외부 로컬 설정 경로를 지정해야 합니다.
+
+`scripts/build.sh`도 local 프로필에서는 로컬 설정을 자동으로 읽습니다. prod 프로필에서는 로컬 설정을 자동으로 추가하지 않습니다. 로컬 properties와 기존 DB 계정/키를 자동 수정하거나 출력하지 않습니다. 로컬 Google Analytics 자격증명이 필요하면 실제 존재하는 외부 JSON 파일의 절대 경로를 로컬 설정에 지정하세요.
 
 프런트 `dist`는 Maven 리소스 단계에서 JAR의 `static/`에 들어갑니다. `dist`와 백엔드 `static`에 빌드 파일을 복사하거나 커밋하지 않습니다. 배포용 빌드는 루트의 `scripts/build.sh`로 실행해야 하며, `mvn package`만 따로 실행하면 프런트 빌드가 갱신되지 않습니다.
 

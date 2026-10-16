@@ -2,6 +2,8 @@ package com.bang9634.yasongmuseum.common.config;
 
 import java.io.IOException;
 
+import com.bang9634.yasongmuseum.common.service.UploadStoragePaths;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -16,13 +18,16 @@ import org.springframework.web.servlet.resource.PathResourceResolver;
  * and falls back to index.html for non-API routes to support single-page applications.
  */
 @Configuration
+@RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
+
+    private final UploadStoragePaths storagePaths;
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         // Serve uploaded files from file system with cache control
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:uploads/")
+                .addResourceLocations(storagePaths.getResourceLocation())
                 .setCacheControl(org.springframework.http.CacheControl.maxAge(365, java.util.concurrent.TimeUnit.DAYS));
 
         // Serve static resources for SPA
@@ -32,15 +37,14 @@ public class WebConfig implements WebMvcConfigurer {
                 .addResolver(new PathResourceResolver() {
             @Override
             protected Resource getResource(String resourcePath, Resource location) throws IOException {
-                Resource requestedResource = location.createRelative(resourcePath);
-
                 // Exclude paths that start with "api/" or "uploads/"
                 if (resourcePath.startsWith("api/") || resourcePath.startsWith("uploads/")) {
                     return null;
                 }
 
+                Resource requestedResource = super.getResource(resourcePath, location);
                 // Return the resource if it exists and is readable
-                if (requestedResource.exists() && requestedResource.isReadable()) {
+                if (requestedResource != null) {
                     return requestedResource;
                 }
 

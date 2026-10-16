@@ -49,3 +49,5 @@ uploads/
 .mvn/
 
 .DS_Store
+
+docs/

@@ -10,8 +10,8 @@
 	</parent>
 	<groupId>com.bang9634</groupId>
 	<artifactId>yasong-art-gallery</artifactId>
-	<version>1.0.2-RELEASE</version>
-	<name>yasongmuseum</name>
+	<version>1.6.0</version>
+	<name>yasong-backend</name>
 	<description>Website project for Yasong Art Gallery</description>
 	<url/>
 	<licenses>

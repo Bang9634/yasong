@@ -4,7 +4,7 @@
 
 - This is the Yasong Museum monorepo: `frontend/` is React/Vite, `backend/` is Spring Boot, `scripts/` contains local/build helpers, and `deployment/` contains Ubuntu/systemd deployment tools.
 - Use JDK 21, Node.js 22 (`.nvmrc`), Python 3, and the Maven Wrapper in `backend/`.
-- Read the relevant code and `README.md` before changing behavior. `deployment/README.md` is the deployment entry point and `deployment/guides/production.md` contains current server setup and operations. Older setup scripts may describe obsolete workflows.
+- Read the relevant code and `README.md` before changing behavior. `deployment/README.md` is the deployment entry point and `deployment/guides/production.md` contains current server setup and operations.
 - Inspect `git status` before editing and preserve unrelated user changes. Keep each issue focused; do not combine a targeted fix with unrelated CRUD or architecture rewrites.
 
 ## Private local handoff

@@ -1,51 +1,43 @@
-HELP.md
-target/
-.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+# Build output and dependencies
+**/target/
+**/node_modules/
+frontend/dist/
+/release/
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### VS Code ###
-.vscode/
-
-### Application Properties ###
-src/main/resources/application-local.properties
-src/main/resources/application-dev.properties
-
-### Environment Variables (보안 중요!) ###
+# Local configuration and credentials
 .env
-.env.local
-.env.prod
+.env.*
 *.env
 !.env.example
+!**/.env.example
+!frontend/.env.development
+!frontend/.env.production
+**/application-local.properties
+**/application-dev.properties
+*.pem
+*.key
+**/service-account*.json
+**/google-analytics-key*.json
+*.hprof
+*.log
+*.sql.gz
+**/uploads/
+/logs/
+/backups/
 
-### Uploads ###
-uploads/
-
-.mvn/
-
+# Editors and private notes
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.iml
+.classpath
+.project
+.settings/
 .DS_Store
+/docs/
+HELP.md
+
+backend/src/main/resources/static/
+
+__pycache__/
+*.pyc

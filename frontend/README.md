@@ -1,3 +1,5 @@
+> 모노레포 전환 이전 문서입니다. 현재 빌드·배포 방법은 [루트 README](../README.md)를 따르세요.
+
 
   # Art Museum Website
 

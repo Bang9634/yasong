@@ -1,344 +1,63 @@
-# 🏛️ Yasong Art Gallery - 야송미술관 웹사이트
+# Yasong Museum
 
-Spring Boot 기반 미술관 웹사이트 백엔드 API 서버
+프런트와 백엔드를 함께 관리하고, 한 번의 빌드로 실행 가능한 JAR를 만드는 모노레포입니다.
 
-## 📋 목차
+```text
+frontend/                React / Vite
+backend/                 Java 21 / Spring Boot / Maven Wrapper
+scripts/build.sh         프런트 빌드 → 테스트 → JAR → 패키지 검증
+deployment/              Ubuntu systemd 배포 및 운영 가이드
+.github/workflows/       PR·main 빌드와 수동 운영 배포
+```
 
-- [기술 스택](#기술-스택)
-- [시스템 요구사항](#시스템-요구사항)
-- [로컬 개발 환경 설정](#로컬-개발-환경-설정)
-- [프로덕션 배포](#프로덕션-배포)
-- [API 문서](#api-문서)
-- [프로젝트 구조](#프로젝트-구조)
+## 개발과 빌드
 
-## 🛠️ 기술 스택
-
-- **Java 21**
-- **Spring Boot 4.0.1**
-- **MySQL 8.0+**
-- **Spring Security + JWT**
-- **Flyway** (DB 마이그레이션)
-- **Maven**
-
-## 💻 시스템 요구사항
-
-### 로컬 개발
-- Java 21+
-- Maven 3.8+
-- MySQL 8.0+
-
-### 프로덕션 서버
-- **최소:** 1GB RAM, 1 CPU Core
-- **권장:** 2GB RAM, 2 CPU Cores
-- Linux (Ubuntu 20.04+, CentOS 7+)
-- Java 21
-- MySQL 8.0+
-
-## 🚀 로컬 개발 환경 설정
-
-### 1. 프로젝트 클론
+Node.js 22, JDK 21, Python 3가 필요합니다. Maven은 backend의 Wrapper를 사용합니다.
 
 ```bash
-git clone https://github.com/bang9634/yasong-art-gallery.git
-cd yasong-art-gallery
+nvm use
+cp backend/src/main/resources/application-local.properties.example backend/src/main/resources/application-local.properties
+# 위 로컬 설정을 자신의 개발 DB와 키로 수정합니다. 운영 자격증명을 넣지 않습니다.
+./scripts/build.sh
 ```
 
-### 2. 데이터베이스 설정
+테스트에는 별도의 개발 DB가 필요합니다. CI는 일회용 MySQL 8.4를 자동 생성하고 무작위 테스트 JWT 키를 사용합니다. 로컬 테스트에 운영 DB를 연결하지 마세요. 빌드 결과는 `backend/target/yasong-art-gallery.jar`입니다.
 
-```sql
--- MySQL 접속
-mysql -u root -p
-
--- 데이터베이스 생성
-CREATE DATABASE yasongmuseum CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- 사용자 생성 (선택사항)
-CREATE USER 'yasongmuseum'@'localhost' IDENTIFIED BY 'your_password';
-GRANT ALL PRIVILEGES ON yasongmuseum.* TO 'yasongmuseum'@'localhost';
-FLUSH PRIVILEGES;
-```
-
-### 3. 환경 변수 설정
+프런트만 개발할 때:
 
 ```bash
-# .env 파일 생성
-cp .env.example .env
-
-# .env 파일 편집
-vi .env
+cd frontend
+npm ci
+npm run dev
 ```
 
-`.env` 파일 내용:
-```bash
-# Database
-DB_URL=jdbc:mysql://localhost:3306/yasongmuseum?useSSL=false&serverTimezone=Asia/Seoul
-DB_USERNAME=root
-DB_PASSWORD=your_password
+백엔드만 개발할 때는 backend 디렉토리에서 `./mvnw spring-boot:run`을 실행합니다. 프런트 개발 서버는 `.env.development`의 API 주소를 사용합니다. 통합 JAR는 `/api`를 같은 도메인으로 호출합니다.
 
-# JWT Secret (보안키 생성: openssl rand -base64 64)
-JWT_SECRET=your_generated_secret_key
-JWT_EXPIRATION=86400000
+프런트 `dist`는 Maven 리소스 단계에서 JAR의 `static/`에 들어갑니다. `dist`와 백엔드 `static`에 빌드 파일을 복사하거나 커밋하지 않습니다. 배포용 빌드는 루트의 `scripts/build.sh`로 실행해야 하며, `mvn package`만 따로 실행하면 프런트 빌드가 갱신되지 않습니다.
 
-# Server
-SERVER_PORT=8080
-SPRING_PROFILES_ACTIVE=local
-```
+`VITE_*` 값은 브라우저에 공개됩니다. 프런트 환경파일의 API 주소와 지도 클라이언트 ID는 공개 설정이며, DB 비밀번호나 JWT 키를 넣으면 안 됩니다. 지도 ID를 CI에서 바꾸려면 저장소 변수 `NAVER_MAP_CLIENT_ID`를 사용합니다.
 
-### 4. 애플리케이션 실행
+## CI/CD
 
-```bash
-# Maven으로 실행 (개발 모드)
-./mvnw spring-boot:run
+PR과 main push는 프런트 빌드, Java 테스트, JAR 검증, 실제 JAR의 HTTP·DB 연결 점검을 실행합니다. 운영 서버에는 자동 배포하지 않습니다.
 
-# 또는 IDE에서 YasongmuseumApplication.java 실행
-```
+서버와 GitHub 설정을 완료한 뒤 Actions → Build and deploy → Run workflow → main → deploy 체크로 운영 배포합니다. 빌드된 JAR와 체크섬은 Actions artifact에 14일간 보관됩니다. 실행 중인 서버와 업로드 파일은 서버에 남으므로 artifact 보관 기간과 별개입니다.
 
-서버가 시작되면 `http://localhost:8080` 에서 접속 가능합니다.
+실제 초기 설정과 배포 권한은 [배포 가이드](deployment/README.md), Java 편집기 오류 해결은 [Java 개발 가이드](deployment/JAVA_DEVELOPMENT.md)를 참고하세요.
 
-### 5. 초기 관리자 계정
+## 저장소 이력
 
-애플리케이션이 처음 시작되면 자동으로 생성됩니다:
-- **Username:** `admin`
-- **Password:** `admin123`
+백엔드 원본 이력을 유지하고 프런트의 master를 squash 없이 subtree merge했습니다. 원래 커밋의 SHA·작성자·메시지는 보존됩니다. 과거 파일은 당시의 루트 경로로 남고 현재 파일만 frontend/backend로 나뉩니다. 원래 GitHub 저장소의 PR·이슈·설정은 이동되지 않습니다.
 
-⚠️ **프로덕션에서는 반드시 비밀번호를 변경하세요!**
-
-## 🌐 프로덕션 배포
-
-### 방법 1: Systemd 서비스 (권장)
-
-상세 가이드: [deployment/README.md](deployment/README.md)
-
-#### 빠른 시작
+- backend 원본: `https://github.com/Bang9634/yasong-museum-backend.git`
+- frontend 원본: `https://github.com/Bang9634/yasong-museum-frontend.git`
+- backend 기준 커밋: c7bc20721786726e63df8a3800a56dcfcbdf5beb
+- frontend 가져온 커밋: 69c880eb5db9a8fb02fb3139618e09e69741a44b
 
 ```bash
-# 1. 로컬에서 빌드
-./mvnw clean package -DskipTests
-
-# 2. 서버에 파일 업로드
-scp target/yasong-art-gallery.jar user@server:/home/yasong-art-gallery/
-scp -r deployment user@server:/home/yasong-art-gallery/
-
-# 3. 서버에서 초기 설정 (최초 1회)
-ssh user@server
-cd /home/yasong-art-gallery
-chmod +x deployment/*.sh
-sudo ./deployment/setup.sh
-
-# 4. .env 파일 생성
-./deployment/setup-env.sh
-
-# 5. 배포
-sudo ./deployment/deploy.sh
+git merge-base --is-ancestor c7bc20721786726e63df8a3800a56dcfcbdf5beb HEAD
+git merge-base --is-ancestor 69c880eb5db9a8fb02fb3139618e09e69741a44b HEAD
+git log --graph --oneline --all
 ```
 
-#### 관리 명령어
-
-```bash
-# 서비스 시작
-sudo systemctl start yasong-art-gallery
-
-# 서비스 중지
-sudo systemctl stop yasong-art-gallery
-
-# 서비스 재시작
-sudo systemctl restart yasong-art-gallery
-
-# 서비스 상태 확인
-./deployment/status.sh
-
-# 실시간 로그
-sudo journalctl -u yasong-art-gallery -f
-```
-
-### 방법 2: 직접 실행
-
-```bash
-# 프로덕션 모드로 실행
-./deployment/start-prod.sh
-
-# 백그라운드 실행
-nohup java -jar yasong-art-gallery.jar --spring.profiles.active=prod > logs/app.log 2>&1 &
-```
-
-### HTTPS 설정
-
-Nginx + Let's Encrypt 설정: [deployment/HTTPS_SETUP_GUIDE.md](deployment/HTTPS_SETUP_GUIDE.md)
-
-```bash
-sudo ./deployment/setup-ssl.sh
-```
-
-## 📖 API 문서
-
-### 인증 (Authentication)
-
-| Method | Endpoint | 설명 | 권한 |
-|--------|----------|------|------|
-| POST | `/api/auth/login` | 로그인 | Public |
-| POST | `/api/auth/signup` | 회원가입 | Admin |
-| GET | `/api/auth/me` | 내 정보 조회 | Authenticated |
-
-### 공지사항 (Notices)
-
-| Method | Endpoint | 설명 | 권한 |
-|--------|----------|------|------|
-| GET | `/api/notices` | 공지사항 목록 | Public |
-| GET | `/api/notices/{id}` | 공지사항 상세 | Public |
-| POST | `/api/management/notices` | 공지사항 작성 | Admin/Manager |
-| PUT | `/api/management/notices/{id}` | 공지사항 수정 | Admin/Manager |
-| DELETE | `/api/management/notices/{id}` | 공지사항 삭제 | Admin/Manager |
-| POST | `/api/management/notices/upload-image` | 에디터 이미지 업로드 | Admin/Manager |
-| POST | `/api/management/notices/{id}/attachments` | 첨부파일 업로드 | Admin/Manager |
-| GET | `/api/files/attachments/{id}` | 첨부파일 다운로드 | Public |
-
-### 웹사이트 설정 (Website Settings)
-
-| Method | Endpoint | 설명 | 권한 |
-|--------|----------|------|------|
-| GET | `/api/website/settings` | 전체 설정 조회 | Public |
-| PUT | `/api/management/website/settings` | 설정 수정 | Admin/Manager |
-| POST | `/api/management/website/images/{imageType}` | 이미지 업로드 | Admin/Manager |
-
-### 컬렉션 (Collections)
-
-| Method | Endpoint | 설명 | 권한 |
-|--------|----------|------|------|
-| GET | `/api/collections` | 소장품 목록 | Public |
-| GET | `/api/collections/{id}` | 소장품 상세 | Public |
-| POST | `/api/management/collections` | 소장품 등록 | Admin/Manager |
-| PUT | `/api/management/collections/{id}` | 소장품 수정 | Admin/Manager |
-| DELETE | `/api/management/collections/{id}` | 소장품 삭제 | Admin/Manager |
-
-## 📁 프로젝트 구조
-
-```
-yasong-art-gallery/
-├── src/
-│   ├── main/
-│   │   ├── java/com/bang9634/yasongmuseum/
-│   │   │   ├── common/          # 공통 기능 (Security, Config, Exception)
-│   │   │   ├── user/            # 사용자 관리
-│   │   │   ├── notice/          # 공지사항
-│   │   │   ├── website/         # 웹사이트 설정
-│   │   │   ├── collection/      # 소장품
-│   │   │   ├── exhibition/      # 전시
-│   │   │   └── souvenir/        # 기념품
-│   │   └── resources/
-│   │       ├── application.properties          # 공통 설정
-│   │       ├── application-local.properties    # 로컬 설정
-│   │       ├── application-prod.properties     # 프로덕션 설정
-│   │       └── db/migration/                   # Flyway 마이그레이션
-│   └── test/
-├── deployment/                   # 배포 스크립트
-│   ├── README.md                # 배포 가이드
-│   ├── setup.sh                 # 초기 설정
-│   ├── deploy.sh                # 배포 스크립트
-│   ├── start-prod.sh            # 프로덕션 시작
-│   ├── stop.sh                  # 서비스 중지
-│   ├── status.sh                # 상태 확인
-│   ├── setup-ssl.sh             # HTTPS 설정
-│   ├── yasong-art-gallery.service  # Systemd 서비스
-│   └── nginx/                   # Nginx 설정
-├── .env.example                 # 환경 변수 예제
-├── pom.xml                      # Maven 설정
-└── README.md                    # 이 파일
-```
-
-## 🔒 보안
-
-### 프로덕션 체크리스트
-
-- [ ] `.env` 파일에 강력한 JWT_SECRET 설정
-- [ ] 데이터베이스 비밀번호 변경
-- [ ] 초기 관리자 비밀번호 변경
-- [ ] HTTPS 설정 완료
-- [ ] 방화벽 설정 (포트 8080 제한)
-- [ ] 정기적인 백업 설정
-
-보안 가이드: [deployment/ENV_SETUP_GUIDE.md](deployment/ENV_SETUP_GUIDE.md)
-
-## 🧪 테스트
-
-```bash
-# 전체 테스트 실행
-./mvnw test
-
-# 특정 테스트 실행
-./mvnw test -Dtest=YasongmuseumApplicationTests
-```
-
-## 📦 빌드
-
-```bash
-# JAR 파일 생성
-./mvnw clean package
-
-# 테스트 없이 빌드
-./mvnw clean package -DskipTests
-
-# 빌드된 파일 위치 (버전 없는 고정 파일명)
-target/yasong-art-gallery.jar
-```
-
-## 🐛 문제 해결
-
-### 데이터베이스 연결 실패
-
-```bash
-# MySQL 서비스 상태 확인
-sudo systemctl status mysql
-
-# 포트 확인
-netstat -an | grep 3306
-
-# .env 파일의 DB_URL, DB_USERNAME, DB_PASSWORD 확인
-```
-
-### 애플리케이션 시작 실패
-
-```bash
-# 로그 확인
-sudo journalctl -u yasong-art-gallery -n 50
-
-# 또는 직접 실행하여 에러 확인
-java -jar yasong-art-gallery.jar --spring.profiles.active=prod
-```
-
-### 포트 이미 사용 중
-
-```bash
-# 8080 포트 사용 프로세스 확인
-lsof -i :8080
-
-# 프로세스 종료
-kill -9 <PID>
-```
-
-## 📊 성능 최적화
-
-현재 설정은 **1GB RAM 서버에 최적화**되어 있습니다:
-
-- JVM Heap: 256MB ~ 512MB
-- Metaspace: 128MB ~ 256MB
-- HikariCP 커넥션 풀: 최대 5개
-- Tomcat 스레드: 최대 50개
-
-더 많은 리소스가 있다면 [application-prod.properties](src/main/resources/application-prod.properties) 에서 조정하세요.
-
-## 🤝 기여
-
-이슈나 풀 리퀘스트를 환영합니다!
-
-## 📄 라이선스
-
-이 프로젝트는 MIT 라이선스를 따릅니다.
-
-## 📞 문의
-
-- **GitHub:** [@bang9634](https://github.com/bang9634)
-- **Email:** bang9634@example.com
-
----
-
-Made with ❤️ by bang9634
+두 is-ancestor 명령이 모두 exit 0이면 두 이력이 통합 브랜치에 연결된 것입니다. 현재 로컬 원본은 각각 main/master 한 브랜치이며 태그가 없습니다. 원격에만 있는 다른 브랜치는 별도 확인·가져오기가 필요합니다. 새 저장소를 사용한다면 그 저장소로 통합 브랜치를 push한 뒤 main으로 검토·병합하세요. 기존 두 저장소는 통합 확인 후 보관용으로 유지합니다. 기존 저장소 삭제나 force push는 필요하지 않습니다.

@@ -1,0 +1,134 @@
+name: Build and deploy
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: Deploy the tested JAR to production
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: ci-root-only
+          MYSQL_DATABASE: yasongmuseum_ci
+          MYSQL_USER: ci
+          MYSQL_PASSWORD: ci-test-only
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: jdbc:mysql://127.0.0.1:3306/yasongmuseum_ci?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
+      DB_USERNAME: ci
+      DB_PASSWORD: ci-test-only
+      NAVER_MAP_CLIENT_ID: ${{ vars.NAVER_MAP_CLIENT_ID }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+      - name: Test deployment rollback and isolation
+        run: python3 -m unittest discover -s tests -v
+      - name: Create an ephemeral test-only JWT key
+        run: |
+          key=$(openssl rand -base64 64 | tr -d '\n')
+          echo "::add-mask::$key"
+          echo "JWT_SECRET=$key" >> "$GITHUB_ENV"
+      - name: Build frontend and verify backend
+        run: ./scripts/build.sh
+      - name: Smoke test the packaged application
+        run: |
+          java -jar backend/target/yasong-art-gallery.jar --server.port=18080 > "$RUNNER_TEMP/app.log" 2>&1 &
+          app_pid=$!
+          trap 'kill "$app_pid" 2>/dev/null || true' EXIT
+          python3 deployment/check-ready.py http://127.0.0.1:18080 backend/target/yasong-art-gallery.jar
+      - name: Prepare checksummed release
+        run: |
+          mkdir release
+          cp backend/target/yasong-art-gallery.jar deployment/deploy.sh deployment/check-ready.py release/
+          printf '%s\n' "$GITHUB_SHA" > release/COMMIT
+          cd release
+          sha256sum yasong-art-gallery.jar deploy.sh check-ready.py COMMIT > SHA256SUMS
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-${{ github.sha }}
+          path: release/
+          retention-days: 14
+          if-no-files-found: error
+
+  deploy:
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: production
+    permissions:
+      contents: read
+      actions: read
+    concurrency:
+      group: production-deployment
+      cancel-in-progress: false
+    steps:
+      - name: Download this run's verified release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh run download "$GITHUB_RUN_ID" --name "release-$GITHUB_SHA" --dir release
+      - name: Deploy over SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ vars.DEPLOY_USER }}
+          DEPLOY_PORT: ${{ vars.DEPLOY_PORT || '22' }}
+        run: |
+          set -euo pipefail
+          : "${SSH_PRIVATE_KEY:?Set production secret DEPLOY_SSH_KEY}"
+          : "${SSH_KNOWN_HOSTS:?Set production secret DEPLOY_KNOWN_HOSTS}"
+          [[ "$DEPLOY_HOST" =~ ^[a-zA-Z0-9][a-zA-Z0-9.-]*$ ]]
+          [[ "$DEPLOY_USER" =~ ^[a-z_][a-z0-9_-]*$ ]]
+          [[ "$DEPLOY_PORT" =~ ^[0-9]+$ ]]
+          ssh_dir=$(mktemp -d)
+          trap 'rm -rf "$ssh_dir"' EXIT
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$ssh_dir/key"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$ssh_dir/known_hosts"
+          chmod 600 "$ssh_dir/key" "$ssh_dir/known_hosts"
+          options=(-i "$ssh_dir/key" -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=15 -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$ssh_dir/known_hosts")
+          destination="$DEPLOY_USER@$DEPLOY_HOST"
+          incoming="/home/yasong-art-gallery/incoming/$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          ssh "${options[@]}" -p "$DEPLOY_PORT" "$destination" "umask 077; mkdir -p '$incoming'"
+          scp "${options[@]}" -P "$DEPLOY_PORT" release/* "$destination:$incoming/"
+          ssh "${options[@]}" -p "$DEPLOY_PORT" "$destination" "cd '$incoming' && sha256sum -c SHA256SUMS && bash deploy.sh yasong-art-gallery.jar '$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT'"

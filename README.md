@@ -92,6 +92,7 @@ main 푸시와 PR은 빌드·테스트를 수행합니다. 운영 배포는 **Ac
 
 - [백엔드 구조와 설정](backend/README.md)
 - [프런트엔드 구조와 설정](frontend/README.md)
+- [버전별 변경 내역](CHANGELOG.md)
 - [서버 준비·배포·복구](deployment/guides/production.md)
 - [Java 개발 환경 문제 해결](backend/README.md#java-편집기-오류)
 - [AI 작업 지침](AGENTS.md)

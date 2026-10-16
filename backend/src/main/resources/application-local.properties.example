@@ -1,9 +1,14 @@
-# MySQL 로컬 개발 환경 설정
+# 로컬 개발용 예시입니다. application-local.properties로 복사한 뒤 수정합니다.
+# 기존 파일과 실제 비밀값은 커밋하지 않습니다.
 spring.datasource.url=jdbc:mysql://localhost:3306/yasongmuseum?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-spring.datasource.username=root
-spring.datasource.password=your_password_here
+spring.datasource.username=yasongmuseum
+spring.datasource.password=your_local_db_password
 spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 
-# Base64 JWT key. Generate with: openssl rand -base64 64 | tr -d '\n'
-# Set JWT_SECRET in your shell, or replace this expression with a private generated key.
+# 실행하는 셸에서 JWT_SECRET을 설정합니다. 예: openssl rand -base64 64 | tr -d '\n'
 jwt.secret=${JWT_SECRET}
+
+# 선택: 로컬에서도 관리자 통계를 사용할 때만 설정합니다.
+# JSON 자격증명 파일은 저장소 밖에 보관합니다.
+google.analytics.property-id=
+google.analytics.credentials-path=

@@ -1,31 +1,59 @@
-# Yasong Museum
+# Yasong
 
-프런트와 백엔드를 함께 관리하고, 한 번의 빌드로 실행 가능한 JAR를 만드는 모노레포입니다.
+야송미술관의 작품과 전시 정보를 제공하고, 운영자가 콘텐츠를 관리하는 웹사이트입니다. React 프런트엔드와 Spring Boot 백엔드를 하나의 저장소에서 관리하며, 통합 빌드 결과를 실행 가능한 JAR로 배포합니다.
 
-```text
-frontend/                React / Vite
-backend/                 Java 21 / Spring Boot / Maven Wrapper
-scripts/build.sh         프런트 빌드 → 테스트 → JAR → 패키지 검증
-deployment/              Ubuntu systemd 배포 및 운영 가이드
-.github/workflows/       PR·main 빌드와 수동 운영 배포
-```
+서비스: [yasong.co.kr](https://yasong.co.kr) · 저장소: [Bang9634/yasong](https://github.com/Bang9634/yasong)
 
-## 개발과 빌드
+## 주요 기능
 
-Node.js 22, JDK 21, Python 3가 필요합니다. Maven은 backend의 Wrapper를 사용합니다.
+- 미술관·작가 소개, 소장품·전시·공모전·사진 자료 조회
+- 공지사항과 첨부파일, 약관 및 업데이트 내역 제공
+- 운영자 콘텐츠·이미지 관리, 사용자·권한 관리
+- Google Analytics 기반 관리자 통계 조회: 별도 자격증명 설정 필요
+
+## 프로젝트 구조
+
+| 경로 | 역할 |
+| --- | --- |
+| [frontend/](frontend/README.md) | React 18 · Vite 6 · Tailwind CSS 4 |
+| [backend/](backend/README.md) | Java 21 · Spring Boot 4 · MySQL · Flyway |
+| [deployment/](deployment/README.md) | Ubuntu · systemd 배포와 운영 |
+| scripts/ | 로컬 실행, 통합 빌드, 패키지 검사 |
+| tests/ | Python 기반 실행·배포 스크립트 테스트 |
+| .github/workflows/ | GitHub Actions 빌드·테스트·수동 운영 배포 |
+
+## 설치와 로컬 실행
+
+**필수 환경:** JDK 21, Node.js 22, Python 3, MySQL, Git, OpenSSL. MySQL은 CI와 같은 8.4 사용을 권장합니다. Maven은 저장소의 Wrapper를 사용합니다.
+
+### 1. 소스와 개발 DB 준비
 
 ```bash
-nvm use
-cp -n backend/src/main/resources/application-local.properties.example backend/src/main/resources/application-local.properties
-# 위 로컬 설정을 자신의 개발 DB와 키로 수정합니다. 운영 자격증명을 넣지 않습니다.
-# 예제를 새로 복사했다면 로컬 JWT 키도 설정합니다. 기존 설정은 덮어쓰지 않습니다.
-export JWT_SECRET=$(openssl rand -base64 64 | tr -d '\n')
-./scripts/build.sh
+git clone https://github.com/Bang9634/yasong.git
+cd yasong
 ```
 
-테스트에는 별도의 개발 DB가 필요합니다. CI는 일회용 MySQL 8.4를 자동 생성하고 무작위 테스트 JWT 키를 사용합니다. 로컬 테스트에 운영 DB를 연결하지 마세요. 빌드 결과는 `backend/target/yasong-art-gallery.jar`입니다.
+nvm을 사용한다면 `nvm install`과 `nvm use`로 Node.js 버전을 맞춥니다. MySQL에는 개발용 `yasongmuseum` DB와 해당 DB에 테이블·인덱스를 생성/변경할 수 있는 개발 계정을 준비합니다. [개발 DB 준비 예시](backend/README.md#개발-db)를 참고하세요. 테이블 변경은 Flyway가 수행합니다. 운영 DB를 로컬 개발이나 테스트에 사용하지 않습니다.
 
-프런트만 개발할 때:
+### 2. 로컬 설정 준비
+
+```bash
+cp -n backend/src/main/resources/application-local.properties.example backend/src/main/resources/application-local.properties
+```
+
+복사한 파일의 DB 주소·계정·비밀번호를 개발 환경에 맞춥니다. `jwt.secret=${JWT_SECRET}` 설정은 유지합니다. 기존 로컬 파일은 덮어쓰지 않으며, 설정 파일과 실제 비밀값은 커밋하지 않습니다.
+
+### 3. 백엔드와 프런트엔드 실행
+
+첫 번째 터미널에서 저장소 루트 기준으로 실행합니다.
+
+```bash
+export SPRING_PROFILES_ACTIVE=local
+export JWT_SECRET="$(openssl rand -base64 64 | tr -d '\n')"
+./scripts/dev-backend.sh
+```
+
+다른 터미널에서 실행합니다.
 
 ```bash
 cd frontend
@@ -33,43 +61,43 @@ npm ci
 npm run dev
 ```
 
-백엔드 개발은 저장소 루트에서 `./scripts/dev-backend.sh`로 실행합니다. 이 스크립트는 Git에 넣지 않는 로컬 properties를 외부 설정으로 읽고, 업로드 저장소를 루트 `uploads/`로 지정합니다. 프런트 개발 서버는 `.env.development`의 API 주소를 사용합니다. 통합 JAR는 `./scripts/build.sh` 후 `./scripts/run-local.sh`로 실행하고 http://localhost:8080 에 접속합니다.
+[http://localhost:5173](http://localhost:5173)에 접속합니다. 백엔드는 기본적으로 `http://localhost:8080`에서 실행됩니다.
 
-두 터미널에서 프런트 `npm run dev`와 백엔드 `scripts/dev-backend.sh`를 각각 실행하면 http://localhost:5173 에서 개발할 수 있습니다. Java 21을 사용합니다. 프런트 빌드는 존재하지 않는 로컬 import도 따로 검사하며, 사용하지 않는 import가 번들에서 사라져 오류를 숨기는 경우를 방지합니다.
+### 4. 통합 빌드 확인
 
-## uploads 위치
-
-로컬 실행 스크립트는 `<저장소 루트>/uploads`를 사용합니다. 기존 파일을 backend로 옮길 필요가 없습니다. 운영 systemd는 `/home/yasong-art-gallery/uploads`를 사용하며, 이 폴더는 Git이나 JAR에 포함되지 않습니다. 공개 URL은 저장 디렉토리와 관계없이 `/uploads/...`를 유지합니다.
-
-물리 저장 경로를 바꾸려면 `FILE_UPLOAD_DIR` 환경변수에 절대 경로를 지정하세요. 저장·이미지 제공·첨부 다운로드·삭제 모두 동일한 설정을 사용합니다. 스크립트 없이 backend에서 Maven/IDE를 직접 실행하면 기본 상대 경로 `uploads`는 `backend/uploads`가 되므로, 기존 루트 파일을 사용하려면 IDE 실행 환경에도 절대 `FILE_UPLOAD_DIR`와 외부 로컬 설정 경로를 지정해야 합니다.
-
-`scripts/build.sh`도 local 프로필에서는 로컬 설정을 자동으로 읽습니다. prod 프로필에서는 로컬 설정을 자동으로 추가하지 않습니다. 로컬 properties와 기존 DB 계정/키를 자동 수정하거나 출력하지 않습니다. 로컬 Google Analytics 자격증명이 필요하면 실제 존재하는 외부 JSON 파일의 절대 경로를 로컬 설정에 지정하세요.
-
-프런트 `dist`는 Maven 리소스 단계에서 JAR의 `static/`에 들어갑니다. `dist`와 백엔드 `static`에 빌드 파일을 복사하거나 커밋하지 않습니다. 배포용 빌드는 루트의 `scripts/build.sh`로 실행해야 하며, `mvn package`만 따로 실행하면 프런트 빌드가 갱신되지 않습니다.
-
-`VITE_*` 값은 브라우저에 공개됩니다. 프런트 환경파일의 API 주소와 지도 클라이언트 ID는 공개 설정이며, DB 비밀번호나 JWT 키를 넣으면 안 됩니다. 지도 ID를 CI에서 바꾸려면 저장소 변수 `NAVER_MAP_CLIENT_ID`를 사용합니다.
-
-## CI/CD
-
-PR과 main push는 프런트 빌드, Java 테스트, JAR 검증, 실제 JAR의 HTTP·DB 연결 점검을 실행합니다. 운영 서버에는 자동 배포하지 않습니다.
-
-서버와 GitHub 설정을 완료한 뒤 Actions → Build and deploy → Run workflow → main → deploy 체크로 운영 배포합니다. 빌드된 JAR와 체크섬은 Actions artifact에 14일간 보관됩니다. 실행 중인 서버와 업로드 파일은 서버에 남으므로 artifact 보관 기간과 별개입니다.
-
-실제 초기 설정과 배포 권한은 [배포 가이드](deployment/README.md), Java 편집기 오류 해결은 [Java 개발 가이드](deployment/JAVA_DEVELOPMENT.md)를 참고하세요.
-
-## 저장소 이력
-
-백엔드 원본 이력을 유지하고 프런트의 master를 squash 없이 subtree merge했습니다. 원래 커밋의 SHA·작성자·메시지는 보존됩니다. 과거 파일은 당시의 루트 경로로 남고 현재 파일만 frontend/backend로 나뉩니다. 원래 GitHub 저장소의 PR·이슈·설정은 이동되지 않습니다.
-
-- backend 원본: `https://github.com/Bang9634/yasong-museum-backend.git`
-- frontend 원본: `https://github.com/Bang9634/yasong-museum-frontend.git`
-- backend 기준 커밋: c7bc20721786726e63df8a3800a56dcfcbdf5beb
-- frontend 가져온 커밋: 69c880eb5db9a8fb02fb3139618e09e69741a44b
+개발 DB가 실행 중이고 위의 로컬 프로필·JWT 환경변수가 설정된 터미널에서, 기존 백엔드를 종료한 뒤 저장소 루트 기준으로 실행합니다.
 
 ```bash
-git merge-base --is-ancestor c7bc20721786726e63df8a3800a56dcfcbdf5beb HEAD
-git merge-base --is-ancestor 69c880eb5db9a8fb02fb3139618e09e69741a44b HEAD
-git log --graph --oneline --all
+./scripts/build.sh
+./scripts/run-local.sh
 ```
 
-두 is-ancestor 명령이 모두 exit 0이면 두 이력이 통합 브랜치에 연결된 것입니다. 현재 로컬 원본은 각각 main/master 한 브랜치이며 태그가 없습니다. 원격에만 있는 다른 브랜치는 별도 확인·가져오기가 필요합니다. 새 저장소를 사용한다면 그 저장소로 통합 브랜치를 push한 뒤 main으로 검토·병합하세요. 기존 두 저장소는 통합 확인 후 보관용으로 유지합니다. 기존 저장소 삭제나 force push는 필요하지 않습니다.
+빌드·Java 테스트·패키지 검사를 통과하면 `backend/target/yasong-art-gallery.jar`가 생성됩니다. 통합 실행은 [http://localhost:8080](http://localhost:8080)에서 확인하며, 별도 프런트 개발 서버는 필요하지 않습니다. 프런트 빌드 파일을 백엔드에 수동 복사하지 않습니다.
+
+## 환경설정과 업로드
+
+| 구분 | 설정 위치 | 적용 시점 |
+| --- | --- | --- |
+| 로컬 백엔드 | `backend/src/main/resources/application-local.properties`와 환경변수 | 백엔드 시작 |
+| 운영 백엔드 | 서버의 `.env`를 systemd가 읽음 | 서비스 시작 |
+| 프런트엔드 | `frontend/.env.development`, `.env.production`, 모드별 로컬 설정 | 개발 서버 시작·빌드 |
+
+`.env.example`은 참고용이며 직접 읽히지 않습니다. 로컬 실행 스크립트도 루트나 백엔드의 `.env`를 자동으로 읽지 않습니다. `VITE_*`는 브라우저에 공개되는 설정이므로 비밀값을 넣지 않습니다.
+
+로컬 스크립트의 업로드 저장소는 저장소 루트의 `uploads/`입니다. 다른 위치는 `FILE_UPLOAD_DIR` 절대 경로로 지정합니다. 업로드 데이터는 Git이나 JAR에 포함하지 않으며 별도로 백업해야 합니다.
+
+## 배포와 문서
+
+main 푸시와 PR은 빌드·테스트를 수행합니다. 운영 배포는 **Actions → Build and deploy → Run workflow → main → deploy 체크**로 시작합니다. 서버 설정은 [배포 안내](deployment/README.md)를 따릅니다.
+
+- [백엔드 구조와 설정](backend/README.md)
+- [프런트엔드 구조와 설정](frontend/README.md)
+- [서버 준비·배포·복구](deployment/guides/production.md)
+- [Java 개발 환경 문제 해결](backend/README.md#java-편집기-오류)
+- [AI 작업 지침](AGENTS.md)
+
+프런트엔드와 백엔드의 기존 Git 커밋 이력은 모노레포 통합 과정에서 보존했습니다.
+
+## 라이선스와 출처
+
+별도 표기가 없는 프로젝트 소스코드와 개발 문서는 [MIT License](LICENSE)를 따릅니다. 작품 이미지·사진·로고 등 콘텐츠에는 이 라이선스를 일괄 적용하지 않습니다. 외부 코드와 라이브러리는 각각의 라이선스를 따르며, UI 코드 출처는 [프런트엔드 README](frontend/README.md#라이선스)에 있습니다.

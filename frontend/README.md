@@ -8,12 +8,15 @@ React 18 / Vite 6 / Tailwind CSS 4 기반 웹 화면입니다. Node.js 22와 npm
 
 | 경로 | 역할 |
 | --- | --- |
-| `src/app/App.tsx` | 페이지 라우팅 |
-| `src/app/components/` | 공개 화면, 콘텐츠 작성·수정 화면 |
-| `src/app/components/admin/` | 사용자·사이트 설정·통계 등 관리 화면 |
-| `src/app/components/common/`, `ui/` | 공통 첨부파일 및 UI 구성요소 |
+| `src/app/` | 앱 구성, 페이지 라우팅, 페이지 이동·방문 추적 |
+| `src/pages/<기능>/` | 기능별 조회·편집·관리 페이지와 내부 `components/`, `hooks/` |
+| `src/components/layout/` | Header·Footer, 데스크톱·모바일 메뉴 |
+| `src/components/attachments/`, `common/`, `ui/` | 공용 첨부파일·이미지·기본 UI 구성요소 |
+| `src/hooks/` | 여러 기능이 공유하는 React 로직 |
 | `src/context/`, `src/utils/` | 인증 상태, API 클라이언트, 이미지·SEO 처리 |
 | `src/styles/`, `public/` | 스타일과 URL로 직접 제공하는 정적 파일 |
+
+페이지는 URL·접근 권한에 따른 화면 처리·SEO·화면 조합을 담당합니다. 복잡한 조회·입력·저장 로직은 기능 내부 Hook으로, 입력 UI는 내부 컴포넌트로 분리합니다. 여러 기능에서 사용하는 코드만 공용 폴더에 둡니다. 관리자 화면도 관련 기능과 함께 관리하며, 폴더명 변경은 기존 URL이나 API 경로에 영향을 주지 않습니다.
 
 ## 개발과 빌드
 
@@ -36,6 +39,6 @@ Vite를 시작한 셸의 환경변수는 파일보다 우선합니다. 변경 �
 
 ## 라이선스
 
-`src/app/components/ui/`에는 [shadcn/ui](https://ui.shadcn.com/) 기반 코드가 포함되어 있습니다. 해당 코드의 저작권 고지와 MIT 허가문은 [루트 LICENSE](../LICENSE)에 보존합니다. 이는 웹사이트 전체 디자인의 출처를 뜻하지 않습니다.
+`src/components/ui/`에는 [shadcn/ui](https://ui.shadcn.com/) 기반 코드가 포함되어 있습니다. 해당 코드의 저작권 고지와 MIT 허가문은 [루트 LICENSE](../LICENSE)에 보존합니다. 이는 웹사이트 전체 디자인의 출처를 뜻하지 않습니다.
 
 프로젝트 라이선스와 콘텐츠 권리 구분은 [루트 README](../README.md#라이선스와-출처)를 참고합니다. 설치된 외부 패키지는 각 패키지의 라이선스를 따릅니다.

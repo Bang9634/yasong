@@ -1,8 +1,10 @@
 # Yasong
 
-야송미술관의 작품과 전시 정보를 제공하고, 운영자가 콘텐츠를 관리하는 웹사이트입니다. React 프런트엔드와 Spring Boot 백엔드를 하나의 저장소에서 관리하며, 통합 빌드 결과를 실행 가능한 JAR로 배포합니다.
+야송 이원좌 화백의 작품과 관련 공모전 및 전시 정보를 제공하고, 운영자가 콘텐츠를 관리하는 웹사이트입니다. React 프런트엔드와 Spring Boot 백엔드를 하나의 저장소에서 관리하며, 통합 빌드 결과를 실행 가능한 JAR로 배포합니다.
 
 서비스: [yasong.co.kr](https://yasong.co.kr) · 저장소: [Bang9634/yasong](https://github.com/Bang9634/yasong)
+
+본 서비스는 정보 제공과 연구·포트폴리오를 목적으로 개인이 비영리로 운영하는 디지털 아카이브이며, 군립 청송야송미술관의 공식 홈페이지가 아닙니다. 자세한 내용은 [이용약관](https://yasong.co.kr/legal/terms)을 참고해 주세요.
 
 ## 주요 기능
 
@@ -43,7 +45,7 @@ cp -n backend/src/main/resources/application-local.properties.example backend/sr
 
 복사한 파일의 DB 주소·계정·비밀번호를 개발 환경에 맞춥니다. `jwt.secret=${JWT_SECRET}` 설정은 유지합니다. 기존 로컬 파일은 덮어쓰지 않으며, 설정 파일과 실제 비밀값은 커밋하지 않습니다.
 
-### 3. 백엔드와 프런트엔드 실행
+### 3. 백엔드와 프론트엔드 실행
 
 첫 번째 터미널에서 저장소 루트 기준으로 실행합니다.
 

@@ -1,3 +1,9 @@
+import {
+  EXHIBITION_TYPE_FILTERS,
+  getExhibitionTypeLabel,
+  type ExhibitionType,
+  type ExhibitionTypeFilter,
+} from '@/utils/exhibitionTypes';
 import { useHorizontalScroll } from '@/hooks/useHorizontalScroll';
 import { useState, useEffect, useRef } from 'react';
 import { ImageWithFallback } from '@/components/common/ImageWithFallback';
@@ -11,7 +17,7 @@ interface Exhibition {
   location: string;
   imageUrl: string;
   description: string;
-  type: 'MEMORIAL' | 'RETROSPECTIVE';
+  type: ExhibitionType;
   startDate: string;
   endDate: string;
   status: 'ONGOING' | 'UPCOMING' | 'PAST';
@@ -32,10 +38,10 @@ export function ExhibitionsSection() {
   } = useHorizontalScroll(exhibitions);
   const [isHeaderVisible, setIsHeaderVisible] = useState(false);
   const [isCardsVisible, setIsCardsVisible] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<'all' | 'memorial' | 'retrospective'>(
-    'all'
-  );
-  const [allCategoryData, setAllCategoryData] = useState<{ [key: string]: Exhibition[] }>({}); // 카테고리별 캐시
+  const [selectedCategory, setSelectedCategory] = useState<ExhibitionTypeFilter>('ALL');
+  const [allCategoryData, setAllCategoryData] = useState<
+    Partial<Record<ExhibitionTypeFilter, Exhibition[]>>
+  >({}); // 카테고리별 캐시
   const headerRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<HTMLDivElement>(null);
   const isInitialLoad = useRef(true);
@@ -84,20 +90,10 @@ export function ExhibitionsSection() {
         setIsLoading(true);
 
         // 카테고리별로 전시 가져오기
-        const categories: Array<'all' | 'memorial' | 'retrospective'> = [
-          'all',
-          'memorial',
-          'retrospective',
-        ];
-        const allResults: { [key: string]: Exhibition[] } = {};
+        const allResults: Partial<Record<ExhibitionTypeFilter, Exhibition[]>> = {};
 
-        for (const category of categories) {
-          const typeParam =
-            category === 'memorial'
-              ? 'MEMORIAL'
-              : category === 'retrospective'
-                ? 'RETROSPECTIVE'
-                : undefined;
+        for (const { value: category } of EXHIBITION_TYPE_FILTERS) {
+          const typeParam = category === 'ALL' ? undefined : category;
 
           // 전시 중, 전시 예정, 지난 전시를 각각 가져오기
           const [ongoing, upcoming, past] = await Promise.all([
@@ -141,7 +137,7 @@ export function ExhibitionsSection() {
         }
 
         setAllCategoryData(allResults);
-        setExhibitions(allResults['all'] || []);
+        setExhibitions(allResults.ALL || []);
         isInitialLoad.current = false;
       } catch (err) {
         console.error('전시 조회 실패:', err);
@@ -274,57 +270,32 @@ export function ExhibitionsSection() {
           </div>
 
           {/* 카테고리 탭 */}
-          <div className="flex gap-4 border-b border-[#2C2C2C]/20">
-            <button
-              onClick={() => setSelectedCategory('all')}
-              className={`pb-3 px-4 font-medium transition-all relative ${
-                selectedCategory === 'all'
-                  ? 'text-[#C84630]'
-                  : 'text-[#2C2C2C]/60 hover:text-[#2C2C2C]'
-              }`}
-            >
-              전체
-              {selectedCategory === 'all' && (
-                <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#C84630]"></div>
-              )}
-            </button>
-            <button
-              onClick={() => setSelectedCategory('memorial')}
-              className={`pb-3 px-4 font-medium transition-all relative ${
-                selectedCategory === 'memorial'
-                  ? 'text-[#C84630]'
-                  : 'text-[#2C2C2C]/60 hover:text-[#2C2C2C]'
-              }`}
-            >
-              추모 전시
-              {selectedCategory === 'memorial' && (
-                <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#C84630]"></div>
-              )}
-            </button>
-            <button
-              onClick={() => setSelectedCategory('retrospective')}
-              className={`pb-3 px-4 font-medium transition-all relative ${
-                selectedCategory === 'retrospective'
-                  ? 'text-[#C84630]'
-                  : 'text-[#2C2C2C]/60 hover:text-[#2C2C2C]'
-              }`}
-            >
-              회고전
-              {selectedCategory === 'retrospective' && (
-                <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#C84630]"></div>
-              )}
-            </button>
+          <div className="flex gap-4 border-b border-[#2C2C2C]/20 overflow-x-auto scrollbar-hide">
+            {EXHIBITION_TYPE_FILTERS.map((tab) => (
+              <button
+                key={tab.value}
+                onClick={() => setSelectedCategory(tab.value)}
+                className={`pb-3 px-4 font-medium transition-all relative whitespace-nowrap ${
+                  selectedCategory === tab.value
+                    ? 'text-[#C84630]'
+                    : 'text-[#2C2C2C]/60 hover:text-[#2C2C2C]'
+                }`}
+              >
+                {tab.label}
+                {selectedCategory === tab.value && (
+                  <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#C84630]"></div>
+                )}
+              </button>
+            ))}
           </div>
         </div>
 
         {/* 카드 스크롤 영역 */}
         {exhibitions.length === 0 ? (
           <div className="flex items-center justify-center text-[#2C2C2C]/60 h-[500px]">
-            {selectedCategory === 'all'
+            {selectedCategory === 'ALL'
               ? '현재 예정된 전시가 없습니다.'
-              : selectedCategory === 'memorial'
-                ? '추모 전시가 없습니다.'
-                : '회고전이 없습니다.'}
+              : `${getExhibitionTypeLabel(selectedCategory)} 항목이 없습니다.`}
           </div>
         ) : (
           <div
@@ -415,7 +386,7 @@ export function ExhibitionsSection() {
                         {/* 전시 종류 */}
                         <div className="flex flex-wrap gap-1 sm:gap-1.5">
                           <span className="inline-block px-2 sm:px-2.5 py-0.5 bg-[#2C2C2C] text-[#F4F4F0] text-[10px] sm:text-[11px] rounded-full">
-                            {exhibition.type === 'MEMORIAL' ? '추모 전시' : '회고전'}
+                            {getExhibitionTypeLabel(exhibition.type)}
                           </span>
                         </div>
                       </div>

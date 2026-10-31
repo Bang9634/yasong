@@ -1,3 +1,4 @@
+import type { ExhibitionType } from '../exhibitionTypes';
 import { apiCall, API_BASE_URL } from './client';
 
 /**
@@ -13,7 +14,7 @@ export const exhibitionAPI = {
     limit: number;
     search?: string;
     status?: string; // ongoing, upcoming, past
-    type?: string; // MEMORIAL, RETROSPECTIVE
+    type?: ExhibitionType;
   }) => {
     const queryParams = new URLSearchParams({
       page: params.page.toString(),
@@ -85,10 +86,9 @@ export const exhibitionAPI = {
    */
   createExhibition: async (data: {
     title: string;
-    artist: string;
     location: string;
     description: string;
-    type: string; // MEMORIAL, RETROSPECTIVE
+    type: ExhibitionType;
     startDate: string;
     endDate: string;
   }, imageFile: File) => {
@@ -120,10 +120,9 @@ export const exhibitionAPI = {
    */
   updateExhibition: async (id: number, data: {
     title: string;
-    artist: string;
     location: string;
     description: string;
-    type: string; // MEMORIAL, RETROSPECTIVE
+    type: ExhibitionType;
     startDate: string;
     endDate: string;
   }, imageFile?: File) => {

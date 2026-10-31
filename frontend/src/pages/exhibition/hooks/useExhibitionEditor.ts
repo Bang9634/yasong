@@ -1,3 +1,4 @@
+import type { ExhibitionType } from '@/utils/exhibitionTypes';
 import { useState } from 'react';
 import { exhibitionAPI } from '@/utils/api';
 import { resizeImage } from '@/utils/imageUtils';
@@ -6,7 +7,7 @@ interface ExhibitionFormData {
   title: string;
   location: string;
   description: string;
-  type: 'MEMORIAL' | 'RETROSPECTIVE';
+  type: ExhibitionType;
   startDate: string;
   endDate: string;
 }

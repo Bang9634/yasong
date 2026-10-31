@@ -1,3 +1,4 @@
+import { EXHIBITION_TYPE_OPTIONS } from '@/utils/exhibitionTypes';
 import { Upload, X } from 'lucide-react';
 import type { useExhibitionEditor } from '../hooks/useExhibitionEditor';
 
@@ -105,8 +106,11 @@ export function ExhibitionForm({
             onChange={handleInputChange}
             className="w-full px-4 py-3 rounded-lg border-2 border-[#2C2C2C]/20 focus:border-[#C84630] focus:outline-none text-[#2C2C2C]"
           >
-            <option value="MEMORIAL">추모 전시</option>
-            <option value="RETROSPECTIVE">회고전</option>
+            {EXHIBITION_TYPE_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
         </div>
 

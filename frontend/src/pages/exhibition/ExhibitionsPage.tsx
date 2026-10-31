@@ -1,3 +1,9 @@
+import {
+  EXHIBITION_TYPE_FILTERS,
+  getExhibitionTypeLabel,
+  type ExhibitionType,
+  type ExhibitionTypeFilter,
+} from '@/utils/exhibitionTypes';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
@@ -23,7 +29,7 @@ interface Exhibition {
   location: string;
   imageUrl: string;
   description: string;
-  type: 'MEMORIAL' | 'RETROSPECTIVE';
+  type: ExhibitionType;
   startDate: string;
   endDate: string;
   status: 'ONGOING' | 'UPCOMING' | 'PAST';
@@ -36,7 +42,7 @@ export function ExhibitionsPage() {
   const navigate = useNavigate();
   const [exhibitions, setExhibitions] = useState<Exhibition[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [typeFilter, setTypeFilter] = useState<string>('전체');
+  const [typeFilter, setTypeFilter] = useState<ExhibitionTypeFilter>('ALL');
   const [statusFilter, setStatusFilter] = useState<string>('전체');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -80,7 +86,7 @@ export function ExhibitionsPage() {
     try {
       setLoading(true);
       
-      const params: any = {
+      const params: Parameters<typeof exhibitionAPI.getExhibitions>[0] = {
         page: currentPage,
         limit: itemsPerPage,
       };
@@ -89,8 +95,8 @@ export function ExhibitionsPage() {
         params.search = searchQuery;
       }
 
-      if (typeFilter !== '전체') {
-        params.type = typeFilter === '추모 전시' ? 'MEMORIAL' : 'RETROSPECTIVE';
+      if (typeFilter !== 'ALL') {
+        params.type = typeFilter;
       }
 
       if (statusFilter !== '전체') {
@@ -102,9 +108,7 @@ export function ExhibitionsPage() {
         params.status = statusMap[statusFilter];
       }
 
-      console.log('📡 전시 로드 파라미터:', params);
       const response = await exhibitionAPI.getExhibitions(params);
-      console.log('✅ 전시 응답:', response);
       
       setExhibitions(response.content || []);
       setTotalPages(response.totalPages || 1);
@@ -152,10 +156,6 @@ export function ExhibitionsPage() {
 
   const getImageUrl = (imageUrl: string) => {
     return getFullImageUrl(imageUrl);
-  };
-
-  const getTypeDisplayName = (type: string) => {
-    return type === 'MEMORIAL' ? '추모 전시' : '회고전';
   };
 
   const getStatusDisplayName = (status: string) => {
@@ -210,7 +210,7 @@ export function ExhibitionsPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#2C2C2C]/40 w-4 h-4" />
               <input
                 type="text"
-                placeholder="전시명, 작가명으로 검색..."
+                placeholder="전시명, 설명으로 검색..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-9 pr-4 py-2 text-sm bg-white border border-[#2C2C2C]/10 rounded-lg focus:ring-2 focus:ring-[#C84630] focus:border-[#C84630] text-[#2C2C2C] placeholder:text-[#2C2C2C]/40"
@@ -221,19 +221,19 @@ export function ExhibitionsPage() {
           {/* 전시 종류 탭 */}
           <div className="mb-6 border-b border-[#2C2C2C]/20">
             <div className="flex gap-6 overflow-x-auto scrollbar-hide">
-              {['전체', '추모 전시', '회고전'].map((tab) => (
+              {EXHIBITION_TYPE_FILTERS.map((tab) => (
                 <button
-                  key={tab}
-                  onClick={() => setTypeFilter(tab)}
+                  key={tab.value}
+                  onClick={() => setTypeFilter(tab.value)}
                   className={`
                     pb-3 px-2 font-medium transition-all whitespace-nowrap relative
-                    ${typeFilter === tab 
+                    ${typeFilter === tab.value
                       ? 'text-[#C84630]' 
                       : 'text-[#2C2C2C]/60 hover:text-[#2C2C2C]'}
                   `}
                 >
-                  {tab}
-                  {typeFilter === tab && (
+                  {tab.label}
+                  {typeFilter === tab.value && (
                     <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#C84630]"></div>
                   )}
                 </button>
@@ -364,7 +364,7 @@ export function ExhibitionsPage() {
                       {/* 전시 종류 */}
                       <div className="flex flex-wrap gap-2">
                         <span className="inline-block px-3 py-1 bg-[#2C2C2C] text-[#F4F4F0] text-xs rounded-full">
-                          {getTypeDisplayName(exhibition.type)}
+                          {getExhibitionTypeLabel(exhibition.type)}
                         </span>
                       </div>
                     </div>

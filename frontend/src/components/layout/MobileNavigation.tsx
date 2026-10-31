@@ -141,7 +141,7 @@ export function MobileNavigation({
               : 'text-[#F4F4F0]/80 hover:bg-[#F4F4F0]/5 hover:text-[#C84630]'
           }`}
         >
-          • 추모 전시, 회고전
+          • 전시 안내
         </button>
         <button
           onClick={() => {

@@ -123,7 +123,7 @@ export function DesktopNavigation({ isDarkBackground, onClose }: NavigationProps
                 : 'text-[#F4F4F0] hover:bg-[#C84630]/20 hover:text-[#C84630]'
             }`}
           >
-            추모 전시, 회고전
+            전시 안내
           </button>
           <button
             onClick={() => {

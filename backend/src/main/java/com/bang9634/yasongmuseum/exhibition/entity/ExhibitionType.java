@@ -12,5 +12,10 @@ public enum ExhibitionType {
     /**
      * 회고전 (Retrospective Exhibition)
      */
-    RETROSPECTIVE
+    RETROSPECTIVE,
+
+    /**
+     * 일반 전시 (General Exhibition)
+     */
+    GENERAL
 }

@@ -1,3 +1,4 @@
+import { getExhibitionTypeLabel, type ExhibitionType } from '@/utils/exhibitionTypes';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
@@ -15,7 +16,7 @@ interface Exhibition {
   location: string;
   imageUrl: string;
   description: string;
-  type: 'MEMORIAL' | 'RETROSPECTIVE';
+  type: ExhibitionType;
   startDate: string;
   endDate: string;
   status: 'ONGOING' | 'UPCOMING' | 'PAST';
@@ -45,7 +46,7 @@ export function ExhibitionDetailPage() {
       setPageSEO({
         title: data.title,
         description: data.description.substring(0, 160),
-        keywords: `야송, 전시, ${data.title}, ${getTypeDisplayName(data.type)}`,
+        keywords: `야송, 전시, ${data.title}, ${getExhibitionTypeLabel(data.type)}`,
         image: getImageUrl(data.imageUrl),
       });
     } catch (error) {
@@ -60,14 +61,6 @@ export function ExhibitionDetailPage() {
       return imageUrl;
     }
     return `${import.meta.env.VITE_API_BASE_URL || ''}${imageUrl}`;
-  };
-
-  const getTypeDisplayName = (type: string) => {
-    const typeMap: { [key: string]: string } = {
-      'MEMORIAL': '추모 전시',
-      'RETROSPECTIVE': '회고전',
-    };
-    return typeMap[type] || type;
   };
 
   const getStatusDisplayName = (status: string) => {
@@ -183,7 +176,7 @@ export function ExhibitionDetailPage() {
               
               {/* 타입 배지 - 우측 상단 */}
               <div className="absolute top-4 right-4 bg-black/70 text-white px-3 py-1.5 rounded text-sm font-medium">
-                {getTypeDisplayName(exhibition.type)}
+                {getExhibitionTypeLabel(exhibition.type)}
               </div>
               
               {/* 상태 배지 - 우측 상단 (타입 아래) */}
@@ -248,7 +241,7 @@ export function ExhibitionDetailPage() {
               <div className="flex justify-between text-sm">
                 <span className="text-[#2C2C2C]/60">전시 유형</span>
                 <span className="text-[#2C2C2C] font-medium">
-                  {getTypeDisplayName(exhibition.type)}
+                  {getExhibitionTypeLabel(exhibition.type)}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
